@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro de Llamadas v2.0 - Alfa</title>
+    <title>Sistema de Registro de Llamadas v1.0 - Firebase</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,6 +21,33 @@
     
     <!-- js-xlsx para leer archivos de Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK v9 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Variables globales para Firebase
+        window.initializeApp = initializeApp;
+        window.getAuth = getAuth;
+        window.signInAnonymously = signInAnonymously;
+        window.signInWithCustomToken = signInWithCustomToken;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.getFirestore = getFirestore;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.addDoc = addDoc;
+        window.setDoc = setDoc;
+        window.updateDoc = updateDoc;
+        window.deleteDoc = deleteDoc;
+        window.onSnapshot = onSnapshot;
+        window.collection = collection;
+        window.query = query;
+        window.where = where;
+        window.getDocs = getDocs;
+        window.serverTimestamp = serverTimestamp;
+    </script>
     
     <!-- Hoja de estilos personalizada -->
     <style>
@@ -227,26 +254,26 @@
                             <input type="file" id="historical-file-input" class="hidden" accept=".xlsx">
                         </label>
                         <button id="import-historical-btn" class="w-full md:w-auto bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                            <i class="fa-solid fa-database mr-2"></i>
-                            Importar a la Base de Datos
+                            <i class="fa-solid fa-upload mr-2"></i>
+                            Importar Histórico
+                        </button>
+                        <button id="download-historical-excel-btn" class="w-full md:w-auto bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-6 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Descargar Histórico</span>
                         </button>
                     </div>
                 </section>
-                
-                <section id="historical-log" class="mt-8">
+
+                <section class="mt-8">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-2xl font-bold text-gob-maroon">Registro Histórico</h2>
+                        <h2 class="text-2xl font-bold text-gob-maroon">Histórico de Llamadas Cargadas</h2>
                         <div class="flex items-center space-x-2">
                              <div class="relative w-full">
-                                <input type="text" id="filter-input-historical" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gob-maroon">
+                                <input type="text" id="filter-input-historico" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gob-maroon">
                                 <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                                <button id="clear-filter-btn-historical" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden">
+                                <button id="clear-filter-btn-historico" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden">
                                     <i class="fa-solid fa-times-circle"></i>
                                 </button>
-                            </div>
-                            <button id="download-historical-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
-                                <i class="fa-solid fa-file-excel"></i>
-                                <span>Descargar Histórico</span>
                             </div>
                         </div>
                     </div>
@@ -270,15 +297,14 @@
                                     <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="estatus">Estatus</th>
                                     <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="atendio">Atendió</th>
                                     <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="comentarios">Comentarios</th>
-                                    <th scope="col" class="py-3 px-6">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="historical-table-body">
-                                <!-- Filas de llamadas se insertarán aquí por JavaScript -->
+                            <tbody id="historical-calls-table-body">
+                                <!-- Filas de llamadas históricas se insertarán aquí por JavaScript -->
                             </tbody>
                         </table>
-                        <div id="no-historical-message" class="p-6 text-center text-slate-500 hidden">
-                            <p>No hay datos históricos cargados.</p>
+                        <div id="no-historical-calls-message" class="p-6 text-center text-slate-500 hidden">
+                            <p>No hay llamadas históricas cargadas.</p>
                         </div>
                     </div>
                 </section>
@@ -286,9 +312,9 @@
 
             <!-- Pestaña de Reportes y Gráficos -->
             <div id="tab-content-reportes" class="tab-content hidden">
-                <section class="bg-white p-6 rounded-xl shadow-md mb-8">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-2xl font-bold text-gob-maroon">Reportes</h2>
+                <section class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gob-maroon mb-2 sm:mb-0">Gráficos de Llamadas</h2>
                         <div class="flex items-center space-x-4">
                             <label for="reportes-data-source" class="block text-sm font-medium text-gray-700">Fuente de datos:</label>
                             <select id="reportes-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
@@ -298,1113 +324,1231 @@
                             </select>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Estatus</h3>
-                            <canvas id="statusChart"></canvas>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-slate-100 p-4 rounded-lg shadow-inner">
+                            <h3 class="text-lg font-semibold text-center mb-2">Llamadas por Mes</h3>
+                            <canvas id="callsByMonthChart"></canvas>
                         </div>
-                        <div>
-                            <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Área</h3>
-                            <canvas id="areaChart"></canvas>
+                        <div class="bg-slate-100 p-4 rounded-lg shadow-inner">
+                            <h3 class="text-lg font-semibold text-center mb-2">Llamadas por Estatus</h3>
+                            <canvas id="callsByStatusChart"></canvas>
                         </div>
-                        <div>
-                            <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Día de la Semana</h3>
-                            <canvas id="dayOfWeekChart"></canvas>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Institución</h3>
-                            <canvas id="institutionChart"></canvas>
+                        <div class="bg-slate-100 p-4 rounded-lg shadow-inner">
+                            <h3 class="text-lg font-semibold text-center mb-2">Llamadas por Área</h3>
+                            <canvas id="callsByAreaChart"></canvas>
                         </div>
                     </div>
                 </section>
             </div>
         </div>
-    </div>
-    
-    <!-- Modal de Registro de Llamada -->
-    <div id="call-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl mx-4">
-            <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
-                <i class="fa-solid fa-times-circle fa-lg"></i>
-            </button>
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gob-maroon">Detalles de la Llamada</h3>
-                <div class="text-right">
-                    <p class="text-sm font-medium text-slate-500">TIEMPO DE LLAMADA ACTUAL</p>
-                    <p id="modal-timer" class="text-2xl font-bold text-gob-maroon tracking-wider">00:00:00</p>
-                </div>
-            </div>
-            <form id="call-form" class="space-y-4">
-                <!-- Datos de Solicitud -->
-                <div class="flex flex-col sm:flex-row gap-4 items-end">
-                    <div class="flex-1">
-                        <label for="caller-institution" class="block text-sm font-medium text-gray-700">Institución</label>
-                        <div class="flex items-center gap-2">
-                            <select id="caller-institution" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
-                            <button type="button" data-option-type="institution" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
-                        </div>
-                    </div>
-                    <div class="flex-1">
-                        <label for="call-area" class="block text-sm font-medium text-gray-700">Área o Departamento</label>
-                        <div class="flex items-center gap-2">
-                            <select id="call-area" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
-                            <button type="button" data-option-type="area" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="flex-1">
-                    <label for="call-subject" class="block text-sm font-medium text-gray-700">Asunto</label>
-                    <input type="text" id="call-subject" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
-                    </div>
-                    <div class="flex-1">
-                    <label for="call-query" class="block text-sm font-medium text-gray-700">Consulta</label>
-                    <input type="text" id="call-query" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
-                    </div>
-                </div>
-                <!-- Datos de Contacto -->
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="flex-1">
-                        <label for="caller-name" class="block text-sm font-medium text-gray-700">Nombre del Solicitante</label>
-                        <input type="text" id="caller-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
-                    </div>
-                    <div class="flex-1">
-                        <label for="caller-cargo" class="block text-sm font-medium text-gray-700">Cargo del Solicitante</label>
-                        <input type="text" id="caller-cargo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
-                    </div>
-                </div>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="flex-1">
-                        <label for="caller-email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-                        <input type="email" id="caller-email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
-                    </div>
-                    <div class="flex-1">
-                        <label for="caller-phone" class="block text-sm font-medium text-gray-700">Teléfono</label>
-                        <input type="tel" id="caller-phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" pattern="[0-9]{10}">
-                    </div>
-                </div>
-                <!-- Datos de Gestión -->
-                <div class="flex flex-col sm:flex-row gap-4 items-end">
-                    <div class="flex-1">
-                        <label for="call-atendio" class="block text-sm font-medium text-gray-700">Atendió</label>
-                        <div class="flex items-center gap-2">
-                            <select id="call-atendio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
-                            <button type="button" data-option-type="atendio" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
-                        </div>
-                    </div>
-                    <div class="flex-1">
-                        <label for="call-comments" class="block text-sm font-medium text-gray-700">Comentarios</label>
-                         <div class="flex items-center gap-2">
-                            <select id="call-comments" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
-                            <button type="button" data-option-type="comentarios" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
-                        </div>
-                    </div>
-                </div>
-                 <div>
-                    <label for="call-actions" class="block text-sm font-medium text-gray-700">Acciones</label>
-                    <div class="flex items-center gap-2">
-                        <select id="call-actions" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
-                        <button type="button" data-option-type="acciones" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
-                    </div>
-                </div>
-                <div class="flex items-center justify-end">
-                    <button type="submit" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">
-                        Guardar y Finalizar Llamada
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Modal de Edición de Llamada -->
-    <div id="edit-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl mx-4">
-            <button id="close-edit-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
-                <i class="fa-solid fa-times-circle fa-lg"></i>
-            </button>
-            <h3 class="text-2xl font-bold text-gob-maroon mb-6">Editar Llamada</h3>
-            <form id="edit-form" class="space-y-4">
-                <input type="hidden" id="edit-id">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="flex-1">
-                        <label for="edit-caller-name" class="block text-sm font-medium text-gray-700">Nombre del Solicitante</label>
-                        <input type="text" id="edit-caller-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
-                    </div>
-                    <div class="flex-1">
-                        <label for="edit-caller-cargo" class="block text-sm font-medium text-gray-700">Cargo del Solicitante</label>
-                        <input type="text" id="edit-caller-cargo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
-                    </div>
-                </div>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="flex-1">
-                        <label for="edit-caller-email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-                        <input type="email" id="edit-caller-email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
-                    </div>
-                    <div class="flex-1">
-                        <label for="edit-caller-phone" class="block text-sm font-medium text-gray-700">Teléfono</label>
-                        <input type="tel" id="edit-caller-phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" pattern="[0-9]{10}">
-                    </div>
-                </div>
-                <div class="flex flex-col sm:flex-row gap-4 items-end">
-                    <div class="flex-1">
-                        <label for="edit-call-area" class="block text-sm font-medium text-gray-700">Área o Departamento</label>
-                        <div class="flex items-center gap-2">
-                            <select id="edit-call-area" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
-                            <button type="button" id="edit-add-area-btn" data-option-type="area" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
-                        </div>
-                    </div>
-                    <div class="flex-1">
-                        <label for="edit-caller-institution" class="block text-sm font-medium text-gray-700">Institución</label>
-                        <div class="flex items-center gap-2">
-                            <select id="edit-caller-institution" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
-                            <button type="button" id="edit-add-institution-btn" data-option-type="institution" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <label for="edit-call-subject" class="block text-sm font-medium text-gray-700">Asunto</label>
-                    <input type="text" id="edit-call-subject" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
-                </div>
-                <div>
-                    <label for="edit-call-query" class="block text-sm font-medium text-gray-700">Consulta</label>
-                    <textarea id="edit-call-query" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></textarea>
-                </div>
-                <div>
-                    <label for="edit-call-comments" class="block text-sm font-medium text-gray-700">Comentarios</label>
-                    <textarea id="edit-call-comments" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2"></textarea>
-                </div>
-                <div class="flex items-center justify-end">
-                    <button type="submit" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">
-                        Guardar Cambios
+        <!-- Modal para el Formulario de Llamada -->
+        <div id="call-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+            <div class="modal-content bg-white p-8 rounded-xl shadow-2xl w-11/12 md:w-2/3 lg:w-1/2">
+                <div class="flex justify-between items-center pb-3 border-b border-gray-200">
+                    <h3 class="text-xl font-bold text-gob-maroon">Registrar Llamada</h3>
+                    <button type="button" id="close-modal-btn" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                        <i class="fa-solid fa-times text-xl"></i>
                     </button>
                 </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Modal de confirmación genérico para eliminar -->
-    <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
-            <h3 class="text-xl font-bold text-slate-800 mb-4">Confirmar Eliminación</h3>
-            <p class="text-slate-600 mb-6">¿Estás seguro de que deseas eliminar este registro?</p>
-            <div class="flex justify-center space-x-4">
-                <button id="cancel-delete-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">
-                    Cancelar
-                </button>
-                <button id="confirm-delete-btn" class="bg-subtle-red hover:bg-subtle-red-dark text-white font-bold py-2 px-4 rounded-lg">
-                    Eliminar
-                </button>
+                <form id="call-form" class="mt-4 space-y-6">
+                    <input type="hidden" id="call-id-field" name="id">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Fecha y Hora -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Fecha y Hora de Inicio</label>
+                            <input type="text" id="call-start-time" name="inicio" class="mt-1 block w-full rounded-md bg-gray-100 border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Fecha y Hora de Fin</label>
+                            <input type="text" id="call-end-time" name="fin" class="mt-1 block w-full rounded-md bg-gray-100 border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" readonly>
+                        </div>
+                        <!-- Duración -->
+                        <div>
+                            <label for="call-duration" class="block text-sm font-medium text-gray-700">Duración de la llamada</label>
+                            <input type="text" id="call-duration" name="duracion" class="mt-1 block w-full rounded-md bg-gray-100 border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" readonly>
+                        </div>
+                        <!-- Estatus -->
+                        <div>
+                            <label for="call-status" class="block text-sm font-medium text-gray-700">Estatus</label>
+                            <select id="call-status" name="estatus" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
+                                <option value="pendiente">Pendiente</option>
+                                <option value="atendida">Atendida</option>
+                            </select>
+                        </div>
+                        <!-- Área y Institución -->
+                        <div>
+                            <label for="call-area" class="block text-sm font-medium text-gray-700">Área</label>
+                            <input type="text" id="call-area" name="area" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" placeholder="Área de la dependencia">
+                        </div>
+                        <div>
+                            <label for="call-institution" class="block text-sm font-medium text-gray-700">Institución</label>
+                            <div class="flex items-center space-x-2">
+                                <select id="call-institution" name="institucion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
+                                    <option value="">Seleccione una institución</option>
+                                </select>
+                                <button type="button" id="add-institution-btn" class="mt-1 text-slate-500 hover:text-slate-700">
+                                    <i class="fa-solid fa-plus-circle text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Asunto y Consulta -->
+                        <div>
+                            <label for="call-subject" class="block text-sm font-medium text-gray-700">Asunto</label>
+                            <div class="flex items-center space-x-2">
+                                <select id="call-subject" name="asunto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
+                                    <option value="">Seleccione un asunto</option>
+                                </select>
+                                <button type="button" id="add-subject-btn" class="mt-1 text-slate-500 hover:text-slate-700">
+                                    <i class="fa-solid fa-plus-circle text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="call-query" class="block text-sm font-medium text-gray-700">Consulta</label>
+                            <input type="text" id="call-query" name="consulta" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" placeholder="Consulta específica">
+                        </div>
+                    </div>
+                    <!-- Persona de Contacto -->
+                    <div class="space-y-2 pt-4 border-t border-gray-200">
+                        <h4 class="text-lg font-semibold text-gob-maroon">Datos de Contacto</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="contact-name" class="block text-sm font-medium text-gray-700">Nombre</label>
+                                <input type="text" id="contact-name" name="nombre" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" placeholder="Nombre de la persona">
+                            </div>
+                            <div>
+                                <label for="contact-position" class="block text-sm font-medium text-gray-700">Cargo</label>
+                                <input type="text" id="contact-position" name="cargo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" placeholder="Cargo del contacto">
+                            </div>
+                            <div>
+                                <label for="contact-email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+                                <input type="email" id="contact-email" name="correo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" placeholder="ejemplo@dominio.com">
+                            </div>
+                            <div>
+                                <label for="contact-phone" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                                <input type="tel" id="contact-phone" name="telefono" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" placeholder="Número de teléfono">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Quién atendió y Comentarios -->
+                    <div class="space-y-2 pt-4 border-t border-gray-200">
+                        <h4 class="text-lg font-semibold text-gob-maroon">Información Adicional</h4>
+                        <div>
+                            <label for="call-atendio" class="block text-sm font-medium text-gray-700">Atendió</label>
+                            <div class="flex items-center space-x-2">
+                                <select id="call-atendio" name="atendio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
+                                    <option value="">Seleccione quien atendió</option>
+                                </select>
+                                <button type="button" id="add-atendio-btn" class="mt-1 text-slate-500 hover:text-slate-700">
+                                    <i class="fa-solid fa-plus-circle text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="call-comments" class="block text-sm font-medium text-gray-700">Comentarios</label>
+                            <textarea id="call-comments" name="comentarios" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" placeholder="Detalles de la llamada..."></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end gap-4">
+                        <button type="button" id="cancel-call-btn" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors duration-200">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gob-maroon hover:bg-[#5a0025] transition-colors duration-200">
+                            Guardar Llamada
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
-
-    <!-- Modal para agregar nueva opción a dropdown -->
-    <div id="add-option-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-md mx-4">
-            <button id="close-add-option-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
-                <i class="fa-solid fa-times-circle fa-lg"></i>
-            </button>
-            <h3 id="add-option-title" class="text-2xl font-bold text-gob-maroon mb-6"></h3>
-            <form id="add-option-form" class="space-y-4">
-                <input type="hidden" id="option-type">
-                <div>
-                    <label for="new-option-value" class="block text-sm font-medium text-gray-700">Nombre de la nueva opción</label>
-                    <input type="text" id="new-option-value" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
-                </div>
-                <div class="flex items-center justify-end">
-                    <button type="submit" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">
-                        Guardar Opción
+        
+        <!-- Modal de Confirmación para Importar Histórico -->
+        <div id="import-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+            <div class="modal-content bg-white p-8 rounded-xl shadow-2xl w-11/12 md:w-1/3">
+                <h3 class="text-xl font-bold text-gob-maroon mb-4">Confirmar Importación</h3>
+                <p class="text-gray-700 mb-6">¿Estás seguro de que deseas importar este archivo de histórico? Esto reemplazará los datos actuales en la tabla de Histórico.</p>
+                <div class="flex justify-end gap-4">
+                    <button type="button" id="cancel-import-btn" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors duration-200">
+                        Cancelar
+                    </button>
+                    <button type="button" id="confirm-import-btn" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gob-maroon hover:bg-[#5a0025] transition-colors duration-200">
+                        Importar
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
+
+        <!-- Modal para Agregar Nueva Opción -->
+        <div id="add-option-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+            <div class="modal-content bg-white p-8 rounded-xl shadow-2xl w-11/12 md:w-1/3">
+                <h3 id="add-option-modal-title" class="text-xl font-bold text-gob-maroon mb-4">Agregar Nueva Opción</h3>
+                <form id="add-option-form">
+                    <label for="new-option-input" class="block text-sm font-medium text-gray-700">Nuevo valor:</label>
+                    <input type="text" id="new-option-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
+                    <div class="mt-6 flex justify-end gap-4">
+                        <button type="button" id="cancel-add-option-btn" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors duration-200">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gob-maroon hover:bg-[#5a0025] transition-colors duration-200">
+                            Agregar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Script de la aplicación -->
+    <!-- Scripts de la aplicación -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, query, addDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Variables globales para la app
+// ====================================================================================================
+//                                     VARIABLES GLOBALES
+// ====================================================================================================
+        
         let timerInterval;
-        let callStartTime;
+        let startTime;
+        let firestoreDb, firebaseAuth;
+        let userId = 'anon_user';
         let calls = [];
         let historicalCalls = [];
-        let areas = [];
-        let institutions = [];
-        let atendioUsers = [];
-        let commentsOptions = [];
-        let actionsOptions = [];
-        let userId;
-        
-        // Elementos del DOM
-        const loader = document.getElementById('loader');
-        const appContainer = document.getElementById('app');
-        const userInfo = document.getElementById('user-info');
-        const tabsContainer = document.getElementById('tabs');
-        const tabContents = document.querySelectorAll('.tab-content');
+        let callsByMonthChart, callsByStatusChart, callsByAreaChart;
+        let currentSortColumn = 'no';
+        let currentSortDirection = 'asc';
+        let historicalSortColumn = 'no';
+        let historicalSortDirection = 'asc';
+        let isEditing = false;
+        let editingCallId = null;
+        let targetSelectForNewOption = null;
 
-        const dashboardDataSource = document.getElementById('dashboard-data-source');
-        const totalCallsElem = document.getElementById('total-calls');
-        const avgDurationElem = document.getElementById('avg-duration');
-        const atendidasCountElem = document.getElementById('atendidas-count');
-        const pendientesCountElem = document.getElementById('pendientes-count');
+// ====================================================================================================
+//                                     CONSTANTES Y ELEMENTOS DEL DOM
+// ====================================================================================================
 
-        const timerElem = document.getElementById('timer');
-        const startCallBtn = document.getElementById('start-call-btn');
-        const downloadExcelBtn = document.getElementById('download-excel-btn');
-
-        const callLogTableBody = document.getElementById('calls-table-body');
-        const noCallsMessage = document.getElementById('no-calls-message');
-        const historicalTableBody = document.getElementById('historical-table-body');
-        const noHistoricalMessage = document.getElementById('no-historical-message');
-
-        const historicalFileInput = document.getElementById('historical-file-input');
-        const historicalFileName = document.getElementById('file-name');
-        const importHistoricalBtn = document.getElementById('import-historical-btn');
-
-        const reportesDataSource = document.getElementById('reportes-data-source');
-        const statusChartCanvas = document.getElementById('statusChart');
-        const areaChartCanvas = document.getElementById('areaChart');
-        const dayOfWeekChartCanvas = document.getElementById('dayOfWeekChart');
-        const institutionChartCanvas = document.getElementById('institutionChart');
-        let statusChart, areaChart, dayOfWeekChart, institutionChart;
-        
-        // Modals y formularios
         const callModal = document.getElementById('call-modal');
-        const callForm = document.getElementById('call-form');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const editModal = document.getElementById('edit-modal');
-        const editForm = document.getElementById('edit-form');
-        const modalTimerElem = document.getElementById('modal-timer');
-        const closeEditModalBtn = document.getElementById('close-edit-modal-btn');
-        const confirmModal = document.getElementById('confirm-modal');
-        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const importModal = document.getElementById('import-modal');
         const addOptionModal = document.getElementById('add-option-modal');
-        const closeAddOptionBtn = document.getElementById('close-add-option-btn');
-        const addOptionForm = document.getElementById('add-option-form');
-
-        // Referencias a los select y botones de añadir
-        const callAreaSelect = document.getElementById('call-area');
-        const callerInstitutionSelect = document.getElementById('caller-institution');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const startCallBtn = document.getElementById('start-call-btn');
+        const cancelCallBtn = document.getElementById('cancel-call-btn');
+        const callForm = document.getElementById('call-form');
+        const callIdField = document.getElementById('call-id-field');
+        const timerDisplay = document.getElementById('timer');
+        const callsTableBody = document.getElementById('calls-table-body');
+        const noCallsMessage = document.getElementById('no-calls-message');
+        const historicalCallsTableBody = document.getElementById('historical-calls-table-body');
+        const noHistoricalCallsMessage = document.getElementById('no-historical-calls-message');
+        const downloadExcelBtn = document.getElementById('download-excel-btn');
+        const downloadHistoricalExcelBtn = document.getElementById('download-historical-excel-btn');
+        const historicalFileInput = document.getElementById('historical-file-input');
+        const importHistoricalBtn = document.getElementById('import-historical-btn');
+        const fileNameSpan = document.getElementById('file-name');
+        const loaderDiv = document.getElementById('loader');
+        const appDiv = document.getElementById('app');
+        const tabs = document.getElementById('tabs');
+        const dashboardDataSource = document.getElementById('dashboard-data-source');
+        const reportesDataSource = document.getElementById('reportes-data-source');
+        const filterInputMain = document.getElementById('filter-input-main');
+        const clearFilterBtnMain = document.getElementById('clear-filter-btn-main');
+        const filterInputHistorico = document.getElementById('filter-input-historico');
+        const clearFilterBtnHistorico = document.getElementById('clear-filter-btn-historico');
+        const mainTableHeader = document.getElementById('main-table-header');
+        const historicalTableHeader = document.getElementById('historical-table-header');
+        const userInfoDiv = document.getElementById('user-info');
+        
+        // Form selects
+        const callInstitutionSelect = document.getElementById('call-institution');
+        const callSubjectSelect = document.getElementById('call-subject');
         const callAtendioSelect = document.getElementById('call-atendio');
-        const callCommentsSelect = document.getElementById('call-comments');
-        const callActionsSelect = document.getElementById('call-actions');
-        const editCallAreaSelect = document.getElementById('edit-call-area');
-        const editCallerInstitutionSelect = document.getElementById('edit-caller-institution');
-        
-        // Función para ocultar el cargador y mostrar la aplicación
-        function showApp() {
-            if (loader) { loader.classList.add('hidden'); }
-            if (appContainer) { appContainer.classList.remove('hidden'); }
+        const addInstitutionBtn = document.getElementById('add-institution-btn');
+        const addSubjectBtn = document.getElementById('add-subject-btn');
+        const addAtendioBtn = document.getElementById('add-atendio-btn');
+        const addOptionForm = document.getElementById('add-option-form');
+        const newOptionInput = document.getElementById('new-option-input');
+
+        // Modal de confirmación para importación
+        const cancelImportBtn = document.getElementById('cancel-import-btn');
+        const confirmImportBtn = document.getElementById('confirm-import-btn');
+        const cancelAddOptionBtn = document.getElementById('cancel-add-option-btn');
+
+// ====================================================================================================
+//                                     CONFIGURACIÓN DE FIREBASE CREDENCIALES
+// ====================================================================================================
+
+        // ¡Asegúrate de que tus credenciales estén aquí!
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Inicializar Firebase
+        let app;
+        try {
+            if (Object.keys(firebaseConfig).length > 0) {
+                app = initializeApp(firebaseConfig);
+                firestoreDb = getFirestore(app);
+                firebaseAuth = getAuth(app);
+            } else {
+                console.error("Firebase config is missing. Cannot initialize Firebase.");
+            }
+        } catch (e) {
+            console.error("Error initializing Firebase:", e);
         }
 
-        // Función para mostrar mensajes de alerta personalizados
-        function showAlert(message, type = 'info') {
-            const alertContainer = document.createElement('div');
-            alertContainer.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white transform transition-all duration-300 z-[60]`;
-            
-            let bgColorClass = 'bg-gray-500'; // info
-            if (type === 'success') bgColorClass = 'bg-green-500';
-            if (type === 'error') bgColorClass = 'bg-red-500';
-            if (type === 'warning') bgColorClass = 'bg-yellow-500';
 
-            alertContainer.classList.add(bgColorClass);
-            alertContainer.textContent = message;
-            document.body.appendChild(alertContainer);
-            
-            setTimeout(() => {
-                alertContainer.classList.add('opacity-0', 'scale-90');
-                alertContainer.addEventListener('transitionend', () => alertContainer.remove());
-            }, 3000);
+// ====================================================================================================
+//                                     CONFIGURACIÓN DE FIREBASE - AUTHENTICACION
+// ====================================================================================================
+
+        async function authenticateUser() {
+            try {
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (initialAuthToken) {
+                    await signInWithCustomToken(firebaseAuth, initialAuthToken);
+                } else {
+                    await signInAnonymously(firebaseAuth);
+                }
+            } catch (error) {
+                console.error("Error during authentication:", error);
+            }
         }
         
-        // Función para manejar la lógica de pestañas
-        function setupTabs() {
-            tabsContainer.addEventListener('click', (e) => {
-                if (e.target.matches('.tab-btn')) {
-                    const tabName = e.target.dataset.tab;
-                    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
+        // Listener de estado de autenticación
+        if (firebaseAuth) {
+            onAuthStateChanged(firebaseAuth, (user) => {
+                if (user) {
+                    userId = user.uid;
+                    userInfoDiv.textContent = `ID de Usuario: ${userId}`;
+                    console.log("User authenticated with ID:", userId);
+                    // Ocultar el loader y mostrar la app una vez que la autenticación está lista
+                    hideLoader();
+                    document.getElementById('app').classList.remove('hidden');
+                    // Iniciar la escucha de datos
+                    setupFirestoreListeners();
+                } else {
+                    userId = null;
+                    userInfoDiv.textContent = 'Usuario Anónimo';
+                    console.log("User is signed out or anonymous.");
+                    // Si no hay usuario, mostrar la app de todos modos, pero sin datos de Firestore
+                    hideLoader();
+                    document.getElementById('app').classList.remove('hidden');
+                }
+            });
+        }
 
-                    tabContents.forEach(content => {
-                        content.classList.add('hidden');
-                        if (content.id === `tab-content-${tabName}`) {
-                            content.classList.remove('hidden');
-                        }
+
+
+        // Función para configurar los listeners de Firestore
+        function setupFirestoreListeners() {
+            if (!firestoreDb || !userId) {
+                console.warn("Firestore or User ID not available. Cannot set up listeners.");
+                return;
+            }
+
+            // Colección para llamadas del usuario actual
+            const callsCollection = collection(firestoreDb, `artifacts/${appId}/users/${userId}/calls`);
+            const callsQuery = query(callsCollection);
+
+            // Listener en tiempo real para las llamadas del usuario
+            onSnapshot(callsQuery, (snapshot) => {
+                const fetchedCalls = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    // Asegurar que las fechas se almacenan y se muestran en el formato correcto
+                    const inicioDate = data.inicio instanceof Date ? data.inicio.toLocaleString() : data.inicio;
+                    const finDate = data.fin instanceof Date ? data.fin.toLocaleString() : data.fin;
+                    const fechaDate = data.fecha instanceof Date ? data.fecha.toLocaleDateString() : data.fecha;
+                    fetchedCalls.push({ 
+                        id: doc.id,
+                        ...data,
+                        inicio: inicioDate,
+                        fin: finDate,
+                        fecha: fechaDate
                     });
-
-                    // CORRECCIÓN: Se renderiza la tabla de histórico explícitamente al cambiar de pestaña
-                    // para asegurar que los datos cargados en segundo plano se muestren.
-                    if (tabName === 'historico') {
-                        renderTable(historicalTableBody, historicalCalls, true);
-                    }
-                    if (tabName === 'reportes') {
-                        updateCharts();
-                    }
-                }
-            });
-        }
-        
-        // Función para actualizar el dashboard
-        function updateDashboard(data) {
-            const totalCalls = data.length;
-            const atendidas = data.filter(c => c.estatus === 'Atendida').length;
-            const pendientes = totalCalls - atendidas;
-            
-            const totalDuration = data.reduce((sum, c) => sum + (c.duracion || 0), 0);
-            const avgDuration = totalCalls > 0 ? totalDuration / totalCalls : 0;
-            const avgDurationFormatted = formatDuration(avgDuration);
-
-            totalCallsElem.textContent = totalCalls;
-            avgDurationElem.textContent = avgDurationFormatted;
-            atendidasCountElem.textContent = atendidas;
-            pendientesCountElem.textContent = pendientes;
-        }
-
-        function formatDuration(seconds) {
-            if (isNaN(seconds) || seconds < 0) seconds = 0;
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = Math.floor(seconds % 60);
-            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        }
-        
-        function renderTable(tableBody, data, isHistorical = false) {
-            tableBody.innerHTML = '';
-            if (data.length === 0) {
-                if (isHistorical) {
-                    noHistoricalMessage.classList.remove('hidden');
-                } else {
-                    noCallsMessage.classList.remove('hidden');
-                }
-                return;
-            } else {
-                if (isHistorical) {
-                    noHistoricalMessage.classList.add('hidden');
-                } else {
-                    noCallsMessage.classList.add('hidden');
-                }
-            }
-
-            data.forEach((call, index) => {
-                const row = document.createElement('tr');
-                row.className = 'bg-white border-b hover:bg-gray-50';
-                
-                let actionsCell = '';
-                if (!isHistorical) {
-                    actionsCell = `
-                        <td class="py-4 px-6 flex space-x-2">
-                            <button data-id="${call.id}" class="edit-btn text-blue-500 hover:text-blue-700 transition-colors"><i class="fa-solid fa-edit"></i></button>
-                            <button data-id="${call.id}" class="delete-btn text-red-500 hover:text-red-700 transition-colors"><i class="fa-solid fa-trash-alt"></i></button>
-                        </td>
-                    `;
-                } else {
-                    actionsCell = `<td class="py-4 px-6 text-slate-400">N/A</td>`;
-                }
-                
-                row.innerHTML = `
-                    <th scope="row" class="py-4 px-6 font-medium text-slate-900 whitespace-nowrap">${index + 1}</th>
-                    <td class="py-4 px-6">${call.fecha || 'N/A'}</td>
-                    <td class="py-4 px-6">${call.inicio || 'N/A'}</td>
-                    <td class="py-4 px-6">${call.fin || 'N/A'}</td>
-                    <td class="py-4 px-6">${formatDuration(call.duracion)}</td>
-                    <td class="py-4 px-6">${call.area || 'N/A'}</td>
-                    <td class="py-4 px-6">${call.institucion || 'N/A'}</td>
-                    <td class="py-4 px-6">${call.asunto || 'N/A'}</td>
-                    <td class="py-4 px-6">${call.consulta || 'N/A'}</td>
-                    <td class="py-4 px-6">${call.nombre || 'N/A'}</td>
-                    <td class="py-4 px-6">${call.cargo || 'N/A'}</td>
-                    <td class="py-4 px-6">${call.correo || 'N/A'}</td>
-                    <td class="py-4 px-6">${call.telefono || 'N/A'}</td>
-                    <td class="py-4 px-6">
-                        <button data-id="${call.id}" class="status-button status-${call.estatus === 'Atendida' ? 'atendida' : 'pendiente'} toggle-status-btn" data-is-historical="${isHistorical}">
-                            ${call.estatus || 'Pendiente'}
-                        </button>
-                    </td>
-                    <td class="py-4 px-6">${call.atendio || 'N/A'}</td>
-                    <td class="py-4 px-6">${call.comentarios || 'N/A'}</td>
-                    ${actionsCell}
-                `;
-                tableBody.appendChild(row);
-            });
-            
-            // Asignar event listeners a los botones de acciones
-            tableBody.querySelectorAll('.toggle-status-btn').forEach(button => {
-                button.addEventListener('click', handleStatusToggle);
-            });
-            if (!isHistorical) {
-                tableBody.querySelectorAll('.edit-btn').forEach(button => {
-                    button.addEventListener('click', handleEditClick);
                 });
-                tableBody.querySelectorAll('.delete-btn').forEach(button => {
-                    button.addEventListener('click', handleDeleteClick);
-                });
-            }
-        }
-        
-        // Manejo de la lógica de ordenamiento
-        function setupSorting(headerId, tableBody, dataProvider, renderFunc) {
-            document.getElementById(headerId).addEventListener('click', (e) => {
-                const header = e.target.closest('.sortable-header');
-                if (!header) return;
-                
-                const sortBy = header.dataset.sortBy;
-                let sortOrder = header.dataset.sortOrder === 'asc' ? 'desc' : 'asc';
-
-                document.querySelectorAll(`#${headerId} .sortable-header`).forEach(h => {
-                    h.dataset.sortOrder = '';
-                    h.classList.remove('asc', 'desc');
-                });
-
-                header.dataset.sortOrder = sortOrder;
-                header.classList.add(sortOrder);
-                
-                const data = dataProvider();
-                const sortedData = [...data].sort((a, b) => {
-                    const valA = a[sortBy];
-                    const valB = b[sortBy];
-
-                    if (typeof valA === 'string') {
-                        return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                    } else {
-                        return sortOrder === 'asc' ? (valA || 0) - (valB || 0) : (valB || 0) - (valA || 0);
-                    }
-                });
-
-                renderFunc(tableBody, sortedData, headerId === 'historical-table-header');
-            });
-        }
-        
-        // Manejo de la lógica de filtrado
-        function setupFiltering(inputId, tableBody, dataProvider, renderFunc, isHistorical = false) {
-            const filterInput = document.getElementById(inputId);
-            const clearFilterBtn = document.getElementById(`clear-filter-btn-${inputId.split('-')[2]}`);
-
-            filterInput.addEventListener('input', () => {
-                const filterText = filterInput.value.toLowerCase();
-                if (filterText) {
-                    clearFilterBtn.classList.remove('hidden');
-                } else {
-                    clearFilterBtn.classList.add('hidden');
-                }
-                const data = dataProvider();
-                const filteredData = data.filter(call => 
-                    Object.values(call).some(value => 
-                        String(value).toLowerCase().includes(filterText)
-                    )
-                );
-                renderFunc(tableBody, filteredData, isHistorical);
-            });
-            
-            clearFilterBtn.addEventListener('click', () => {
-                filterInput.value = '';
-                clearFilterBtn.classList.add('hidden');
-                renderFunc(tableBody, dataProvider(), isHistorical);
-            });
-        }
-
-        // ---- LÓGICA DE FIREBASE Y CRUD ----
-        let db, auth;
-        let callsCollectionRef, historicalCallsCollectionRef, areasCollectionRef, institutionsCollectionRef, atendioCollectionRef, commentsCollectionRef, actionsCollectionRef;
-
-        async function initializeFirebase() {
-            if (!firebaseConfig) {
-                console.warn("Firebase config not found. Running in non-persistent mode.");
-                showApp();
-                showAlert("Advertencia: No se encontró la configuración de Firebase. La aplicación se ejecutará en modo no persistente.", "warning");
-                return;
-            }
-            
-            try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        userInfo.textContent = `ID de Usuario: ${userId.substring(0, 8)}...`;
-                        callsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/calls`);
-                        historicalCallsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/historicalCalls`);
-                        areasCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/areas`);
-                        institutionsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/institutions`);
-                        atendioCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/atendioUsers`);
-                        commentsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/commentOptions`);
-                        actionsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/actionOptions`);
-                        
-                        setupRealtimeListeners();
-                        showApp();
-                    } else {
-                        if (initialAuthToken) {
-                            await signInWithCustomToken(auth, initialAuthToken);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error("Error al inicializar Firebase o autenticar:", error);
-                showAlert(`Error al inicializar la aplicación: ${error.message}`, "error");
-                showApp();
-            }
-        }
-        
-        function setupRealtimeListeners() {
-            onSnapshot(query(callsCollectionRef), (snapshot) => {
-                calls = [];
-                snapshot.forEach(doc => {
-                    calls.push({ id: doc.id, ...doc.data() });
-                });
-                updateDashboard(calls);
-                renderTable(callLogTableBody, calls);
+                calls = fetchedCalls;
+                updateDashboard(calls, historicalCalls);
+                renderTable(calls, callsTableBody, "main");
+                populateDropdowns(calls, historicalCalls);
             }, (error) => {
-                console.error("Error escuchando la colección de llamadas:", error);
-                showAlert(`Error al cargar los datos en tiempo real: ${error.message}`, "error");
-            });
-            
-            onSnapshot(query(historicalCallsCollectionRef), (snapshot) => {
-                historicalCalls = [];
-                snapshot.forEach(doc => {
-                    historicalCalls.push({ id: doc.id, ...doc.data() });
-                });
-                renderTable(historicalTableBody, historicalCalls, true);
-            }, (error) => {
-                console.error("Error escuchando la colección histórica:", error);
-                showAlert(`Error al cargar los datos históricos en tiempo real: ${error.message}`, "error");
+                console.error("Error fetching real-time calls:", error);
+                loadInitialData();
             });
 
-            onSnapshot(query(areasCollectionRef), (snapshot) => {
-                areas = [];
-                snapshot.forEach(doc => {
-                    areas.push(doc.data().name);
-                });
-                populateSelect(callAreaSelect, areas);
-                populateSelect(editCallAreaSelect, areas);
-            }, (error) => console.error("Error escuchando la colección de áreas:", error));
 
-            onSnapshot(query(institutionsCollectionRef), (snapshot) => {
-                institutions = [];
-                snapshot.forEach(doc => {
-                    institutions.push(doc.data().name);
-                });
-                populateSelect(callerInstitutionSelect, institutions);
-                populateSelect(editCallerInstitutionSelect, institutions);
-            }, (error) => console.error("Error escuchando la colección de instituciones:", error));
-
-            onSnapshot(query(atendioCollectionRef), (snapshot) => {
-                atendioUsers = [];
-                snapshot.forEach(doc => {
-                    atendioUsers.push(doc.data().name);
-                });
-                if (snapshot.empty) {
-                    ['Usuario A', 'Usuario B', 'Usuario C'].forEach(name => saveOption(name, 'atendio'));
+            // Función para cargar los datos iniciales si el listener en tiempo real falla
+            async function loadInitialData() {
+                try {
+                    const snapshot = await getDocs(callsQuery);
+                    const fetchedCalls = [];
+                    snapshot.forEach((doc) => {
+                         const data = doc.data();
+                         const inicioDate = data.inicio instanceof Date ? data.inicio.toLocaleString() : data.inicio;
+                         const finDate = data.fin instanceof Date ? data.fin.toLocaleString() : data.fin;
+                         const fechaDate = data.fecha instanceof Date ? data.fecha.toLocaleDateString() : data.fecha;
+                         fetchedCalls.push({ 
+                            id: doc.id,
+                            ...data,
+                            inicio: inicioDate,
+                            fin: finDate,
+                            fecha: fechaDate
+                        });
+                    });
+                    calls = fetchedCalls;
+                    updateDashboard(calls, historicalCalls);
+                    renderTable(calls, callsTableBody, "main");
+                    populateDropdowns(calls, historicalCalls);
+                } catch (error) {
+                    console.error("Error fetching initial calls data:", error);
                 }
-                populateSelect(callAtendioSelect, atendioUsers, userId);
-            }, (error) => console.error("Error escuchando la colección de usuarios:", error));
-
-            onSnapshot(query(commentsCollectionRef), (snapshot) => {
-                commentsOptions = [];
-                snapshot.forEach(doc => {
-                    commentsOptions.push(doc.data().name);
-                });
-                 if (snapshot.empty) {
-                    ['Se resolvió en la llamada', 'Requiere seguimiento', 'Se envió correo con información'].forEach(name => saveOption(name, 'comentarios'));
-                }
-                populateSelect(callCommentsSelect, commentsOptions);
-            }, (error) => console.error("Error escuchando la colección de comentarios:", error));
-
-            onSnapshot(query(actionsCollectionRef), (snapshot) => {
-                actionsOptions = [];
-                snapshot.forEach(doc => {
-                    actionsOptions.push(doc.data().name);
-                });
-                if (snapshot.empty) {
-                    ['Crear ticket de soporte', 'Agendar reunión de seguimiento', 'No se requiere acción'].forEach(name => saveOption(name, 'acciones'));
-                }
-                populateSelect(callActionsSelect, actionsOptions);
-            }, (error) => console.error("Error escuchando la colección de acciones:", error));
-        }
-        
-        function populateSelect(selectElement, options, defaultValue = null) {
-            const currentValue = selectElement.value;
-            selectElement.innerHTML = '<option value="">Seleccione una opción</option>';
-            options.sort().forEach(option => {
-                const opt = document.createElement('option');
-                opt.value = option;
-                opt.textContent = option;
-                selectElement.appendChild(opt);
-            });
-            if (defaultValue && options.includes(defaultValue)) {
-                selectElement.value = defaultValue;
-            } else if (currentValue && options.includes(currentValue)) {
-                selectElement.value = currentValue;
             }
         }
 
-        async function saveCall(callData) {
-            if (!db || !userId) {
-                showAlert("Error: Usuario no autenticado o base de datos no inicializada.", "error");
+
+
+
+// ====================================================================================================
+//                                     GUARDAR NUEVA LLAMADA - FIRESTORE
+// ====================================================================================================
+
+        async function saveCallToFirestore(callData) {
+            if (!firestoreDb || !userId) {
+                console.error("Firestore or User ID not available. Cannot save data.");
                 return;
             }
             try {
-                await addDoc(callsCollectionRef, callData);
-                showAlert("Llamada guardada con éxito!", "success");
-            } catch (error) {
-                console.error("Error al guardar la llamada:", error);
-                showAlert(`Error al guardar la llamada: ${error.message}`, "error");
-            }
-        }
-        
-        async function updateCall(id, updateData, isHistorical) {
-            if (!db || !userId) {
-                showAlert("Error: Usuario no autenticado o base de datos no inicializada.", "error");
-                return;
-            }
-            try {
-                const collectionRef = isHistorical ? historicalCallsCollectionRef : callsCollectionRef;
-                const callDocRef = doc(db, collectionRef.path, id);
-                await updateDoc(callDocRef, updateData);
-                showAlert("Llamada actualizada con éxito!", "success");
-            } catch (error) {
-                console.error("Error al actualizar la llamada:", error);
-                showAlert(`Error al actualizar la llamada: ${error.message}`, "error");
-            }
-        }
-        
-        async function deleteCall(id) {
-            if (!db || !userId) {
-                showAlert("Error: Usuario no autenticado o base de datos no inicializada.", "error");
-                return;
-            }
-            try {
-                const callDocRef = doc(db, `/artifacts/${appId}/users/${userId}/calls`, id);
-                await deleteDoc(callDocRef);
-                showAlert("Llamada eliminada con éxito!", "success");
-            } catch (error) {
-                console.error("Error al eliminar la llamada:", error);
-                showAlert(`Error al eliminar la llamada: ${error.message}`, "error");
-            }
-        }
-
-        async function importHistoricalData(data) {
-            if (!db || !userId) {
-                 showAlert("Error: Usuario no autenticado o base de datos no inicializada.", "error");
-                 return;
-            }
-            try {
-                const importPromises = data.map(item => addDoc(historicalCallsCollectionRef, item));
-                await Promise.all(importPromises);
-                showAlert(`Se han importado ${data.length} registros históricos correctamente.`, "success");
-            } catch (error) {
-                console.error("Error al importar datos históricos:", error);
-                showAlert(`Error al importar datos históricos: ${error.message}`, "error");
-            }
-        }
-
-        async function saveOption(option, type) {
-            if (!db || !userId || !option) return;
-            try {
-                let collectionRef;
-                if (type === 'area') collectionRef = areasCollectionRef;
-                else if (type === 'institution') collectionRef = institutionsCollectionRef;
-                else if (type === 'atendio') collectionRef = atendioCollectionRef;
-                else if (type === 'comentarios') collectionRef = commentsCollectionRef;
-                else if (type === 'acciones') collectionRef = actionsCollectionRef;
-                else return;
-                await addDoc(collectionRef, { name: option });
-                showAlert("Opción guardada con éxito!", "success");
-            } catch (error) {
-                console.error("Error al guardar la opción:", error);
-                showAlert(`Error al guardar la opción: ${error.message}`, "error");
-            }
-        }
-        
-        // ---- LÓGICA DE GRÁFICOS ----
-        function updateCharts() {
-            const dataSource = reportesDataSource.value;
-            let reportData = [];
-            if (dataSource === 'registro') reportData = calls;
-            else if (dataSource === 'historico') reportData = historicalCalls;
-            else reportData = [...calls, ...historicalCalls];
-            
-            if (reportData.length === 0) return;
-            
-            const statusCounts = {}, areaCounts = {}, dayOfWeekCounts = {}, institutionCounts = {};
-            reportData.forEach(call => {
-                const estatus = call.estatus || 'N/A';
-                const area = call.area || 'N/A';
-                const institucion = call.institucion || 'N/A';
-
-                statusCounts[estatus] = (statusCounts[estatus] || 0) + 1;
-                areaCounts[area] = (areaCounts[area] || 0) + 1;
-                institutionCounts[institucion] = (institutionCounts[institucion] || 0) + 1;
-
-                if (call.fecha && typeof call.fecha === 'string') {
-                    const date = new Date(call.fecha.split('/').reverse().join('-'));
-                    if (!isNaN(date)) {
-                        const day = date.toLocaleDateString('es-ES', { weekday: 'long' });
-                        dayOfWeekCounts[day] = (dayOfWeekCounts[day] || 0) + 1;
-                    }
+                const callsCollection = collection(firestoreDb, `artifacts/${appId}/users/${userId}/calls`);
+                if (callData.id) {
+                    const callRef = doc(callsCollection, callData.id);
+                    await setDoc(callRef, { ...callData, timestamp: serverTimestamp() }, { merge: true });
+                    console.log("Llamada actualizada en Firestore.");
+                } else {
+                    const dataWithTimestamp = { ...callData, timestamp: serverTimestamp() };
+                    await addDoc(callsCollection, dataWithTimestamp);
+                    console.log("Llamada guardada en Firestore.");
                 }
-            });
-            
-            if (statusChart) statusChart.destroy();
-            statusChart = new Chart(statusChartCanvas, { type: 'pie', data: { labels: Object.keys(statusCounts), datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#10B981', '#EF4444', '#6B7280'] }] }, options: { responsive: true, plugins: { legend: { position: 'top' } } } });
-
-            if (areaChart) areaChart.destroy();
-            areaChart = new Chart(areaChartCanvas, { type: 'bar', data: { labels: Object.keys(areaCounts), datasets: [{ label: 'Número de Llamadas', data: Object.values(areaCounts), backgroundColor: '#6A002C' }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
-
-            const daysOrder = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
-            const sortedDays = Object.keys(dayOfWeekCounts).sort((a, b) => daysOrder.indexOf(a) - daysOrder.indexOf(b));
-            const sortedDayData = sortedDays.map(day => dayOfWeekCounts[day]);
-            if (dayOfWeekChart) dayOfWeekChart.destroy();
-            dayOfWeekChart = new Chart(dayOfWeekChartCanvas, { type: 'line', data: { labels: sortedDays, datasets: [{ label: 'Número de Llamadas', data: sortedDayData, borderColor: '#6A002C', tension: 0.1, fill: true }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
-
-            if (institutionChart) institutionChart.destroy();
-            institutionChart = new Chart(institutionChartCanvas, { type: 'polarArea', data: { labels: Object.keys(institutionCounts), datasets: [{ data: Object.values(institutionCounts), backgroundColor: ['#6A002C', '#10B981', '#EF4444', '#FCD34D', '#3B82F6', '#8B5CF6'] }] }, options: { responsive: true, plugins: { legend: { position: 'right' } } } });
-        }
-        
-        // ---- MANEJO DE EVENTOS Y LÓGICA DE UI ----
-        
-        document.addEventListener('DOMContentLoaded', async () => {
-            await initializeFirebase();
-            setupTabs();
-            setupSorting('main-table-header', callLogTableBody, () => calls, renderTable);
-            setupSorting('historical-table-header', historicalTableBody, () => historicalCalls, renderTable);
-            setupFiltering('filter-input-main', callLogTableBody, () => calls, renderTable);
-            setupFiltering('filter-input-historical', historicalTableBody, () => historicalCalls, renderTable, true);
-        });
-        
-        dashboardDataSource.addEventListener('change', () => {
-            const source = dashboardDataSource.value;
-            let dataToShow = [];
-            if (source === 'registro') dataToShow = calls;
-            else if (source === 'historico') dataToShow = historicalCalls;
-            else dataToShow = [...calls, ...historicalCalls];
-            updateDashboard(dataToShow);
-        });
-
-        reportesDataSource.addEventListener('change', updateCharts);
-        
-        startCallBtn.addEventListener('click', () => {
-            if (startCallBtn.dataset.state === 'active') {
-                stopTimer(false); 
-                closeModal();
-            } else {
-                startTimer();
+            } catch (error) {
+                console.error("Error al guardar la llamada en Firestore:", error);
             }
-        });
-        
+        }
+
+
+        // Lógica del cronómetro
         function startTimer() {
-            startCallBtn.dataset.state = 'active';
-            startCallBtn.innerHTML = `<i class="fa-solid fa-stopwatch h-6 w-6"></i><span>Finalizar Llamada</span>`;
-            startCallBtn.classList.remove('bg-subtle-green', 'hover:bg-subtle-green-dark');
-            startCallBtn.classList.add('bg-subtle-red', 'hover:bg-subtle-red-dark');
-            
-            callModal.classList.remove('hidden');
-            callModal.classList.add('modal-enter');
-
-            callStartTime = Date.now();
+            startTime = new Date();
             timerInterval = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
-                const formattedTime = formatDuration(elapsed);
-                timerElem.textContent = formattedTime;
-                modalTimerElem.textContent = formattedTime;
+                const now = new Date();
+                const durationInSeconds = Math.floor((now - startTime) / 1000);
+                timerDisplay.textContent = formatTime(durationInSeconds);
             }, 1000);
         }
-        
-        function stopTimer(shouldSave = true) {
+
+
+        // Detener cronometro
+        function stopTimer() {
             clearInterval(timerInterval);
-            if (shouldSave) {
-                const endTime = Date.now();
-                const duration = Math.floor((endTime - callStartTime) / 1000);
-                const callData = {
-                    fecha: new Date(callStartTime).toLocaleDateString('es-ES', {year: 'numeric', month: '2-digit', day: '2-digit'}),
-                    inicio: new Date(callStartTime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-                    fin: new Date(endTime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-                    duracion: duration,
-                    area: callForm['call-area'].value,
-                    institucion: callForm['caller-institution'].value,
-                    asunto: callForm['call-subject'].value,
-                    consulta: callForm['call-query'].value,
-                    nombre: callForm['caller-name'].value,
-                    cargo: callForm['caller-cargo'].value,
-                    correo: callForm['caller-email'].value,
-                    telefono: callForm['caller-phone'].value,
-                    estatus: 'Atendida',
-                    atendio: callForm['call-atendio'].value,
-                    comentarios: callForm['call-comments'].value,
-                    acciones: callForm['call-actions'].value,
-                    timestamp: serverTimestamp()
-                };
-                saveCall(callData);
-            }
-            
-            startCallBtn.dataset.state = 'inactive';
-            startCallBtn.innerHTML = `<i class="fa-solid fa-phone-alt h-6 w-6"></i><span>Iniciar Nueva Llamada</span>`;
-            startCallBtn.classList.remove('bg-subtle-red', 'hover:bg-subtle-red-dark');
-            startCallBtn.classList.add('bg-subtle-green', 'hover:bg-subtle-green-dark');
-            resetTimer();
         }
         
+        // Resetear cronómetro
         function resetTimer() {
-            timerElem.textContent = '00:00:00';
-            modalTimerElem.textContent = '00:00:00';
-            callForm.reset();
-        }
-        
-        closeModalBtn.addEventListener('click', closeModal);
-        function closeModal() {
-            callModal.classList.remove('modal-enter');
-            callModal.classList.add('modal-leave');
-            setTimeout(() => {
-                callModal.classList.add('hidden');
-                callModal.classList.remove('modal-leave');
-            }, 300);
-            if(startCallBtn.dataset.state === 'active') {
-                stopTimer(false);
-            }
-            resetTimer();
-        }
-        
-        callForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            stopTimer(true);
-            closeModal();
-        });
-
-        function handleEditClick(e) {
-            const callId = e.currentTarget.dataset.id;
-            const callToEdit = calls.find(call => call.id === callId);
-            if (!callToEdit) return;
-
-            document.getElementById('edit-id').value = callId;
-            document.getElementById('edit-caller-name').value = callToEdit.nombre;
-            document.getElementById('edit-caller-cargo').value = callToEdit.cargo;
-            document.getElementById('edit-caller-email').value = callToEdit.correo;
-            document.getElementById('edit-caller-phone').value = callToEdit.telefono;
-            document.getElementById('edit-caller-institution').value = callToEdit.institucion;
-            document.getElementById('edit-call-area').value = callToEdit.area;
-            document.getElementById('edit-call-subject').value = callToEdit.asunto;
-            document.getElementById('edit-call-query').value = callToEdit.consulta;
-            document.getElementById('edit-call-comments').value = callToEdit.comentarios;
-
-            editModal.classList.remove('hidden');
-            editModal.classList.add('modal-enter');
+            stopTimer();
+            timerDisplay.textContent = '00:00:00';
+            startTime = null;
         }
 
-        closeEditModalBtn.addEventListener('click', () => {
-            editModal.classList.remove('modal-enter');
-            editModal.classList.add('modal-leave');
-            setTimeout(() => { editModal.classList.add('hidden'); editModal.classList.remove('modal-leave'); }, 300);
-        });
 
-        editForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const callId = document.getElementById('edit-id').value;
-            const updateData = {
-                nombre: editForm['edit-caller-name'].value,
-                cargo: editForm['edit-caller-cargo'].value,
-                correo: editForm['edit-caller-email'].value,
-                telefono: editForm['edit-caller-phone'].value,
-                institucion: editForm['edit-caller-institution'].value,
-                area: editForm['edit-call-area'].value,
-                asunto: editForm['edit-call-subject'].value,
-                consulta: editForm['edit-call-query'].value,
-                comentarios: editForm['edit-call-comments'].value,
-            };
-            await updateCall(callId, updateData, false);
-            closeEditModalBtn.click();
-        });
 
-        async function handleStatusToggle(e) {
-            const button = e.currentTarget;
-            const callId = button.dataset.id;
-            const isHistorical = button.dataset.isHistorical === 'true';
-            const currentStatus = button.textContent.trim();
-            const newStatus = currentStatus === 'Atendida' ? 'Pendiente' : 'Atendida';
-            await updateCall(callId, { estatus: newStatus }, isHistorical);
+
+// ====================================================================================================
+//                                     FUNCIONES PARA FORMATO DE FECHAS
+// ====================================================================================================
+
+
+        // Funciones de utilidad
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return [hours, minutes, seconds].map(v => String(v).padStart(2, '0')).join(':');
         }
 
-        let callToDeleteId = null;
-        function handleDeleteClick(e) {
-            callToDeleteId = e.currentTarget.dataset.id;
-            confirmModal.classList.remove('hidden');
-            confirmModal.classList.add('modal-enter');
+        // Funciones para convertir las fechas de Excel a formato JavaScript
+        function excelDateToJSDate(serial) {
+            const date = new Date(Math.round((serial - 25569) * 86400 * 1000) + 86400 * 1000); // sumar 1 día
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
         }
 
-        cancelDeleteBtn.addEventListener('click', () => {
-            confirmModal.classList.remove('modal-enter');
-            confirmModal.classList.add('modal-leave');
-            setTimeout(() => { confirmModal.classList.add('hidden'); confirmModal.classList.remove('modal-leave'); }, 300);
-            callToDeleteId = null;
-        });
+        // Función para convertir la hora de Excel a un formato de hora legible (ej. 10:20:26 a. m.)
+        function excelTimeToJSString(serial) {
+            const totalSeconds = Math.floor(serial * 86400);
+            let hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
 
-        confirmDeleteBtn.addEventListener('click', async () => {
-            if (callToDeleteId) {
-                await deleteCall(callToDeleteId);
-                cancelDeleteBtn.click();
-            }
-        });
-        
-        document.body.addEventListener('click', (e) => {
-            const button = e.target.closest('.add-option-btn-generic');
-            if (button) {
-                const type = button.dataset.optionType;
-                const titles = { area: 'Agregar nueva Área', institution: 'Agregar nueva Institución', atendio: 'Agregar nuevo Usuario', comentarios: 'Agregar nuevo Comentario', acciones: 'Agregar nueva Acción' };
-                showAddOptionModal(type, titles[type] || 'Agregar nueva opción');
-            }
-        });
-        
-        function showAddOptionModal(type, title) {
-            document.getElementById('add-option-title').textContent = title;
-            document.getElementById('option-type').value = type;
-            document.getElementById('new-option-value').value = '';
-            addOptionModal.classList.remove('hidden');
-            addOptionModal.classList.add('modal-enter');
+            const ampm = hours >= 12 ? 'p. m.' : 'a. m.';
+            hours = hours % 12;
+            if (hours === 0) hours = 12; // caso medianoche / mediodía
+
+            const hh = String(hours).padStart(2, '0');
+            const mm = String(minutes).padStart(2, '0');
+            const ss = String(seconds).padStart(2, '0');
+
+            return `${hh}:${mm}:${ss} ${ampm}`;
         }
-        
-        closeAddOptionBtn.addEventListener('click', () => {
-            addOptionModal.classList.remove('modal-enter');
-            addOptionModal.classList.add('modal-leave');
-            setTimeout(() => { addOptionModal.classList.add('hidden'); addOptionModal.classList.remove('modal-leave'); }, 300);
-        });
-        
-        addOptionForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newOption = document.getElementById('new-option-value').value;
-            const type = document.getElementById('option-type').value;
-            if (newOption) {
-                await saveOption(newOption, type);
-                closeAddOptionBtn.click();
-            }
-        });
 
-        downloadExcelBtn.addEventListener('click', () => {
-            if (calls.length === 0) {
-                showAlert("No hay datos para descargar.", "warning");
-                return;
-            }
-            const ws = XLSX.utils.json_to_sheet(calls);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Llamadas");
-            XLSX.writeFile(wb, "registro_llamadas.xlsx");
-        });
-        
-        document.getElementById('download-historical-excel-btn').addEventListener('click', () => {
-            if (historicalCalls.length === 0) {
-                showAlert("No hay datos históricos para descargar.", "warning");
-                return;
-            }
-            const ws = XLSX.utils.json_to_sheet(historicalCalls);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Historico");
-            XLSX.writeFile(wb, "registro_historico.xlsx");
-        });
+        // Función para obtener la duración de la llamada en el historico, presentando hh:mm:ss
+        function excelDuracionToJSString(serial) {
+            const totalSeconds = Math.floor(serial * 86400);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
 
-        historicalFileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                historicalFileName.textContent = file.name;
-                importHistoricalBtn.disabled = false;
-                importHistoricalBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            } else {
-                historicalFileName.textContent = 'Seleccionar archivo Excel (.xlsx)';
-                importHistoricalBtn.disabled = true;
-                importHistoricalBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-        });
-        
-        importHistoricalBtn.addEventListener('click', () => {
-            const file = historicalFileInput.files[0];
-            if (!file) {
-                showAlert("Por favor, selecciona un archivo Excel primero.", "warning");
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    const data = new Uint8Array(event.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[sheetName];
-                    const json = XLSX.utils.sheet_to_json(worksheet);
+            const hh = String(hours).padStart(2, '0');
+            const mm = String(minutes).padStart(2, '0');
+            const ss = String(seconds).padStart(2, '0');
 
-                    // Mapeo de cabeceras de Excel (posibles variaciones) a las claves de objeto de la aplicación.
-                    // Se convierte a minúsculas y se normaliza para que sea robusto.
-                    const keyMapping = {
-                        'no.': 'no',
-                        'fecha': 'fecha',
-                        'inicio': 'inicio',
-                        'fin': 'fin',
-                        'duración': 'duracion', 'duracion': 'duracion',
-                        'área': 'area', 'area': 'area',
-                        'institución': 'institucion', 'institucion': 'institucion',
-                        'asunto': 'asunto',
-                        'consulta': 'consulta',
-                        'nombre': 'nombre',
-                        'cargo': 'cargo',
-                        'correo': 'correo',
-                        'teléfono': 'telefono', 'telefono': 'telefono',
-                        'estatus': 'estatus',
-                        'atendió': 'atendio', 'atendio': 'atendio',
-                        'comentarios': 'comentarios'
-                    };
+            return `${hh}:${mm}:${ss}`;
+        }
 
-                    const processedData = json.map(row => {
-                        const newRow = {};
-                        for (const originalKey in row) {
-                            const normalizedKey = originalKey.trim().toLowerCase().replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i').replace(/ó/g, 'o').replace(/ú/g, 'u');
-                            const newKey = keyMapping[normalizedKey];
-                            if (newKey) {
-                                let value = row[originalKey];
-                                // Si la clave es de fecha/hora y el valor es un número (serial de Excel), se convierte.
-                                if ((newKey === 'fecha' || newKey === 'inicio' || newKey === 'fin') && typeof value === 'number' && value > 1) {
-                                    // Convertir el número de serie de Excel a una fecha de JavaScript.
-                                    // La resta de 25569 es para ajustar la época de Excel (1900) a la de Unix (1970).
-                                    const jsDate = new Date((value - 25569) * 86400 * 1000);
-                                    
-                                    if (newKey === 'fecha') {
-                                        // Formato DD/MM/YYYY
-                                        value = jsDate.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
-                                    } else { // Para 'inicio' y 'fin'
-                                        // Formato HH:mm:ss
-                                        value = jsDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-                                    }
-                                } else if (newKey === 'duracion' && typeof value === 'number' && value > 0 && value < 1) {
-                                    // Si la duración es una fracción de día (formato de tiempo de Excel), convertir a segundos.
-                                    value = Math.round(value * 86400);
-                                }
-                                newRow[newKey] = value;
-                            }
-                        }
-                        if (!newRow.estatus) newRow.estatus = 'Pendiente';
-                        return newRow;
-                    });
 
-                    if (processedData.length === 0) {
-                        showAlert("El archivo Excel está vacío o no contiene datos válidos.", "warning");
-                        return;
-                    }
-                    await importHistoricalData(processedData);
-                    historicalFileInput.value = '';
-                    historicalFileName.textContent = 'Seleccionar archivo Excel (.xlsx)';
-                    importHistoricalBtn.disabled = true;
-                    importHistoricalBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                } catch (error) {
-                    console.error("Error al procesar el archivo Excel:", error);
-                    showAlert(`Error al procesar el archivo Excel: ${error.message}`, "error");
+
+// ====================================================================================================
+//                                  MOSTRAR MODAL DEL FORMULARIO - nueva LLAMADA
+// ====================================================================================================
+
+
+        // Mostrar modal
+        function showModal(modal, callData = null) {
+            // Solo ejecutar la lógica de nueva llamada para el modal principal
+            if (modal === callModal) {
+                isEditing = callData !== null;
+                if (isEditing) {
+                    fillFormForEdit(callData);
+                } else {
+                    resetForm();
+                    document.getElementById('call-start-time').value = new Date().toLocaleString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(',', '');
+                    startTimer();
                 }
+            }
+            modal.classList.remove('hidden', 'modal-leave');
+            modal.classList.add('modal-enter');
+        }
+        
+        function hideModal(modal) {
+            modal.classList.add('modal-leave');
+            modal.classList.remove('modal-enter');
+            modal.addEventListener('animationend', () => modal.classList.add('hidden'), { once: true });
+
+            // Solo ejecutar la lógica específica de la llamada para el modal principal
+            if (modal === callModal) {
+                if (!isEditing) resetTimer();
+                editingCallId = null;
+                isEditing = false;
+            }
+        }
+
+
+
+        // Resetar Formulario
+
+        function resetForm() {
+            callForm.reset();
+            callIdField.value = '';
+            document.getElementById('call-institution').innerHTML = '<option value="">Seleccione una institución</option>';
+            document.getElementById('call-subject').innerHTML = '<option value="">Seleccione un asunto</option>';
+            document.getElementById('call-atendio').innerHTML = '<option value="">Seleccione quien atendió</option>';
+            populateDropdowns(calls, historicalCalls);
+        }
+
+// ====================================================================================================
+//                                 EDITAR FORMULARIO
+// ====================================================================================================
+
+        function fillFormForEdit(callData) {
+            callIdField.value = callData.id;
+            document.getElementById('call-start-time').value = callData.inicio;
+            document.getElementById('call-end-time').value = callData.fin;
+            document.getElementById('call-duration').value = callData.duracion;
+            document.getElementById('call-status').value = callData.estatus;
+            document.getElementById('call-area').value = callData.area;
+            document.getElementById('call-query').value = callData.consulta;
+            document.getElementById('contact-name').value = callData.nombre;
+            document.getElementById('contact-position').value = callData.cargo;
+            document.getElementById('contact-email').value = callData.correo;
+            document.getElementById('contact-phone').value = callData.telefono;
+            document.getElementById('call-comments').value = callData.comentarios;
+            
+            // Llenar selects
+            populateDropdowns(calls, historicalCalls);
+            // Seleccionar los valores correctos
+            document.getElementById('call-institution').value = callData.institucion || '';
+            document.getElementById('call-subject').value = callData.asunto || '';
+            document.getElementById('call-atendio').value = callData.atendio || '';
+
+            // Desactivar el cronómetro para la edición
+            stopTimer();
+            timerDisplay.textContent = callData.duracion;
+        }
+
+
+// ====================================================================================================
+//                                EXPORTAR HISTORIAL DE LLAMADAS A EXCEL
+// ====================================================================================================
+
+
+
+        function hideLoader() {
+            loaderDiv.classList.add('hidden');
+        }
+        
+        function exportToExcel(data, fileName) {
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Llamadas");
+            XLSX.writeFile(workbook, `${fileName}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        }
+        
+
+// ====================================================================================================
+//                                  FUNCIONES DEL DASHBOARD
+// ====================================================================================================
+
+        // --- Funciones del Dashboard ---
+        function updateDashboard(currentData, historicalData) {
+            const dataSource = dashboardDataSource.value;
+            let combinedData = [];
+        
+            if (dataSource === 'registro') {
+                combinedData = currentData;
+            } else if (dataSource === 'historico') {
+                combinedData = historicalData;
+            } else { // combinado
+                combinedData = [...currentData, ...historicalData];
+            }
+
+            const totalCalls = combinedData.length;
+            const atendidas = combinedData.filter(call => call.estatus === 'atendida').length;
+            const pendientes = combinedData.filter(call => call.estatus === 'pendiente').length;
+
+            let totalDurationInSeconds = 0;
+            combinedData.forEach(call => {
+                if (call.duracion) {
+                    const parts = call.duracion.split(':').map(Number);
+                    if (parts.length === 3) {
+                        totalDurationInSeconds += parts[0] * 3600 + parts[1] * 60 + parts[2];
+                    }
+                }
+            });
+
+            const avgDuration = totalCalls > 0 ? totalDurationInSeconds / totalCalls : 0;
+
+            document.getElementById('total-calls').textContent = totalCalls;
+            document.getElementById('atendidas-count').textContent = atendidas;
+            document.getElementById('pendientes-count').textContent = pendientes;
+            document.getElementById('avg-duration').textContent = formatTime(Math.round(avgDuration));
+            
+            // Actualizar gráficos
+            const reportesDataSourceValue = reportesDataSource.value;
+            let reportData = [];
+            if (reportesDataSourceValue === 'registro') {
+                reportData = calls;
+            } else if (reportesDataSourceValue === 'historico') {
+                reportData = historicalCalls;
+            } else { // combinado
+                reportData = [...calls, ...historicalCalls];
+            }
+            updateCharts(reportData);
+        }
+        
+
+
+
+
+
+        function populateDropdowns(currentData, historicalData) {
+            const combinedData = [...currentData, ...historicalData];
+
+            const institutions = [...new Set(combinedData.map(call => call.institucion).filter(Boolean))].sort();
+            const subjects = [...new Set(combinedData.map(call => call.asunto).filter(Boolean))].sort();
+            const atendio = [...new Set(combinedData.map(call => call.atendio).filter(Boolean))].sort();
+
+            function populateSelect(selectElement, options, currentValue) {
+                const selectedValue = selectElement.value;
+                const placeholder = selectElement.querySelector('option[value=""]').textContent;
+                selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+                options.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option;
+                    opt.textContent = option;
+                    selectElement.appendChild(opt);
+                });
+                selectElement.value = currentValue || selectedValue;
+            }
+
+            populateSelect(callInstitutionSelect, institutions, callInstitutionSelect.value);
+            populateSelect(callSubjectSelect, subjects, callSubjectSelect.value);
+            populateSelect(callAtendioSelect, atendio, callAtendioSelect.value);
+        }
+
+
+// ====================================================================================================
+//                                  RENDERIZADO DE TABLAS Y GRÁFICAS
+// ====================================================================================================
+
+        // Lógica de Renderizado de Tablas y Gráficos
+        function renderTable(data, tableBody, tableType) {
+            // Determinar la columna y dirección de ordenamiento
+            const sortBy = tableType === 'main' ? currentSortColumn : historicalSortColumn;
+            const sortDirection = tableType === 'main' ? currentSortDirection : historicalSortDirection;
+
+            // Ordenar los datos
+            const sortedData = [...data].sort((a, b) => {
+                let valA = a[sortBy];
+                let valB = b[sortBy];
+
+                // Convertir a minúsculas para ordenar strings sin distinción de mayúsculas y minúsculas
+                if (typeof valA === 'string' && typeof valB === 'string') {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                }
+
+                if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+                if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+            
+            tableBody.innerHTML = '';
+            if (sortedData.length === 0) {
+                const noMessage = tableType === 'main' ? noCallsMessage : noHistoricalCallsMessage;
+                noMessage.classList.remove('hidden');
+                return;
+            }
+            const noMessage = tableType === 'main' ? noCallsMessage : noHistoricalCallsMessage;
+            noMessage.classList.add('hidden');
+
+            sortedData.forEach((call, index) => {
+                const row = document.createElement('tr');
+                row.classList.add('bg-white', 'border-b', 'hover:bg-slate-50', 'transition-colors', 'duration-150');
+                
+                // Los datos ya están formateados en el objeto call
+                const fields = [
+                    index + 1, // No.
+                    call.fecha,
+                    call.inicio,
+                    call.fin,
+                    call.duracion,
+                    call.area,
+                    call.institucion,
+                    call.asunto,
+                    call.consulta,
+                    call.nombre,
+                    call.cargo,
+                    call.correo,
+                    call.telefono,
+                    call.estatus,
+                    call.atendio,
+                    call.comentarios
+                ];
+                
+                fields.forEach((field, fieldIndex) => {
+                    const cell = document.createElement('td');
+                    cell.classList.add('py-4', 'px-6', 'whitespace-nowrap');
+                    cell.textContent = field || '';
+                    if (fieldIndex === 13) { // Columna de estatus
+                        cell.innerHTML = `
+                            <button class="status-button ${field === 'atendida' ? 'status-atendida' : 'status-pendiente'}">
+                                ${field === 'atendida' ? 'Atendida' : 'Pendiente'}
+                            </button>
+                        `;
+                        cell.querySelector('.status-button').addEventListener('click', async (e) => {
+                            e.stopPropagation(); // Evita que se dispare el evento del modal
+                            if (tableType === 'main' && firestoreDb && userId) {
+                                const newStatus = call.estatus === 'atendida' ? 'pendiente' : 'atendida';
+                                try {
+                                    const callRef = doc(firestoreDb, `artifacts/${appId}/users/${userId}/calls`, call.id);
+                                    await setDoc(callRef, { estatus: newStatus }, { merge: true });
+                                    console.log("Estatus de llamada actualizado.");
+                                } catch (error) {
+                                    console.error("Error al actualizar el estatus:", error);
+                                }
+                            }
+                        });
+                    }
+                    row.appendChild(cell);
+                });
+
+                if (tableType === 'main') { // Columna de acciones
+                    const actionsCell = document.createElement('td');
+                    actionsCell.classList.add('py-4', 'px-6', 'whitespace-nowrap', 'space-x-2');
+                    actionsCell.innerHTML = `
+                        <button class="text-blue-500 hover:text-blue-700 transition-colors duration-200 edit-call" data-id="${call.id}">
+                            <i class="fa-solid fa-edit"></i>
+                        </button>
+                        <button class="text-gob-maroon hover:text-red-700 transition-colors duration-200 delete-call" data-id="${call.id}">
+                            <i class="fa-solid fa-trash-alt"></i>
+                        </button>
+                    `;
+                    actionsCell.querySelector('.edit-call').addEventListener('click', () => {
+                        showModal(callModal, call);
+                    });
+                    actionsCell.querySelector('.delete-call').addEventListener('click', async () => {
+                        // Lógica para eliminar de Firestore
+                        try {
+                            const callRef = doc(firestoreDb, `artifacts/${appId}/users/${userId}/calls`, call.id);
+                            await deleteDoc(callRef);
+                            console.log("Llamada eliminada de Firestore.");
+                        } catch (error) {
+                            console.error("Error al eliminar la llamada:", error);
+                        }
+                    });
+                    row.appendChild(actionsCell);
+                }
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+
+// ====================================================================================================
+//                                  FUNCION PARA ORDENAR TABLA DATOS
+// ====================================================================================================
+
+        function setupSorting(headerElement, tableType) {
+            const headers = headerElement.querySelectorAll('.sortable-header');
+            headers.forEach(header => {
+                header.addEventListener('click', () => {
+                    const sortBy = header.getAttribute('data-sort-by');
+                    let sortDirection;
+                    if (tableType === 'main') {
+                        if (currentSortColumn === sortBy) {
+                            currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+                        } else {
+                            currentSortColumn = sortBy;
+                            currentSortDirection = 'asc';
+                        }
+                        renderTable(calls, callsTableBody, 'main');
+                        
+                        headers.forEach(h => h.classList.remove('asc', 'desc'));
+                        header.classList.add(currentSortDirection);
+                    } else {
+                        if (historicalSortColumn === sortBy) {
+                            historicalSortDirection = historicalSortDirection === 'asc' ? 'desc' : 'asc';
+                        } else {
+                            historicalSortColumn = sortBy;
+                            historicalSortDirection = 'asc';
+                        }
+                        renderTable(historicalCalls, historicalCallsTableBody, 'historico');
+                        
+                        headers.forEach(h => h.classList.remove('asc', 'desc'));
+                        header.classList.add(historicalSortDirection);
+                    }
+                });
+            });
+        }
+
+        //Funcion para actualizar Grafico de llamadas por mes
+        function updateCharts(data) {
+            const callsByMonth = {};
+            const callsByStatus = { atendida: 0, pendiente: 0 };
+            const callsByArea = {};
+            const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+            data.forEach(call => {
+                // Gráfico de llamadas por mes
+                // Asumiendo que `call.fecha` tiene el formato 'dd/mm/yyyy'
+                if (call.fecha && call.fecha.includes('/')) {
+                    const [day, month, year] = call.fecha.split('/');
+                    const date = new Date(year, month - 1, day);
+                    const monthName = months[date.getMonth()];
+                    callsByMonth[monthName] = (callsByMonth[monthName] || 0) + 1;
+                }
+
+                // Gráfico de llamadas por estatus
+                if (call.estatus === 'atendida') {
+                    callsByStatus.atendida++;
+                } else if (call.estatus === 'pendiente') {
+                    callsByStatus.pendiente++;
+                }
+
+                // Gráfico de llamadas por área
+                if (call.area) {
+                    callsByArea[call.area] = (callsByArea[call.area] || 0) + 1;
+                }
+            });
+
+            const callsByMonthData = {
+                labels: months,
+                datasets: [{
+                    label: 'Llamadas por Mes',
+                    data: months.map(m => callsByMonth[m] || 0),
+                    backgroundColor: '#6A002C',
+                    borderColor: '#6A002C',
+                    borderWidth: 1,
+                }],
             };
-            reader.readAsArrayBuffer(file);
+
+            const callsByStatusData = {
+                labels: ['Atendidas', 'Pendientes'],
+                datasets: [{
+                    label: 'Llamadas por Estatus',
+                    data: [callsByStatus.atendida, callsByStatus.pendiente],
+                    backgroundColor: ['#10B981', '#EF4444'],
+                    hoverOffset: 4,
+                }],
+            };
+
+            const callsByAreaData = {
+                labels: Object.keys(callsByArea),
+                datasets: [{
+                    label: 'Llamadas por Área',
+                    data: Object.values(callsByArea),
+                    backgroundColor: '#1C3D5A', // Color para este gráfico
+                    hoverOffset: 4,
+                }]
+            };
+
+            const callsByMonthCtx = document.getElementById('callsByMonthChart').getContext('2d');
+            const callsByStatusCtx = document.getElementById('callsByStatusChart').getContext('2d');
+            const callsByAreaCtx = document.getElementById('callsByAreaChart').getContext('2d');
+
+            if (callsByMonthChart) { callsByMonthChart.destroy(); }
+            if (callsByStatusChart) { callsByStatusChart.destroy(); }
+            if (callsByAreaChart) { callsByAreaChart.destroy(); }
+            
+            callsByMonthChart = new Chart(callsByMonthCtx, {
+                type: 'bar',
+                data: callsByMonthData,
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+            
+            callsByStatusChart = new Chart(callsByStatusCtx, {
+                type: 'doughnut',
+                data: callsByStatusData,
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+
+            callsByAreaChart = new Chart(callsByAreaCtx, {
+                type: 'doughnut',
+                data: callsByAreaData,
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+
+
+
+// ====================================================================================================
+//                                  MANEJO DE EVENTOS
+// ====================================================================================================
+
+        // Manejo de eventos
+        document.addEventListener('DOMContentLoaded', async () => {
+            await authenticateUser();
+            
+            // Lógica de pestañas
+            tabs.addEventListener('click', (e) => {
+                if (e.target.matches('.tab-btn')) {
+                    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+                    document.getElementById(`tab-content-${e.target.dataset.tab}`).classList.remove('hidden');
+                }
+            });
+
+            // Lógica del modal
+            startCallBtn.addEventListener('click', () => {
+                showModal(callModal);
+            });
+            
+            closeModalBtn.addEventListener('click', () => {
+                hideModal(callModal);
+            });
+
+            cancelCallBtn.addEventListener('click', () => {
+                hideModal(callModal);
+            });
+            
+            // Envío del formulario
+            callForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const id = callIdField.value;
+                let callData;
+
+                if (id) { // Editando llamada existente
+                    callData = {
+                        id: id,
+                        fecha: document.getElementById('call-start-time').value.split(',')[0].trim(),
+                        inicio: document.getElementById('call-start-time').value,
+                        fin: document.getElementById('call-end-time').value,
+                        duracion: document.getElementById('call-duration').value,
+                        area: document.getElementById('call-area').value,
+                        institucion: document.getElementById('call-institution').value,
+                        asunto: document.getElementById('call-subject').value,
+                        consulta: document.getElementById('call-query').value,
+                        nombre: document.getElementById('contact-name').value,
+                        cargo: document.getElementById('contact-position').value,
+                        correo: document.getElementById('contact-email').value,
+                        telefono: document.getElementById('contact-phone').value,
+                        estatus: document.getElementById('call-status').value,
+                        atendio: document.getElementById('call-atendio').value,
+                        comentarios: document.getElementById('call-comments').value,
+                    };
+                } else { // Nueva llamada
+                    stopTimer();
+                    const now = new Date();
+                    const durationInSeconds = Math.floor((now - startTime) / 1000);
+                    const formattedDuration = formatTime(durationInSeconds);
+                    const formattedStartTime = startTime.toLocaleString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(',', '');
+                    const formattedEndTime = now.toLocaleString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(',', '');
+                    
+                    document.getElementById('call-end-time').value = formattedEndTime;
+                    document.getElementById('call-duration').value = formattedDuration;
+
+                    callData = {
+                        fecha: formattedStartTime.split(',')[0].trim(),
+                        inicio: formattedStartTime,
+                        fin: formattedEndTime,
+                        duracion: formattedDuration,
+                        area: document.getElementById('call-area').value,
+                        institucion: document.getElementById('call-institution').value,
+                        asunto: document.getElementById('call-subject').value,
+                        consulta: document.getElementById('call-query').value,
+                        nombre: document.getElementById('contact-name').value,
+                        cargo: document.getElementById('contact-position').value,
+                        correo: document.getElementById('contact-email').value,
+                        telefono: document.getElementById('contact-phone').value,
+                        estatus: document.getElementById('call-status').value,
+                        atendio: document.getElementById('call-atendio').value,
+                        comentarios: document.getElementById('call-comments').value,
+                    };
+                }
+
+                await saveCallToFirestore(callData);
+                
+                resetForm();
+                hideModal(callModal);
+            });
+            
+            // Botón de descargar Excel
+            downloadExcelBtn.addEventListener('click', () => {
+                const dataToExport = calls.map(({ id, ...rest }) => rest); // Excluir el ID de Firebase
+                if (dataToExport.length > 0) {
+                    exportToExcel(dataToExport, "Registro de Llamadas");
+                }
+            });
+            
+            downloadHistoricalExcelBtn.addEventListener('click', () => {
+                const dataToExport = historicalCalls;
+                if (dataToExport.length > 0) {
+                    exportToExcel(dataToExport, "Historico de Llamadas");
+                }
+            });
+
+
+
+// ====================================================================================================
+//                                  IMPORTACIÓN DE HISTORICO DE EXCEL
+// ====================================================================================================
+
+            // Lógica de importación de histórico desde Excel
+            historicalFileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    fileNameSpan.textContent = file.name;
+                    importHistoricalBtn.disabled = false;
+                } else {
+                    fileNameSpan.textContent = 'Seleccionar archivo Excel (.xlsx)';
+                    importHistoricalBtn.disabled = true;
+                }
+            });
+
+            importHistoricalBtn.addEventListener('click', () => {
+                const file = historicalFileInput.files[0];
+                if (!file) return;
+                showModal(importModal);
+            });
+            
+            confirmImportBtn.addEventListener('click', () => {
+                hideModal(importModal);
+                const file = historicalFileInput.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[sheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                        
+                        historicalCalls = jsonData.map(row => {
+                            // Mapear y procesar los datos con las funciones de Excel
+                            const processedRow = {};
+                            for (const key in row) {
+                                const normalizedKey = key.toLowerCase().replace(/á/g, 'a').replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ñ/g, 'n').replace(/\s+/g, '');
+                                processedRow[normalizedKey] = row[key];
+                            }
+                            
+                            const callData = {
+                                fecha: processedRow.fecha ? excelDateToJSDate(processedRow.fecha) : '',
+                                inicio: processedRow.inicio ? excelTimeToJSString(processedRow.inicio) : '',
+                                fin: processedRow.fin ? excelTimeToJSString(processedRow.fin) : '',
+                                duracion: processedRow.duracion ? excelDuracionToJSString(processedRow.duracion) : '',
+                                area: processedRow.area || '',
+                                institucion: processedRow.institucion || '',
+                                asunto: processedRow.asunto || '',
+                                consulta: processedRow.consulta || '',
+                                nombre: processedRow.nombre || '',
+                                cargo: processedRow.cargo || '',
+                                correo: processedRow.correo || '',
+                                telefono: processedRow.telefono || '',
+                                estatus: (processedRow.estatus || '').toLowerCase() === 'atendida' ? 'atendida' : 'pendiente',
+                                atendio: processedRow.atendio || '',
+                                comentarios: processedRow.comentarios || '',
+                            };
+                            
+                            // Solo hora, sin concatenar fecha
+                            if (processedRow.inicio) {
+                                callData.inicio = excelTimeToJSString(processedRow.inicio);
+                            }
+                            if (processedRow.fin) {
+                                callData.fin = excelTimeToJSString(processedRow.fin);
+                            }
+                            
+                            return callData;
+                        });
+                        
+                        renderTable(historicalCalls, historicalCallsTableBody, "historico");
+                        updateDashboard(calls, historicalCalls);
+                        populateDropdowns(calls, historicalCalls);
+                    } catch (error) {
+                        console.error("Error al procesar el archivo de Excel:", error);
+                        // Implementar un modal de error si es necesario
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+            
+            cancelImportBtn.addEventListener('click', () => {
+                hideModal(importModal);
+            });
+
+
+// ====================================================================================================
+//                                  AGREGAR OPCIONES A LOS SELECTS
+// ====================================================================================================
+
+
+            // Lógica de agregar opciones a los selects
+            function setupAddOptionButton(button, selectElement, modalTitle) {
+                button.addEventListener('click', () => {
+                    targetSelectForNewOption = selectElement;
+                    document.getElementById('add-option-modal-title').textContent = modalTitle;
+                    newOptionInput.value = ''; // Limpiar valor previo
+                    showModal(addOptionModal);
+                });
+            }
+
+            setupAddOptionButton(addInstitutionBtn, callInstitutionSelect, 'Agregar Nueva Institución');
+            setupAddOptionButton(addSubjectBtn, callSubjectSelect, 'Agregar Nuevo Asunto');
+            setupAddOptionButton(addAtendioBtn, callAtendioSelect, 'Agregar Nuevo Responsable');
+
+            cancelAddOptionBtn.addEventListener('click', () => {
+                hideModal(addOptionModal);
+            });
+
+            addOptionForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newOptionValue = newOptionInput.value.trim();
+                if (newOptionValue && targetSelectForNewOption) {
+                    const option = document.createElement('option');
+                    option.value = newOptionValue;
+                    option.textContent = newOptionValue;
+                    targetSelectForNewOption.appendChild(option);
+                    targetSelectForNewOption.value = newOptionValue;
+                    hideModal(addOptionModal);
+                }
+            });
+
+            // Lógica de filtrado de tablas
+            function setupFilter(inputElement, clearBtnElement, tableType) {
+                inputElement.addEventListener('keyup', (e) => {
+                    const filterValue = e.target.value.toLowerCase();
+                    const data = tableType === 'main' ? calls : historicalCalls;
+                    const filteredData = data.filter(call => 
+                        Object.values(call).some(val => 
+                            String(val).toLowerCase().includes(filterValue)
+                        )
+                    );
+                    const tableBody = tableType === 'main' ? callsTableBody : historicalCallsTableBody;
+                    renderTable(filteredData, tableBody, tableType);
+
+                    if (filterValue.length > 0) {
+                        clearBtnElement.classList.remove('hidden');
+                    } else {
+                        clearBtnElement.classList.add('hidden');
+                    }
+                });
+
+                clearBtnElement.addEventListener('click', () => {
+                    inputElement.value = '';
+                    clearBtnElement.classList.add('hidden');
+                    const data = tableType === 'main' ? calls : historicalCalls;
+                    const tableBody = tableType === 'main' ? callsTableBody : historicalCallsTableBody;
+                    renderTable(data, tableBody, tableType);
+                });
+            }
+
+            setupFilter(filterInputMain, clearFilterBtnMain, 'main');
+            setupFilter(filterInputHistorico, clearFilterBtnHistorico, 'historico');
+
+            // Lógica de ordenamiento
+            setupSorting(mainTableHeader, 'main');
+            setupSorting(historicalTableHeader, 'historico');
+            
+            // Lógica para actualizar el dashboard al cambiar la fuente de datos VERSIONNNNNNNNNNNNNNNNN
+            dashboardDataSource.addEventListener('change', () => {
+                updateDashboard(calls, historicalCalls);
+            });
+            
+            reportesDataSource.addEventListener('change', () => {
+                const dataSource = reportesDataSource.value;
+                let reportData = [];
+                if (dataSource === 'registro') {
+                    reportData = calls;
+                } else if (dataSource === 'historico') {
+                    reportData = historicalCalls;
+                } else { // combinado
+                    reportData = [...calls, ...historicalCalls];
+                }
+                updateCharts(reportData);
+            });
+            
+            if (typeof __initial_auth_token === 'undefined' && typeof __firebase_config === 'undefined') {
+                // Si las variables de entorno no están presentes (por ejemplo, en un entorno de desarrollo local),
+                // ocultamos el loader y mostramos la app directamente, sin autenticación de Firebase.
+                // Esto permite que la app siga siendo funcional para tareas sin persistencia.
+                console.warn("Firebase environment variables not found. Running in a non-persistent mode.");
+                hideLoader();
+                document.getElementById('app').classList.remove('hidden');
+            }
         });
+
     </script>
 </body>
 </html>
