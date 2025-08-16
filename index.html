@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Registro de Llamadas v2.0 - Alfa</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- js-xlsx para leer archivos de Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Hoja de estilos personalizada -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
+        .bg-gob-maroon { background-color: #6A002C; }
+        .text-gob-maroon { color: #6A002C; }
+        .border-gob-maroon { border-color: #6A002C; }
+        .bg-subtle-green { background-color: #10B981; }
+        .hover\:bg-subtle-green-dark:hover { background-color: #059669; }
+        .bg-subtle-red { background-color: #EF4444; }
+        .hover\:bg-subtle-red-dark:hover { background-color: #DC2626; }
+        .modal-enter { animation: fadeIn 0.3s ease-out forwards; }
+        .modal-leave { animation: fadeOut 0.3s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+        .hidden { display: none; }
+        .tab-btn.active { border-color: #6A002C; color: #6A002C; font-weight: bold; }
+        .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.9); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .loader .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #6A002C; animation: spin 1s ease infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Estilos de tabla robustecidos */
+        .table-container { overflow-x: auto; }
+        .status-button {
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.25rem;
+            font-weight: 500; /* medium */
+            text-align: center;
+            user-select: none;
+            border: 1px solid transparent;
+        }
+        .status-atendida {
+            background-color: #10B981; /* bg-emerald-500 */
+            color: #fff;
+            border-color: #059669; /* border-emerald-600 */
+        }
+        .status-pendiente {
+            background-color: #EF4444; /* bg-red-500 */
+            color: #fff;
+            border-color: #DC2626; /* border-red-600 */
+        }
+        .sortable-header { cursor: pointer; }
+        .sortable-header .sort-icon { display: none; }
+        .sortable-header.asc .sort-icon.asc,
+        .sortable-header.desc .sort-icon.desc { display: inline-block; }
+    </style>
+</head>
+<body class="antialiased text-slate-700">
+
+    <!-- Loader de Carga Inicial -->
+    <div id="loader" class="loader">
+        <div class="spinner"></div>
+        <p class="mt-4 text-sm text-slate-600">Cargando datos, por favor espera...</p>
+    </div>
+
+    <!-- Contenedor Principal de la App -->
+    <div id="app" class="min-h-screen hidden">
+        <!-- Encabezado con logo y título mejorados -->
+        <header class="bg-gob-maroon shadow-lg sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <!-- SVG del Logo del Gobierno del Estado de México (Ejemplo) -->
+                    <svg class="h-14 w-auto" fill="#FFFFFF" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Registro de Contacto y Llamadas</h1>
+                </div>
+                <div id="user-info" class="text-white text-sm">
+                    <!-- Aquí se mostrará el ID de usuario -->
+                </div>
+            </div>
+        </header>
+
+        <!-- Navegación de Pestañas -->
+        <div class="bg-white shadow-sm sticky top-20 z-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div id="tabs" class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button data-tab="registro" class="tab-btn active whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Registro y Control</button>
+                        <button data-tab="historico" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Histórico</button>
+                        <button data-tab="reportes" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Reportes y Gráficos</button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido de las Pestañas -->
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <!-- Pestaña de Registro -->
+            <main id="tab-content-registro" class="tab-content">
+                <!-- Dashboard, Control y Tabla -->
+                <section id="dashboard" class="mb-8">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gob-maroon mb-2 sm:mb-0">Dashboard General</h2>
+                        <div class="flex items-center space-x-4">
+                            <label for="dashboard-data-source" class="block text-sm font-medium text-gray-700">Fuente de datos:</label>
+                            <select id="dashboard-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
+                                <option value="registro">Registro y Control</option>
+                                <option value="historico">Histórico</option>
+                                <option value="combinado">Registro y Control + Histórico</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4">
+                            <div class="bg-gob-maroon/10 p-3 rounded-full"><i class="fa-solid fa-phone-volume text-gob-maroon text-2xl"></i></div>
+                            <div><p class="text-slate-500">Total de Llamadas</p><p id="total-calls" class="text-3xl font-bold text-gob-maroon">0</p></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4">
+                            <div class="bg-gob-maroon/10 p-3 rounded-full"><i class="fa-solid fa-hourglass-half text-gob-maroon text-2xl"></i></div>
+                            <div><p class="text-slate-500">Duración Promedio</p><p id="avg-duration" class="text-3xl font-bold text-gob-maroon">00:00</p></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4">
+                            <div class="bg-subtle-green/10 p-3 rounded-full"><i class="fa-solid fa-circle-check text-subtle-green text-2xl"></i></div>
+                            <div><p class="text-slate-500">Llamadas Atendidas</p><p id="atendidas-count" class="text-3xl font-bold text-subtle-green">0</p></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4">
+                            <div class="bg-subtle-red/10 p-3 rounded-full"><i class="fa-solid fa-circle-xmark text-subtle-red text-2xl"></i></div>
+                            <div><p class="text-slate-500">Llamadas Pendientes</p><p id="pendientes-count" class="text-3xl font-bold text-subtle-red">0</p></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-white p-6 rounded-xl shadow-md mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="text-center md:text-left">
+                        <h3 class="text-xl font-semibold text-slate-800">Control de Llamadas</h3>
+                        <p class="text-slate-500">Inicia una nueva llamada para activar el cronómetro y el formulario.</p>
+                    </div>
+                    <div class="flex items-center gap-6">
+                        <div class="text-center">
+                            <p class="text-sm font-medium text-slate-500">TIEMPO DE LLAMADA ACTUAL</p>
+                            <p id="timer" class="text-4xl font-bold text-gob-maroon tracking-wider">00:00:00</p>
+                        </div>
+                        <button id="start-call-btn" class="bg-subtle-green hover:bg-subtle-green-dark text-white font-bold py-4 px-8 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center space-x-3">
+                            <i class="fa-solid fa-phone-alt h-6 w-6"></i>
+                            <span>Iniciar Nueva Llamada</span>
+                        </button>
+                    </div>
+                </section>
+                
+                <section id="call-log">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gob-maroon">Historial de Llamadas</h2>
+                        <div class="flex items-center space-x-2">
+                             <div class="relative w-full">
+                                <input type="text" id="filter-input-main" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gob-maroon">
+                                <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                <button id="clear-filter-btn-main" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden">
+                                    <i class="fa-solid fa-times-circle"></i>
+                                </button>
+                            </div>
+                            <button id="download-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
+                                <i class="fa-solid fa-file-excel"></i>
+                                <span>Descargar Excel</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-md table-container">
+                        <table class="w-full text-sm text-left text-slate-500">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                                <tr id="main-table-header">
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="no">No. <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="fecha">Fecha <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="inicio">Inicio <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="fin">Fin <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="duracion">Duración <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="area">Área <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="institucion">Institución <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="asunto">Asunto <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="consulta">Consulta <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="nombre">Nombre <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="cargo">Cargo <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="correo">Correo <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="telefono">Teléfono <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="estatus">Estatus <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="atendio">Atendió <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="comentarios">Comentarios <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="calls-table-body">
+                                <!-- Filas de llamadas se insertarán aquí por JavaScript -->
+                            </tbody>
+                        </table>
+                        <div id="no-calls-message" class="p-6 text-center text-slate-500 hidden">
+                            <p>No hay llamadas registradas en la base de datos.</p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Pestaña de Histórico -->
+            <div id="tab-content-historico" class="tab-content hidden">
+                <section class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-gob-maroon mb-4">Cargar Histórico desde Excel</h2>
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <label for="historical-file-input" class="w-full md:w-auto cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-lg shadow-sm transition-all duration-200 ease-in-out text-center flex-grow">
+                            <i class="fa-solid fa-file-upload mr-2"></i>
+                            <span id="file-name">Seleccionar archivo Excel (.xlsx)</span>
+                            <input type="file" id="historical-file-input" class="hidden" accept=".xlsx">
+                        </label>
+                        <button id="import-historical-btn" class="w-full md:w-auto bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i class="fa-solid fa-database mr-2"></i>
+                            Importar a la Base de Datos
+                        </button>
+                    </div>
+                </section>
+                
+                <section id="historical-log" class="mt-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gob-maroon">Registro Histórico</h2>
+                        <div class="flex items-center space-x-2">
+                             <div class="relative w-full">
+                                <input type="text" id="filter-input-historical" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gob-maroon">
+                                <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                <button id="clear-filter-btn-historical" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden">
+                                    <i class="fa-solid fa-times-circle"></i>
+                                </button>
+                            </div>
+                            <button id="download-historical-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
+                                <i class="fa-solid fa-file-excel"></i>
+                                <span>Descargar Histórico</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-md table-container">
+                        <table class="w-full text-sm text-left text-slate-500">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                                <tr id="historical-table-header">
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="no">No.</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="fecha">Fecha</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="inicio">Inicio</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="fin">Fin</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="duracion">Duración</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="area">Área</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="institucion">Institución</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="asunto">Asunto</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="consulta">Consulta</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="nombre">Nombre</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="cargo">Cargo</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="correo">Correo</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="telefono">Teléfono</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="estatus">Estatus</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="atendio">Atendió</th>
+                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="comentarios">Comentarios</th>
+                                    <th scope="col" class="py-3 px-6">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historical-table-body">
+                                <!-- Filas de llamadas se insertarán aquí por JavaScript -->
+                            </tbody>
+                        </table>
+                        <div id="no-historical-message" class="p-6 text-center text-slate-500 hidden">
+                            <p>No hay datos históricos cargados.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Pestaña de Reportes y Gráficos -->
+            <div id="tab-content-reportes" class="tab-content hidden">
+                <section class="bg-white p-6 rounded-xl shadow-md mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gob-maroon">Reportes</h2>
+                        <div class="flex items-center space-x-4">
+                            <label for="reportes-data-source" class="block text-sm font-medium text-gray-700">Fuente de datos:</label>
+                            <select id="reportes-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
+                                <option value="registro">Registro y Control</option>
+                                <option value="historico">Histórico</option>
+                                <option value="combinado">Registro y Control + Histórico</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Estatus</h3>
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Área</h3>
+                            <canvas id="areaChart"></canvas>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Día de la Semana</h3>
+                            <canvas id="dayOfWeekChart"></canvas>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Institución</h3>
+                            <canvas id="institutionChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Registro de Llamada -->
+    <div id="call-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl mx-4">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fa-solid fa-times-circle fa-lg"></i>
+            </button>
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gob-maroon">Detalles de la Llamada</h3>
+                <div class="text-right">
+                    <p class="text-sm font-medium text-slate-500">TIEMPO DE LLAMADA ACTUAL</p>
+                    <p id="modal-timer" class="text-2xl font-bold text-gob-maroon tracking-wider">00:00:00</p>
+                </div>
+            </div>
+            <form id="call-form" class="space-y-4">
+                <!-- Datos de Solicitud -->
+                <div class="flex flex-col sm:flex-row gap-4 items-end">
+                    <div class="flex-1">
+                        <label for="caller-institution" class="block text-sm font-medium text-gray-700">Institución</label>
+                        <div class="flex items-center gap-2">
+                            <select id="caller-institution" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
+                            <button type="button" data-option-type="institution" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <label for="call-area" class="block text-sm font-medium text-gray-700">Área o Departamento</label>
+                        <div class="flex items-center gap-2">
+                            <select id="call-area" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
+                            <button type="button" data-option-type="area" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                    <label for="call-subject" class="block text-sm font-medium text-gray-700">Asunto</label>
+                    <input type="text" id="call-subject" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
+                    </div>
+                    <div class="flex-1">
+                    <label for="call-query" class="block text-sm font-medium text-gray-700">Consulta</label>
+                    <input type="text" id="call-query" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
+                    </div>
+                </div>
+                <!-- Datos de Contacto -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="caller-name" class="block text-sm font-medium text-gray-700">Nombre del Solicitante</label>
+                        <input type="text" id="caller-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
+                    </div>
+                    <div class="flex-1">
+                        <label for="caller-cargo" class="block text-sm font-medium text-gray-700">Cargo del Solicitante</label>
+                        <input type="text" id="caller-cargo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="caller-email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+                        <input type="email" id="caller-email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
+                    </div>
+                    <div class="flex-1">
+                        <label for="caller-phone" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                        <input type="tel" id="caller-phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" pattern="[0-9]{10}">
+                    </div>
+                </div>
+                <!-- Datos de Gestión -->
+                <div class="flex flex-col sm:flex-row gap-4 items-end">
+                    <div class="flex-1">
+                        <label for="call-atendio" class="block text-sm font-medium text-gray-700">Atendió</label>
+                        <div class="flex items-center gap-2">
+                            <select id="call-atendio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
+                            <button type="button" data-option-type="atendio" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <label for="call-comments" class="block text-sm font-medium text-gray-700">Comentarios</label>
+                         <div class="flex items-center gap-2">
+                            <select id="call-comments" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
+                            <button type="button" data-option-type="comentarios" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
+                        </div>
+                    </div>
+                </div>
+                 <div>
+                    <label for="call-actions" class="block text-sm font-medium text-gray-700">Acciones</label>
+                    <div class="flex items-center gap-2">
+                        <select id="call-actions" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
+                        <button type="button" data-option-type="acciones" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end">
+                    <button type="submit" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">
+                        Guardar y Finalizar Llamada
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Edición de Llamada -->
+    <div id="edit-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl mx-4">
+            <button id="close-edit-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fa-solid fa-times-circle fa-lg"></i>
+            </button>
+            <h3 class="text-2xl font-bold text-gob-maroon mb-6">Editar Llamada</h3>
+            <form id="edit-form" class="space-y-4">
+                <input type="hidden" id="edit-id">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="edit-caller-name" class="block text-sm font-medium text-gray-700">Nombre del Solicitante</label>
+                        <input type="text" id="edit-caller-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
+                    </div>
+                    <div class="flex-1">
+                        <label for="edit-caller-cargo" class="block text-sm font-medium text-gray-700">Cargo del Solicitante</label>
+                        <input type="text" id="edit-caller-cargo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="edit-caller-email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+                        <input type="email" id="edit-caller-email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
+                    </div>
+                    <div class="flex-1">
+                        <label for="edit-caller-phone" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                        <input type="tel" id="edit-caller-phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" pattern="[0-9]{10}">
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4 items-end">
+                    <div class="flex-1">
+                        <label for="edit-call-area" class="block text-sm font-medium text-gray-700">Área o Departamento</label>
+                        <div class="flex items-center gap-2">
+                            <select id="edit-call-area" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
+                            <button type="button" id="edit-add-area-btn" data-option-type="area" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <label for="edit-caller-institution" class="block text-sm font-medium text-gray-700">Institución</label>
+                        <div class="flex items-center gap-2">
+                            <select id="edit-caller-institution" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
+                            <button type="button" id="edit-add-institution-btn" data-option-type="institution" class="add-option-btn-generic p-2 text-gob-maroon hover:text-[#5a0025] transition-colors"><i class="fa-solid fa-plus-circle fa-lg"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label for="edit-call-subject" class="block text-sm font-medium text-gray-700">Asunto</label>
+                    <input type="text" id="edit-call-subject" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
+                </div>
+                <div>
+                    <label for="edit-call-query" class="block text-sm font-medium text-gray-700">Consulta</label>
+                    <textarea id="edit-call-query" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></textarea>
+                </div>
+                <div>
+                    <label for="edit-call-comments" class="block text-sm font-medium text-gray-700">Comentarios</label>
+                    <textarea id="edit-call-comments" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2"></textarea>
+                </div>
+                <div class="flex items-center justify-end">
+                    <button type="submit" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal de confirmación genérico para eliminar -->
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Confirmar Eliminación</h3>
+            <p class="text-slate-600 mb-6">¿Estás seguro de que deseas eliminar este registro?</p>
+            <div class="flex justify-center space-x-4">
+                <button id="cancel-delete-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">
+                    Cancelar
+                </button>
+                <button id="confirm-delete-btn" class="bg-subtle-red hover:bg-subtle-red-dark text-white font-bold py-2 px-4 rounded-lg">
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar nueva opción a dropdown -->
+    <div id="add-option-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-md mx-4">
+            <button id="close-add-option-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fa-solid fa-times-circle fa-lg"></i>
+            </button>
+            <h3 id="add-option-title" class="text-2xl font-bold text-gob-maroon mb-6"></h3>
+            <form id="add-option-form" class="space-y-4">
+                <input type="hidden" id="option-type">
+                <div>
+                    <label for="new-option-value" class="block text-sm font-medium text-gray-700">Nombre de la nueva opción</label>
+                    <input type="text" id="new-option-value" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required>
+                </div>
+                <div class="flex items-center justify-end">
+                    <button type="submit" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">
+                        Guardar Opción
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script de la aplicación -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Variables globales para la app
+        let timerInterval;
+        let callStartTime;
+        let calls = [];
+        let historicalCalls = [];
+        let areas = [];
+        let institutions = [];
+        let atendioUsers = [];
+        let commentsOptions = [];
+        let actionsOptions = [];
+        let userId;
+        
+        // Elementos del DOM
+        const loader = document.getElementById('loader');
+        const appContainer = document.getElementById('app');
+        const userInfo = document.getElementById('user-info');
+        const tabsContainer = document.getElementById('tabs');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        const dashboardDataSource = document.getElementById('dashboard-data-source');
+        const totalCallsElem = document.getElementById('total-calls');
+        const avgDurationElem = document.getElementById('avg-duration');
+        const atendidasCountElem = document.getElementById('atendidas-count');
+        const pendientesCountElem = document.getElementById('pendientes-count');
+
+        const timerElem = document.getElementById('timer');
+        const startCallBtn = document.getElementById('start-call-btn');
+        const downloadExcelBtn = document.getElementById('download-excel-btn');
+
+        const callLogTableBody = document.getElementById('calls-table-body');
+        const noCallsMessage = document.getElementById('no-calls-message');
+        const historicalTableBody = document.getElementById('historical-table-body');
+        const noHistoricalMessage = document.getElementById('no-historical-message');
+
+        const historicalFileInput = document.getElementById('historical-file-input');
+        const historicalFileName = document.getElementById('file-name');
+        const importHistoricalBtn = document.getElementById('import-historical-btn');
+
+        const reportesDataSource = document.getElementById('reportes-data-source');
+        const statusChartCanvas = document.getElementById('statusChart');
+        const areaChartCanvas = document.getElementById('areaChart');
+        const dayOfWeekChartCanvas = document.getElementById('dayOfWeekChart');
+        const institutionChartCanvas = document.getElementById('institutionChart');
+        let statusChart, areaChart, dayOfWeekChart, institutionChart;
+        
+        // Modals y formularios
+        const callModal = document.getElementById('call-modal');
+        const callForm = document.getElementById('call-form');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const editModal = document.getElementById('edit-modal');
+        const editForm = document.getElementById('edit-form');
+        const modalTimerElem = document.getElementById('modal-timer');
+        const closeEditModalBtn = document.getElementById('close-edit-modal-btn');
+        const confirmModal = document.getElementById('confirm-modal');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const addOptionModal = document.getElementById('add-option-modal');
+        const closeAddOptionBtn = document.getElementById('close-add-option-btn');
+        const addOptionForm = document.getElementById('add-option-form');
+
+        // Referencias a los select y botones de añadir
+        const callAreaSelect = document.getElementById('call-area');
+        const callerInstitutionSelect = document.getElementById('caller-institution');
+        const callAtendioSelect = document.getElementById('call-atendio');
+        const callCommentsSelect = document.getElementById('call-comments');
+        const callActionsSelect = document.getElementById('call-actions');
+        const editCallAreaSelect = document.getElementById('edit-call-area');
+        const editCallerInstitutionSelect = document.getElementById('edit-caller-institution');
+        
+        // Función para ocultar el cargador y mostrar la aplicación
+        function showApp() {
+            if (loader) { loader.classList.add('hidden'); }
+            if (appContainer) { appContainer.classList.remove('hidden'); }
+        }
+
+        // Función para mostrar mensajes de alerta personalizados
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.createElement('div');
+            alertContainer.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white transform transition-all duration-300 z-[60]`;
+            
+            let bgColorClass = 'bg-gray-500'; // info
+            if (type === 'success') bgColorClass = 'bg-green-500';
+            if (type === 'error') bgColorClass = 'bg-red-500';
+            if (type === 'warning') bgColorClass = 'bg-yellow-500';
+
+            alertContainer.classList.add(bgColorClass);
+            alertContainer.textContent = message;
+            document.body.appendChild(alertContainer);
+            
+            setTimeout(() => {
+                alertContainer.classList.add('opacity-0', 'scale-90');
+                alertContainer.addEventListener('transitionend', () => alertContainer.remove());
+            }, 3000);
+        }
+        
+        // Función para manejar la lógica de pestañas
+        function setupTabs() {
+            tabsContainer.addEventListener('click', (e) => {
+                if (e.target.matches('.tab-btn')) {
+                    const tabName = e.target.dataset.tab;
+                    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+
+                    tabContents.forEach(content => {
+                        content.classList.add('hidden');
+                        if (content.id === `tab-content-${tabName}`) {
+                            content.classList.remove('hidden');
+                        }
+                    });
+
+                    // CORRECCIÓN: Se renderiza la tabla de histórico explícitamente al cambiar de pestaña
+                    // para asegurar que los datos cargados en segundo plano se muestren.
+                    if (tabName === 'historico') {
+                        renderTable(historicalTableBody, historicalCalls, true);
+                    }
+                    if (tabName === 'reportes') {
+                        updateCharts();
+                    }
+                }
+            });
+        }
+        
+        // Función para actualizar el dashboard
+        function updateDashboard(data) {
+            const totalCalls = data.length;
+            const atendidas = data.filter(c => c.estatus === 'Atendida').length;
+            const pendientes = totalCalls - atendidas;
+            
+            const totalDuration = data.reduce((sum, c) => sum + (c.duracion || 0), 0);
+            const avgDuration = totalCalls > 0 ? totalDuration / totalCalls : 0;
+            const avgDurationFormatted = formatDuration(avgDuration);
+
+            totalCallsElem.textContent = totalCalls;
+            avgDurationElem.textContent = avgDurationFormatted;
+            atendidasCountElem.textContent = atendidas;
+            pendientesCountElem.textContent = pendientes;
+        }
+
+        function formatDuration(seconds) {
+            if (isNaN(seconds) || seconds < 0) seconds = 0;
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+        
+        function renderTable(tableBody, data, isHistorical = false) {
+            tableBody.innerHTML = '';
+            if (data.length === 0) {
+                if (isHistorical) {
+                    noHistoricalMessage.classList.remove('hidden');
+                } else {
+                    noCallsMessage.classList.remove('hidden');
+                }
+                return;
+            } else {
+                if (isHistorical) {
+                    noHistoricalMessage.classList.add('hidden');
+                } else {
+                    noCallsMessage.classList.add('hidden');
+                }
+            }
+
+            data.forEach((call, index) => {
+                const row = document.createElement('tr');
+                row.className = 'bg-white border-b hover:bg-gray-50';
+                
+                let actionsCell = '';
+                if (!isHistorical) {
+                    actionsCell = `
+                        <td class="py-4 px-6 flex space-x-2">
+                            <button data-id="${call.id}" class="edit-btn text-blue-500 hover:text-blue-700 transition-colors"><i class="fa-solid fa-edit"></i></button>
+                            <button data-id="${call.id}" class="delete-btn text-red-500 hover:text-red-700 transition-colors"><i class="fa-solid fa-trash-alt"></i></button>
+                        </td>
+                    `;
+                } else {
+                    actionsCell = `<td class="py-4 px-6 text-slate-400">N/A</td>`;
+                }
+                
+                row.innerHTML = `
+                    <th scope="row" class="py-4 px-6 font-medium text-slate-900 whitespace-nowrap">${index + 1}</th>
+                    <td class="py-4 px-6">${call.fecha || 'N/A'}</td>
+                    <td class="py-4 px-6">${call.inicio || 'N/A'}</td>
+                    <td class="py-4 px-6">${call.fin || 'N/A'}</td>
+                    <td class="py-4 px-6">${formatDuration(call.duracion)}</td>
+                    <td class="py-4 px-6">${call.area || 'N/A'}</td>
+                    <td class="py-4 px-6">${call.institucion || 'N/A'}</td>
+                    <td class="py-4 px-6">${call.asunto || 'N/A'}</td>
+                    <td class="py-4 px-6">${call.consulta || 'N/A'}</td>
+                    <td class="py-4 px-6">${call.nombre || 'N/A'}</td>
+                    <td class="py-4 px-6">${call.cargo || 'N/A'}</td>
+                    <td class="py-4 px-6">${call.correo || 'N/A'}</td>
+                    <td class="py-4 px-6">${call.telefono || 'N/A'}</td>
+                    <td class="py-4 px-6">
+                        <button data-id="${call.id}" class="status-button status-${call.estatus === 'Atendida' ? 'atendida' : 'pendiente'} toggle-status-btn" data-is-historical="${isHistorical}">
+                            ${call.estatus || 'Pendiente'}
+                        </button>
+                    </td>
+                    <td class="py-4 px-6">${call.atendio || 'N/A'}</td>
+                    <td class="py-4 px-6">${call.comentarios || 'N/A'}</td>
+                    ${actionsCell}
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Asignar event listeners a los botones de acciones
+            tableBody.querySelectorAll('.toggle-status-btn').forEach(button => {
+                button.addEventListener('click', handleStatusToggle);
+            });
+            if (!isHistorical) {
+                tableBody.querySelectorAll('.edit-btn').forEach(button => {
+                    button.addEventListener('click', handleEditClick);
+                });
+                tableBody.querySelectorAll('.delete-btn').forEach(button => {
+                    button.addEventListener('click', handleDeleteClick);
+                });
+            }
+        }
+        
+        // Manejo de la lógica de ordenamiento
+        function setupSorting(headerId, tableBody, dataProvider, renderFunc) {
+            document.getElementById(headerId).addEventListener('click', (e) => {
+                const header = e.target.closest('.sortable-header');
+                if (!header) return;
+                
+                const sortBy = header.dataset.sortBy;
+                let sortOrder = header.dataset.sortOrder === 'asc' ? 'desc' : 'asc';
+
+                document.querySelectorAll(`#${headerId} .sortable-header`).forEach(h => {
+                    h.dataset.sortOrder = '';
+                    h.classList.remove('asc', 'desc');
+                });
+
+                header.dataset.sortOrder = sortOrder;
+                header.classList.add(sortOrder);
+                
+                const data = dataProvider();
+                const sortedData = [...data].sort((a, b) => {
+                    const valA = a[sortBy];
+                    const valB = b[sortBy];
+
+                    if (typeof valA === 'string') {
+                        return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                    } else {
+                        return sortOrder === 'asc' ? (valA || 0) - (valB || 0) : (valB || 0) - (valA || 0);
+                    }
+                });
+
+                renderFunc(tableBody, sortedData, headerId === 'historical-table-header');
+            });
+        }
+        
+        // Manejo de la lógica de filtrado
+        function setupFiltering(inputId, tableBody, dataProvider, renderFunc, isHistorical = false) {
+            const filterInput = document.getElementById(inputId);
+            const clearFilterBtn = document.getElementById(`clear-filter-btn-${inputId.split('-')[2]}`);
+
+            filterInput.addEventListener('input', () => {
+                const filterText = filterInput.value.toLowerCase();
+                if (filterText) {
+                    clearFilterBtn.classList.remove('hidden');
+                } else {
+                    clearFilterBtn.classList.add('hidden');
+                }
+                const data = dataProvider();
+                const filteredData = data.filter(call => 
+                    Object.values(call).some(value => 
+                        String(value).toLowerCase().includes(filterText)
+                    )
+                );
+                renderFunc(tableBody, filteredData, isHistorical);
+            });
+            
+            clearFilterBtn.addEventListener('click', () => {
+                filterInput.value = '';
+                clearFilterBtn.classList.add('hidden');
+                renderFunc(tableBody, dataProvider(), isHistorical);
+            });
+        }
+
+        // ---- LÓGICA DE FIREBASE Y CRUD ----
+        let db, auth;
+        let callsCollectionRef, historicalCallsCollectionRef, areasCollectionRef, institutionsCollectionRef, atendioCollectionRef, commentsCollectionRef, actionsCollectionRef;
+
+        async function initializeFirebase() {
+            if (!firebaseConfig) {
+                console.warn("Firebase config not found. Running in non-persistent mode.");
+                showApp();
+                showAlert("Advertencia: No se encontró la configuración de Firebase. La aplicación se ejecutará en modo no persistente.", "warning");
+                return;
+            }
+            
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        userInfo.textContent = `ID de Usuario: ${userId.substring(0, 8)}...`;
+                        callsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/calls`);
+                        historicalCallsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/historicalCalls`);
+                        areasCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/areas`);
+                        institutionsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/institutions`);
+                        atendioCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/atendioUsers`);
+                        commentsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/commentOptions`);
+                        actionsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/actionOptions`);
+                        
+                        setupRealtimeListeners();
+                        showApp();
+                    } else {
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error al inicializar Firebase o autenticar:", error);
+                showAlert(`Error al inicializar la aplicación: ${error.message}`, "error");
+                showApp();
+            }
+        }
+        
+        function setupRealtimeListeners() {
+            onSnapshot(query(callsCollectionRef), (snapshot) => {
+                calls = [];
+                snapshot.forEach(doc => {
+                    calls.push({ id: doc.id, ...doc.data() });
+                });
+                updateDashboard(calls);
+                renderTable(callLogTableBody, calls);
+            }, (error) => {
+                console.error("Error escuchando la colección de llamadas:", error);
+                showAlert(`Error al cargar los datos en tiempo real: ${error.message}`, "error");
+            });
+            
+            onSnapshot(query(historicalCallsCollectionRef), (snapshot) => {
+                historicalCalls = [];
+                snapshot.forEach(doc => {
+                    historicalCalls.push({ id: doc.id, ...doc.data() });
+                });
+                renderTable(historicalTableBody, historicalCalls, true);
+            }, (error) => {
+                console.error("Error escuchando la colección histórica:", error);
+                showAlert(`Error al cargar los datos históricos en tiempo real: ${error.message}`, "error");
+            });
+
+            onSnapshot(query(areasCollectionRef), (snapshot) => {
+                areas = [];
+                snapshot.forEach(doc => {
+                    areas.push(doc.data().name);
+                });
+                populateSelect(callAreaSelect, areas);
+                populateSelect(editCallAreaSelect, areas);
+            }, (error) => console.error("Error escuchando la colección de áreas:", error));
+
+            onSnapshot(query(institutionsCollectionRef), (snapshot) => {
+                institutions = [];
+                snapshot.forEach(doc => {
+                    institutions.push(doc.data().name);
+                });
+                populateSelect(callerInstitutionSelect, institutions);
+                populateSelect(editCallerInstitutionSelect, institutions);
+            }, (error) => console.error("Error escuchando la colección de instituciones:", error));
+
+            onSnapshot(query(atendioCollectionRef), (snapshot) => {
+                atendioUsers = [];
+                snapshot.forEach(doc => {
+                    atendioUsers.push(doc.data().name);
+                });
+                if (snapshot.empty) {
+                    ['Usuario A', 'Usuario B', 'Usuario C'].forEach(name => saveOption(name, 'atendio'));
+                }
+                populateSelect(callAtendioSelect, atendioUsers, userId);
+            }, (error) => console.error("Error escuchando la colección de usuarios:", error));
+
+            onSnapshot(query(commentsCollectionRef), (snapshot) => {
+                commentsOptions = [];
+                snapshot.forEach(doc => {
+                    commentsOptions.push(doc.data().name);
+                });
+                 if (snapshot.empty) {
+                    ['Se resolvió en la llamada', 'Requiere seguimiento', 'Se envió correo con información'].forEach(name => saveOption(name, 'comentarios'));
+                }
+                populateSelect(callCommentsSelect, commentsOptions);
+            }, (error) => console.error("Error escuchando la colección de comentarios:", error));
+
+            onSnapshot(query(actionsCollectionRef), (snapshot) => {
+                actionsOptions = [];
+                snapshot.forEach(doc => {
+                    actionsOptions.push(doc.data().name);
+                });
+                if (snapshot.empty) {
+                    ['Crear ticket de soporte', 'Agendar reunión de seguimiento', 'No se requiere acción'].forEach(name => saveOption(name, 'acciones'));
+                }
+                populateSelect(callActionsSelect, actionsOptions);
+            }, (error) => console.error("Error escuchando la colección de acciones:", error));
+        }
+        
+        function populateSelect(selectElement, options, defaultValue = null) {
+            const currentValue = selectElement.value;
+            selectElement.innerHTML = '<option value="">Seleccione una opción</option>';
+            options.sort().forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                selectElement.appendChild(opt);
+            });
+            if (defaultValue && options.includes(defaultValue)) {
+                selectElement.value = defaultValue;
+            } else if (currentValue && options.includes(currentValue)) {
+                selectElement.value = currentValue;
+            }
+        }
+
+        async function saveCall(callData) {
+            if (!db || !userId) {
+                showAlert("Error: Usuario no autenticado o base de datos no inicializada.", "error");
+                return;
+            }
+            try {
+                await addDoc(callsCollectionRef, callData);
+                showAlert("Llamada guardada con éxito!", "success");
+            } catch (error) {
+                console.error("Error al guardar la llamada:", error);
+                showAlert(`Error al guardar la llamada: ${error.message}`, "error");
+            }
+        }
+        
+        async function updateCall(id, updateData, isHistorical) {
+            if (!db || !userId) {
+                showAlert("Error: Usuario no autenticado o base de datos no inicializada.", "error");
+                return;
+            }
+            try {
+                const collectionRef = isHistorical ? historicalCallsCollectionRef : callsCollectionRef;
+                const callDocRef = doc(db, collectionRef.path, id);
+                await updateDoc(callDocRef, updateData);
+                showAlert("Llamada actualizada con éxito!", "success");
+            } catch (error) {
+                console.error("Error al actualizar la llamada:", error);
+                showAlert(`Error al actualizar la llamada: ${error.message}`, "error");
+            }
+        }
+        
+        async function deleteCall(id) {
+            if (!db || !userId) {
+                showAlert("Error: Usuario no autenticado o base de datos no inicializada.", "error");
+                return;
+            }
+            try {
+                const callDocRef = doc(db, `/artifacts/${appId}/users/${userId}/calls`, id);
+                await deleteDoc(callDocRef);
+                showAlert("Llamada eliminada con éxito!", "success");
+            } catch (error) {
+                console.error("Error al eliminar la llamada:", error);
+                showAlert(`Error al eliminar la llamada: ${error.message}`, "error");
+            }
+        }
+
+        async function importHistoricalData(data) {
+            if (!db || !userId) {
+                 showAlert("Error: Usuario no autenticado o base de datos no inicializada.", "error");
+                 return;
+            }
+            try {
+                const importPromises = data.map(item => addDoc(historicalCallsCollectionRef, item));
+                await Promise.all(importPromises);
+                showAlert(`Se han importado ${data.length} registros históricos correctamente.`, "success");
+            } catch (error) {
+                console.error("Error al importar datos históricos:", error);
+                showAlert(`Error al importar datos históricos: ${error.message}`, "error");
+            }
+        }
+
+        async function saveOption(option, type) {
+            if (!db || !userId || !option) return;
+            try {
+                let collectionRef;
+                if (type === 'area') collectionRef = areasCollectionRef;
+                else if (type === 'institution') collectionRef = institutionsCollectionRef;
+                else if (type === 'atendio') collectionRef = atendioCollectionRef;
+                else if (type === 'comentarios') collectionRef = commentsCollectionRef;
+                else if (type === 'acciones') collectionRef = actionsCollectionRef;
+                else return;
+                await addDoc(collectionRef, { name: option });
+                showAlert("Opción guardada con éxito!", "success");
+            } catch (error) {
+                console.error("Error al guardar la opción:", error);
+                showAlert(`Error al guardar la opción: ${error.message}`, "error");
+            }
+        }
+        
+        // ---- LÓGICA DE GRÁFICOS ----
+        function updateCharts() {
+            const dataSource = reportesDataSource.value;
+            let reportData = [];
+            if (dataSource === 'registro') reportData = calls;
+            else if (dataSource === 'historico') reportData = historicalCalls;
+            else reportData = [...calls, ...historicalCalls];
+            
+            if (reportData.length === 0) return;
+            
+            const statusCounts = {}, areaCounts = {}, dayOfWeekCounts = {}, institutionCounts = {};
+            reportData.forEach(call => {
+                const estatus = call.estatus || 'N/A';
+                const area = call.area || 'N/A';
+                const institucion = call.institucion || 'N/A';
+
+                statusCounts[estatus] = (statusCounts[estatus] || 0) + 1;
+                areaCounts[area] = (areaCounts[area] || 0) + 1;
+                institutionCounts[institucion] = (institutionCounts[institucion] || 0) + 1;
+
+                if (call.fecha && typeof call.fecha === 'string') {
+                    const date = new Date(call.fecha.split('/').reverse().join('-'));
+                    if (!isNaN(date)) {
+                        const day = date.toLocaleDateString('es-ES', { weekday: 'long' });
+                        dayOfWeekCounts[day] = (dayOfWeekCounts[day] || 0) + 1;
+                    }
+                }
+            });
+            
+            if (statusChart) statusChart.destroy();
+            statusChart = new Chart(statusChartCanvas, { type: 'pie', data: { labels: Object.keys(statusCounts), datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#10B981', '#EF4444', '#6B7280'] }] }, options: { responsive: true, plugins: { legend: { position: 'top' } } } });
+
+            if (areaChart) areaChart.destroy();
+            areaChart = new Chart(areaChartCanvas, { type: 'bar', data: { labels: Object.keys(areaCounts), datasets: [{ label: 'Número de Llamadas', data: Object.values(areaCounts), backgroundColor: '#6A002C' }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+
+            const daysOrder = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+            const sortedDays = Object.keys(dayOfWeekCounts).sort((a, b) => daysOrder.indexOf(a) - daysOrder.indexOf(b));
+            const sortedDayData = sortedDays.map(day => dayOfWeekCounts[day]);
+            if (dayOfWeekChart) dayOfWeekChart.destroy();
+            dayOfWeekChart = new Chart(dayOfWeekChartCanvas, { type: 'line', data: { labels: sortedDays, datasets: [{ label: 'Número de Llamadas', data: sortedDayData, borderColor: '#6A002C', tension: 0.1, fill: true }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+
+            if (institutionChart) institutionChart.destroy();
+            institutionChart = new Chart(institutionChartCanvas, { type: 'polarArea', data: { labels: Object.keys(institutionCounts), datasets: [{ data: Object.values(institutionCounts), backgroundColor: ['#6A002C', '#10B981', '#EF4444', '#FCD34D', '#3B82F6', '#8B5CF6'] }] }, options: { responsive: true, plugins: { legend: { position: 'right' } } } });
+        }
+        
+        // ---- MANEJO DE EVENTOS Y LÓGICA DE UI ----
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeFirebase();
+            setupTabs();
+            setupSorting('main-table-header', callLogTableBody, () => calls, renderTable);
+            setupSorting('historical-table-header', historicalTableBody, () => historicalCalls, renderTable);
+            setupFiltering('filter-input-main', callLogTableBody, () => calls, renderTable);
+            setupFiltering('filter-input-historical', historicalTableBody, () => historicalCalls, renderTable, true);
+        });
+        
+        dashboardDataSource.addEventListener('change', () => {
+            const source = dashboardDataSource.value;
+            let dataToShow = [];
+            if (source === 'registro') dataToShow = calls;
+            else if (source === 'historico') dataToShow = historicalCalls;
+            else dataToShow = [...calls, ...historicalCalls];
+            updateDashboard(dataToShow);
+        });
+
+        reportesDataSource.addEventListener('change', updateCharts);
+        
+        startCallBtn.addEventListener('click', () => {
+            if (startCallBtn.dataset.state === 'active') {
+                stopTimer(false); 
+                closeModal();
+            } else {
+                startTimer();
+            }
+        });
+        
+        function startTimer() {
+            startCallBtn.dataset.state = 'active';
+            startCallBtn.innerHTML = `<i class="fa-solid fa-stopwatch h-6 w-6"></i><span>Finalizar Llamada</span>`;
+            startCallBtn.classList.remove('bg-subtle-green', 'hover:bg-subtle-green-dark');
+            startCallBtn.classList.add('bg-subtle-red', 'hover:bg-subtle-red-dark');
+            
+            callModal.classList.remove('hidden');
+            callModal.classList.add('modal-enter');
+
+            callStartTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+                const formattedTime = formatDuration(elapsed);
+                timerElem.textContent = formattedTime;
+                modalTimerElem.textContent = formattedTime;
+            }, 1000);
+        }
+        
+        function stopTimer(shouldSave = true) {
+            clearInterval(timerInterval);
+            if (shouldSave) {
+                const endTime = Date.now();
+                const duration = Math.floor((endTime - callStartTime) / 1000);
+                const callData = {
+                    fecha: new Date(callStartTime).toLocaleDateString('es-ES', {year: 'numeric', month: '2-digit', day: '2-digit'}),
+                    inicio: new Date(callStartTime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                    fin: new Date(endTime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                    duracion: duration,
+                    area: callForm['call-area'].value,
+                    institucion: callForm['caller-institution'].value,
+                    asunto: callForm['call-subject'].value,
+                    consulta: callForm['call-query'].value,
+                    nombre: callForm['caller-name'].value,
+                    cargo: callForm['caller-cargo'].value,
+                    correo: callForm['caller-email'].value,
+                    telefono: callForm['caller-phone'].value,
+                    estatus: 'Atendida',
+                    atendio: callForm['call-atendio'].value,
+                    comentarios: callForm['call-comments'].value,
+                    acciones: callForm['call-actions'].value,
+                    timestamp: serverTimestamp()
+                };
+                saveCall(callData);
+            }
+            
+            startCallBtn.dataset.state = 'inactive';
+            startCallBtn.innerHTML = `<i class="fa-solid fa-phone-alt h-6 w-6"></i><span>Iniciar Nueva Llamada</span>`;
+            startCallBtn.classList.remove('bg-subtle-red', 'hover:bg-subtle-red-dark');
+            startCallBtn.classList.add('bg-subtle-green', 'hover:bg-subtle-green-dark');
+            resetTimer();
+        }
+        
+        function resetTimer() {
+            timerElem.textContent = '00:00:00';
+            modalTimerElem.textContent = '00:00:00';
+            callForm.reset();
+        }
+        
+        closeModalBtn.addEventListener('click', closeModal);
+        function closeModal() {
+            callModal.classList.remove('modal-enter');
+            callModal.classList.add('modal-leave');
+            setTimeout(() => {
+                callModal.classList.add('hidden');
+                callModal.classList.remove('modal-leave');
+            }, 300);
+            if(startCallBtn.dataset.state === 'active') {
+                stopTimer(false);
+            }
+            resetTimer();
+        }
+        
+        callForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            stopTimer(true);
+            closeModal();
+        });
+
+        function handleEditClick(e) {
+            const callId = e.currentTarget.dataset.id;
+            const callToEdit = calls.find(call => call.id === callId);
+            if (!callToEdit) return;
+
+            document.getElementById('edit-id').value = callId;
+            document.getElementById('edit-caller-name').value = callToEdit.nombre;
+            document.getElementById('edit-caller-cargo').value = callToEdit.cargo;
+            document.getElementById('edit-caller-email').value = callToEdit.correo;
+            document.getElementById('edit-caller-phone').value = callToEdit.telefono;
+            document.getElementById('edit-caller-institution').value = callToEdit.institucion;
+            document.getElementById('edit-call-area').value = callToEdit.area;
+            document.getElementById('edit-call-subject').value = callToEdit.asunto;
+            document.getElementById('edit-call-query').value = callToEdit.consulta;
+            document.getElementById('edit-call-comments').value = callToEdit.comentarios;
+
+            editModal.classList.remove('hidden');
+            editModal.classList.add('modal-enter');
+        }
+
+        closeEditModalBtn.addEventListener('click', () => {
+            editModal.classList.remove('modal-enter');
+            editModal.classList.add('modal-leave');
+            setTimeout(() => { editModal.classList.add('hidden'); editModal.classList.remove('modal-leave'); }, 300);
+        });
+
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const callId = document.getElementById('edit-id').value;
+            const updateData = {
+                nombre: editForm['edit-caller-name'].value,
+                cargo: editForm['edit-caller-cargo'].value,
+                correo: editForm['edit-caller-email'].value,
+                telefono: editForm['edit-caller-phone'].value,
+                institucion: editForm['edit-caller-institution'].value,
+                area: editForm['edit-call-area'].value,
+                asunto: editForm['edit-call-subject'].value,
+                consulta: editForm['edit-call-query'].value,
+                comentarios: editForm['edit-call-comments'].value,
+            };
+            await updateCall(callId, updateData, false);
+            closeEditModalBtn.click();
+        });
+
+        async function handleStatusToggle(e) {
+            const button = e.currentTarget;
+            const callId = button.dataset.id;
+            const isHistorical = button.dataset.isHistorical === 'true';
+            const currentStatus = button.textContent.trim();
+            const newStatus = currentStatus === 'Atendida' ? 'Pendiente' : 'Atendida';
+            await updateCall(callId, { estatus: newStatus }, isHistorical);
+        }
+
+        let callToDeleteId = null;
+        function handleDeleteClick(e) {
+            callToDeleteId = e.currentTarget.dataset.id;
+            confirmModal.classList.remove('hidden');
+            confirmModal.classList.add('modal-enter');
+        }
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            confirmModal.classList.remove('modal-enter');
+            confirmModal.classList.add('modal-leave');
+            setTimeout(() => { confirmModal.classList.add('hidden'); confirmModal.classList.remove('modal-leave'); }, 300);
+            callToDeleteId = null;
+        });
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if (callToDeleteId) {
+                await deleteCall(callToDeleteId);
+                cancelDeleteBtn.click();
+            }
+        });
+        
+        document.body.addEventListener('click', (e) => {
+            const button = e.target.closest('.add-option-btn-generic');
+            if (button) {
+                const type = button.dataset.optionType;
+                const titles = { area: 'Agregar nueva Área', institution: 'Agregar nueva Institución', atendio: 'Agregar nuevo Usuario', comentarios: 'Agregar nuevo Comentario', acciones: 'Agregar nueva Acción' };
+                showAddOptionModal(type, titles[type] || 'Agregar nueva opción');
+            }
+        });
+        
+        function showAddOptionModal(type, title) {
+            document.getElementById('add-option-title').textContent = title;
+            document.getElementById('option-type').value = type;
+            document.getElementById('new-option-value').value = '';
+            addOptionModal.classList.remove('hidden');
+            addOptionModal.classList.add('modal-enter');
+        }
+        
+        closeAddOptionBtn.addEventListener('click', () => {
+            addOptionModal.classList.remove('modal-enter');
+            addOptionModal.classList.add('modal-leave');
+            setTimeout(() => { addOptionModal.classList.add('hidden'); addOptionModal.classList.remove('modal-leave'); }, 300);
+        });
+        
+        addOptionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newOption = document.getElementById('new-option-value').value;
+            const type = document.getElementById('option-type').value;
+            if (newOption) {
+                await saveOption(newOption, type);
+                closeAddOptionBtn.click();
+            }
+        });
+
+        downloadExcelBtn.addEventListener('click', () => {
+            if (calls.length === 0) {
+                showAlert("No hay datos para descargar.", "warning");
+                return;
+            }
+            const ws = XLSX.utils.json_to_sheet(calls);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Llamadas");
+            XLSX.writeFile(wb, "registro_llamadas.xlsx");
+        });
+        
+        document.getElementById('download-historical-excel-btn').addEventListener('click', () => {
+            if (historicalCalls.length === 0) {
+                showAlert("No hay datos históricos para descargar.", "warning");
+                return;
+            }
+            const ws = XLSX.utils.json_to_sheet(historicalCalls);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Historico");
+            XLSX.writeFile(wb, "registro_historico.xlsx");
+        });
+
+        historicalFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                historicalFileName.textContent = file.name;
+                importHistoricalBtn.disabled = false;
+                importHistoricalBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                historicalFileName.textContent = 'Seleccionar archivo Excel (.xlsx)';
+                importHistoricalBtn.disabled = true;
+                importHistoricalBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        });
+        
+        importHistoricalBtn.addEventListener('click', () => {
+            const file = historicalFileInput.files[0];
+            if (!file) {
+                showAlert("Por favor, selecciona un archivo Excel primero.", "warning");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    // Mapeo de cabeceras de Excel (posibles variaciones) a las claves de objeto de la aplicación.
+                    // Se convierte a minúsculas y se normaliza para que sea robusto.
+                    const keyMapping = {
+                        'no.': 'no',
+                        'fecha': 'fecha',
+                        'inicio': 'inicio',
+                        'fin': 'fin',
+                        'duración': 'duracion', 'duracion': 'duracion',
+                        'área': 'area', 'area': 'area',
+                        'institución': 'institucion', 'institucion': 'institucion',
+                        'asunto': 'asunto',
+                        'consulta': 'consulta',
+                        'nombre': 'nombre',
+                        'cargo': 'cargo',
+                        'correo': 'correo',
+                        'teléfono': 'telefono', 'telefono': 'telefono',
+                        'estatus': 'estatus',
+                        'atendió': 'atendio', 'atendio': 'atendio',
+                        'comentarios': 'comentarios'
+                    };
+
+                    const processedData = json.map(row => {
+                        const newRow = {};
+                        for (const originalKey in row) {
+                            const normalizedKey = originalKey.trim().toLowerCase().replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i').replace(/ó/g, 'o').replace(/ú/g, 'u');
+                            const newKey = keyMapping[normalizedKey];
+                            if (newKey) {
+                                let value = row[originalKey];
+                                // Si la clave es de fecha/hora y el valor es un número (serial de Excel), se convierte.
+                                if ((newKey === 'fecha' || newKey === 'inicio' || newKey === 'fin') && typeof value === 'number' && value > 1) {
+                                    // Convertir el número de serie de Excel a una fecha de JavaScript.
+                                    // La resta de 25569 es para ajustar la época de Excel (1900) a la de Unix (1970).
+                                    const jsDate = new Date((value - 25569) * 86400 * 1000);
+                                    
+                                    if (newKey === 'fecha') {
+                                        // Formato DD/MM/YYYY
+                                        value = jsDate.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                                    } else { // Para 'inicio' y 'fin'
+                                        // Formato HH:mm:ss
+                                        value = jsDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                                    }
+                                } else if (newKey === 'duracion' && typeof value === 'number' && value > 0 && value < 1) {
+                                    // Si la duración es una fracción de día (formato de tiempo de Excel), convertir a segundos.
+                                    value = Math.round(value * 86400);
+                                }
+                                newRow[newKey] = value;
+                            }
+                        }
+                        if (!newRow.estatus) newRow.estatus = 'Pendiente';
+                        return newRow;
+                    });
+
+                    if (processedData.length === 0) {
+                        showAlert("El archivo Excel está vacío o no contiene datos válidos.", "warning");
+                        return;
+                    }
+                    await importHistoricalData(processedData);
+                    historicalFileInput.value = '';
+                    historicalFileName.textContent = 'Seleccionar archivo Excel (.xlsx)';
+                    importHistoricalBtn.disabled = true;
+                    importHistoricalBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                } catch (error) {
+                    console.error("Error al procesar el archivo Excel:", error);
+                    showAlert(`Error al procesar el archivo Excel: ${error.message}`, "error");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    </script>
+</body>
+</html>
