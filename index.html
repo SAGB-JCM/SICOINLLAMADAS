@@ -68,23 +68,37 @@
         input:invalid, select:invalid { border-color: #ef4444; }
         .section-title { font-weight: bold; color: #6A002C; margin-bottom: 1rem; }
         header + div { top: 56px !important; } /* Ajuste para eliminar hueco entre header y tabs */
-        
+
         .flex-with-button {
             display: flex;
             align-items: flex-end;
         }
 
-        .flex-with-button button {
-            margin-left: 0.5rem;
-            height: 38px;
-            flex-shrink: 0;
+        .flex-with-button .select2-container {
+            flex-grow: 1;
+            margin-right: 0.5rem;
+            margin-bottom: 1px; /* Alineación vertical */
         }
 
-        /* Asegurar que el Select2 no se desborde */
-        .select2-container {
-            width: 100% !important;
+        .flex-with-button button {
+            height: 38px;
+            margin-bottom: 1px; /* Alineación vertical */
+            flex-shrink: 0;
+            background-color: #3b82f6; /* Azul */
+            color: white;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
         }
-    
+
+        .flex-with-button button:hover {
+            background-color: #2563eb; /* Azul más oscuro al pasar el mouse */
+        }
+
     </style>
 </head>
 <body class="antialiased text-slate-700">
@@ -248,16 +262,16 @@
             <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
             <div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-bold text-gob-maroon">Detalles de la Llamada</h3><div class="text-right"><p class="text-sm font-medium text-slate-500">TIEMPO DE LLAMADA ACTUAL</p><p id="modal-timer" class="text-2xl font-bold text-gob-maroon tracking-wider">00:00:00</p></div></div>
             <form id="call-form" class="space-y-6" novalidate>
-                <div>
+                <div> 
                     <h4 class="section-title text-lg">Datos Institución</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                         <div class="flex-with-button">
                             <div class="flex-grow">
-                                <label for="caller-institution" class="block text-sm font-medium text-gray-700">Institución</label>
-                                <select id="caller-institution" name="institucion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
+                                <label for="caller-institution">Institución</label>
+                                <select id="caller-institution"></select>
                             </div>
-                            <button type="button" id="add-institution-btn" class="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><i class="fa-solid fa-plus"></i></button>
+                            <button id="add-institution-btn">+</button>
                         </div>
 
                         <div><label for="call-area" class="block text-sm font-medium text-gray-700">Área o Departamento</label><textarea id="call-area" name="area" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></textarea></div>
@@ -1273,7 +1287,11 @@
             newAtendioInput.value = '';
         });
 
-
+        // Añadir este evento para el botón de cancelar
+        document.getElementById('cancel-add-institution-btn')?.addEventListener('click', () => {
+            closeModal(document.getElementById('add-institution-modal'));
+            document.getElementById('new-institution-input').value = '';
+        });
 
 
 
