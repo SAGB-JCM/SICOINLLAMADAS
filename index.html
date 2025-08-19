@@ -68,6 +68,23 @@
         input:invalid, select:invalid { border-color: #ef4444; }
         .section-title { font-weight: bold; color: #6A002C; margin-bottom: 1rem; }
         header + div { top: 56px !important; } /* Ajuste para eliminar hueco entre header y tabs */
+        
+        .flex-with-button {
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .flex-with-button button {
+            margin-left: 0.5rem;
+            height: 38px;
+            flex-shrink: 0;
+        }
+
+        /* Asegurar que el Select2 no se desborde */
+        .select2-container {
+            width: 100% !important;
+        }
+    
     </style>
 </head>
 <body class="antialiased text-slate-700">
@@ -234,10 +251,15 @@
                 <div>
                     <h4 class="section-title text-lg">Datos Institución</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="caller-institution" class="block text-sm font-medium text-gray-700">Institución</label>
-                        <select id="caller-institution" name="institucion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
-                    </div>  
+
+                        <div class="flex-with-button">
+                            <div class="flex-grow">
+                                <label for="caller-institution" class="block text-sm font-medium text-gray-700">Institución</label>
+                                <select id="caller-institution" name="institucion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
+                            </div>
+                            <button type="button" id="add-institution-btn" class="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+
                         <div><label for="call-area" class="block text-sm font-medium text-gray-700">Área o Departamento</label><textarea id="call-area" name="area" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></textarea></div>
                         <div><label for="call-subject" class="block text-sm font-medium text-gray-700">Asunto</label><input type="text" id="call-subject" name="asunto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></div>
                         <div><label for="call-query" class="block text-sm font-medium text-gray-700">Consulta</label><input type="text" id="call-query" name="consulta" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></div>
@@ -279,10 +301,15 @@
                 <div>
                     <h4 class="section-title text-lg">Datos Institución</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">                      
-                    <div>
-                        <label for="edit-caller-institution" class="block text-sm font-medium text-gray-700">Institución</label>
-                        <select id="edit-caller-institution" name="institucion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
-                    </div>
+
+                        <div class="flex-with-button">
+                            <div class="flex-grow">
+                                <label for="edit-caller-institution" class="block text-sm font-medium text-gray-700">Institución</label>
+                                <select id="edit-caller-institution" name="institucion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
+                            </div>
+                            <button type="button" id="add-institution-edit-btn" class="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+
                         <div><label for="edit-call-area" class="block text-sm font-medium text-gray-700">Área</label><textarea id="edit-call-area" name="area" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></textarea></div>
                         <div><label for="edit-call-subject" class="block text-sm font-medium text-gray-700">Asunto</label><input type="text" id="edit-call-subject" name="asunto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></div>
                         <div><label for="edit-call-query" class="block text-sm font-medium text-gray-700">Consulta</label><input type="text" id="edit-call-query" name="consulta" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></div>
@@ -323,6 +350,7 @@
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center"><h3 class="text-xl font-bold text-gob-maroon mb-4">Reemplazar Histórico</h3><p class="text-slate-600 mb-6">¿Desea reemplazar el histórico actual?</p><div class="flex justify-center space-x-4"><button id="cancel-replace-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">No</button><button id="confirm-replace-btn" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-2 px-4 rounded-lg">Sí</button></div></div>
     </div>
 
+
     <div id="add-atendio-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
             <h3 class="text-xl font-bold text-gob-maroon mb-4">Agregar Nuevo Atendió</h3>
@@ -330,6 +358,20 @@
             <div class="flex justify-center space-x-4"><button id="cancel-add-atendio-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button><button id="confirm-add-atendio-btn" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-2 px-4 rounded-lg">Agregar</button></div>
         </div>
     </div>
+
+
+    <div id="add-institution-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
+            <h3 class="text-xl font-bold text-gob-maroon mb-4">Agregar Nueva Institución</h3>
+            <input type="text" id="new-institution-input" placeholder="Ingrese la nueva institución" class="w-full p-2 border border-gray-300 rounded-md mb-4">
+            <div class="flex justify-center space-x-4">
+                <button id="cancel-add-institution-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="confirm-add-institution-btn" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-2 px-4 rounded-lg">Agregar</button>
+            </div>
+        </div>
+    </div>
+
+
 
     <script type="module">
         // INICIALIZACIÓN DE FIREBASE (v3.3 final)
@@ -614,6 +656,8 @@
             }
         }
         
+
+        // Agregar nuevo Atendio
         async function addNewAtendio(newUser) {
             if (!newUser) return;
             if (!atendioUsers.includes(newUser)) {
@@ -622,6 +666,19 @@
                 populateAllSelects();
             }
         }
+
+
+
+        // Agregar nueva institución
+        async function addNewInstitution(newInstitution) {
+            if (!newInstitution) return;
+            if (!institutions.includes(newInstitution)) {
+                institutions.push(newInstitution);
+                await setDoc(configDocRef, { institutions }, { merge: true });
+                populateAllSelects();
+            }
+        }
+
 
         function populateAllSelects() {
             populateSelect(document.getElementById('call-atendio'), atendioUsers.sort());
@@ -643,6 +700,7 @@
             });
         }
 
+
         function populateSelect(selectElement, options) {
             if (!selectElement) return;
             selectElement.innerHTML = '<option value="">Seleccione una opción</option>';
@@ -654,8 +712,10 @@
             });
         }
 
+
+        // MODIFICACIÓN: Actualizar función updateAutocompletes
         function updateAutocompletes() {
-            const allData = [...calls, ...historicalCalls];
+            const allData = [...calls, ...historicalCalls]; 
 
             const uniqueAreas = [...new Set(allData.map(c => c.area).filter(Boolean))];
             const uniqueInstitutions = [...new Set(allData.map(c => c.institucion).filter(Boolean))];
@@ -666,6 +726,7 @@
             const uniqueAsuntos = [...new Set(allData.map(c => c.asunto).filter(Boolean))];
             const uniqueConsultas = [...new Set(allData.map(c => c.consulta).filter(Boolean))];
             const uniqueComentarios = [...new Set(allData.map(c => c.comentarios).filter(Boolean))];
+            const uniqueAtendios = [...new Set(allData.map(c => c.atendio).filter(Boolean))];
 
             // Para formulario de nueva llamada 
             $("#call-area").autocomplete({ source: uniqueAreas });
@@ -687,10 +748,20 @@
             $("#edit-call-query").autocomplete({ source: uniqueConsultas });
             $("#edit-call-comments").autocomplete({ source: uniqueComentarios });
 
+            // NUEVO: Actualizar lista de atendió con valores históricos
+            const newAtendios = uniqueAtendios.filter(a => !atendioUsers.includes(a));
+            if (newAtendios.length > 0) {
+                atendioUsers = [...atendioUsers, ...newAtendios];
+                setDoc(configDocRef, { atendioUsers }, { merge: true });
+                populateSelect(document.getElementById('call-atendio'), atendioUsers.sort());
+                populateSelect(document.getElementById('edit-call-atendio'), atendioUsers.sort());
+            }
+
             // Aplicar Select2 a institución para búsqueda
             $('#caller-institution').select2({ data: uniqueInstitutions.sort(), tags: true, placeholder: "Seleccione o busque una institución", allowClear: true });
             $('#edit-caller-institution').select2({ data: uniqueInstitutions.sort(), tags: true, placeholder: "Seleccione o busque una institución", allowClear: true });
         }
+
 
         async function saveCall(callData) {
             try {
@@ -915,7 +986,10 @@
             startCallBtn.classList.replace('hover:bg-subtle-red-dark', 'hover:bg-subtle-green-dark');
             resetTimer();
         }
-        
+
+
+
+
         function resetTimer() {
             timerElem.textContent = '00:00:00';
             modalTimerElem.textContent = '00:00:00';
@@ -1149,6 +1223,34 @@
             reader.readAsBinaryString(file);
         });
 
+
+        // Eventos nueva institucion
+        document.getElementById('add-institution-btn')?.addEventListener('click', () => {
+            openModal(document.getElementById('add-institution-modal'));
+        });
+
+        document.getElementById('add-institution-edit-btn')?.addEventListener('click', () => {
+            openModal(document.getElementById('add-institution-modal'));
+        });
+
+        // Evento para agregar nueva institución
+        document.getElementById('confirm-add-institution-btn')?.addEventListener('click', () => {
+            const newInstitution = document.getElementById('new-institution-input').value.trim();
+            if (newInstitution) {
+                addNewInstitution(newInstitution);
+                
+                // Actualizar los selects de institución
+                $('#caller-institution').append(new Option(newInstitution, newInstitution)).trigger('change');
+                $('#edit-caller-institution').append(new Option(newInstitution, newInstitution)).trigger('change');
+            }
+            closeModal(document.getElementById('add-institution-modal'));
+            document.getElementById('new-institution-input').value = '';
+        });
+
+
+
+        // EVENTOS del boton "Atendio"
+
         addAtendioBtn.addEventListener('click', () => {
             openModal(addAtendioModal);
         });
@@ -1170,6 +1272,10 @@
             closeModal(addAtendioModal);
             newAtendioInput.value = '';
         });
+
+
+
+
 
 
         // Asegurar que los modales se cierren correctamente
