@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro de Llamadas Alpha 1.6</title>
+    <title>Sistema de Registro de Llamadas Alpha 1.0</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,7 +37,7 @@
     
     <!-- Hoja de estilos personalizada -->
     <style>
-        html { font-size: 75%; } /* Simula zoom negativo al 75% */
+        html { font-size: 75%; } /* Simula zoom negativo al 65% */
         body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
         .bg-gob-maroon { background-color: #6A002C; }
         .text-gob-maroon { color: #6A002C; }
@@ -246,7 +246,7 @@
             color: #6b7280;
         }
 
-        /* Nuevos estilos para la versión 1.6 */
+        /* Nuevos estilos para la versión 1.7 */
         .config-report-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -270,6 +270,11 @@
             margin-right: 0.5rem;
         }
 
+        /* VERSIÓN 1.7: Aumentar ancho de modales */
+        .wide-modal .relative {
+            max-width: 72rem !important; /* equivalente a max-w-6xl */
+        }
+
     </style>
 </head>
 <body class="antialiased text-slate-700">
@@ -284,7 +289,7 @@
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div class="flex items-center space-x-4">
                     <svg class="h-14 w-auto" fill="#FFFFFF" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas Alpha 1.6</h1>
+                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas v1.7  (Avance al 22/08/2025)</h1>
                 </div>
                 <div id="user-info" class="text-white text-sm font-mono"></div>
             </div>
@@ -436,8 +441,9 @@
         </div>
     </div>
     
-    <div id="call-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl mx-4">
+    <!-- VERSIÓN 1.7: Modales más anchos con clase wide-modal -->
+    <div id="call-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
+        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
             <div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-bold text-gob-maroon">Detalles de la Llamada</h3><div class="text-right"><p class="text-sm font-medium text-slate-500">TIEMPO DE LLAMADA ACTUAL</p><p id="modal-timer" class="text-2xl font-bold text-gob-maroon tracking-wider">00:00:00</p></div></div>
             <div class="call-form-container">
@@ -542,8 +548,9 @@
         </div>
     </div>
 
-    <div id="edit-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl mx-4">
+    <!-- VERSIÓN 1.7: Modal de edición más ancho -->
+    <div id="edit-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
+        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-edit-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
             <h3 class="text-2xl font-bold text-gob-maroon mb-6">Editar Llamada</h3>
             <div class="call-form-container">
@@ -725,7 +732,7 @@
         </div>
     </div>
 
-    <!-- Nuevo modal de configuración de reportes para la versión 1.6 -->
+    <!-- Modal de configuración de reportes para la versión 1.7 -->
     <div id="config-report-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl mx-4">
             <button id="close-config-report-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
@@ -763,7 +770,7 @@
     <div id="report-preview" class="hidden"></div>
 
     <script type="module">
-        // INICIALIZACIÓN DE FIREBASE (v1.6)
+        // INICIALIZACIÓN DE FIREBASE (v1.7)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, serverTimestamp, writeBatch, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -782,7 +789,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // LÓGICA DE LA APLICACIÓN (v1.6)
+        // LÓGICA DE LA APLICACIÓN (v1.7)
 
         let timerInterval;
         let callStartTime;
@@ -862,7 +869,7 @@
         const reportPreview = document.getElementById('report-preview');
         let currentEditIsHistorical = false;
         
-        // Variables para la versión 1.6
+        // Variables para la versión 1.7
         let fieldOptions = {
             areas: [],
             asuntos: [],
@@ -941,6 +948,26 @@
             return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
         
+        // VERSIÓN 1.7: Formatear hora con a.m./p.m.
+        function formatTimeWithAmPm(timeString) {
+            if (!timeString) return 'N/A';
+            
+            try {
+                // Intentar parsear el formato HH:MM:SS
+                const [hours, minutes, seconds] = timeString.split(':');
+                let h = parseInt(hours);
+                const m = minutes || '00';
+                const s = seconds || '00';
+                
+                const period = h >= 12 ? 'p. m.' : 'a. m.';
+                h = h % 12 || 12; // Convertir a formato 12 horas
+                
+                return `${h}:${m} ${period}`;
+            } catch (e) {
+                return timeString; // Devolver original si hay error
+            }
+        }
+        
         function renderTable(tableBody, data, isHistorical = false) {
             const noDataMessage = isHistorical ? noHistoricalMessage : noCallsMessage;
             tableBody.innerHTML = '';
@@ -958,6 +985,9 @@
                     else if (header === 'duracion') content = formatDuration(call.duracion);
                     else if (header === 'estatus') {
                         content = `<button data-id="${call.id}" class="status-button status-${call.estatus === 'Atendida' ? 'atendida' : 'pendiente'} toggle-status-btn" data-is-historical="${isHistorical}">${call.estatus || 'Pendiente'}</button>`;
+                    } else if (header === 'inicio' || header === 'fin') {
+                        // VERSIÓN 1.7: Formatear horas con a.m./p.m.
+                        content = formatTimeWithAmPm(call[header]);
                     } else {
                         content = call[header] || 'N/A';
                     }
@@ -1060,7 +1090,7 @@
             renderTable(tableBody, sortedData, isHistorical);
         }
 
-        // VERSIÓN 1.6: Actualizar opciones dinámicas desde la base de datos
+        // VERSIÓN 1.7: Actualizar opciones dinámicas desde la base de datos
         function updateDynamicSelectOptions() {
             const allData = [...calls, ...historicalCalls];
             
@@ -1111,7 +1141,7 @@
             }
         }
 
-        // VERSIÓN 1.6: Función para buscar y reemplazar valores en toda la base de datos
+        // VERSIÓN 1.7: Función para buscar y reemplazar valores en toda la base de datos
         async function findAndReplaceInDatabase(field, oldValue, newValue) {
             const fieldToDbFieldMap = {
                 'instituciones': 'institucion',
@@ -1153,7 +1183,7 @@
             }
         }
 
-        // Configurar event listeners para los botones de añadir y editar
+        // VERSIÓN 1.7: Configurar event listeners para los botones de añadir y editar con navegación DOM
         function setupAddEditButtons() {
             // Mapeo de botones a campos
             const buttonToFieldMap = {
@@ -1205,14 +1235,13 @@
                 }
             });
             
-            // Configurar event listeners para botones de editar
+            // VERSIÓN 1.7: Configurar event listeners para botones de editar con navegación DOM
             Object.entries(buttonToFieldMap).forEach(([buttonId, field]) => {
                 if (buttonId.startsWith('edit-')) {
-                    document.getElementById(buttonId)?.addEventListener('click', () => {
-                        const selectId = buttonId.replace('edit-', '').replace('-btn', '');
-                        // Para botones en el modal de edición
-                        const finalSelectId = selectId.includes('edit') ? selectId : `edit-${selectId}`;
-                        const currentValue = $(`#${finalSelectId}`).val();
+                    document.getElementById(buttonId)?.addEventListener('click', (e) => {
+                        // Usar navegación DOM para encontrar el select correspondiente
+                        const selectElement = e.currentTarget.parentElement.querySelector('select');
+                        const currentValue = $(selectElement).val(); // Usar jQuery para obtener el valor de Select2
                         
                         if (!currentValue) {
                             showAlert("Por favor, seleccione una opción para editar.", "warning");
@@ -1263,7 +1292,7 @@
             });
         }
 
-        // VERSIÓN 1.6: Verificación de contraseña simplificada
+        // VERSIÓN 1.7: Verificación de contraseña simplificada
         function verifyPassword() {
             const password = passwordInput.value;
             if (password === 'admin') {
@@ -1292,7 +1321,7 @@
             openModal(passwordModal);
         }
 
-        // VERSIÓN 1.6: Configurar vinculación institución-nombre para autocompletado (sin área)
+        // VERSIÓN 1.7: Configurar vinculación institución-nombre para autocompletado (sin área)
         function setupInstitutionNameLinking() {
             $('#caller-institution').on('change', function() {
                 const institution = $(this).val();
@@ -1327,7 +1356,7 @@
                 width: '100%'
             });
 
-            // VERSIÓN 1.6: Actualizar también las listas de cargo y correo (pero NO área)
+            // VERSIÓN 1.7: Actualizar también las listas de cargo y correo (pero NO área)
             const cargos = [...new Set(allData
                 .filter(c => c.institucion === institution)
                 .map(c => c.cargo)
@@ -1356,7 +1385,7 @@
             });
         }
 
-        // VERSIÓN 1.6: Autocompletar campos (sin área)
+        // VERSIÓN 1.7: Autocompletar campos (sin área)
         function autofillFields(name, institution) {
             const allData = [...calls, ...historicalCalls];
             // Buscar el último registro con ese nombre e institución
@@ -1371,7 +1400,7 @@
                 });
                 
                 const record = records[0];
-                // VERSIÓN 1.6: No autocompletar área, solo cargo, correo y teléfono
+                // VERSIÓN 1.7: No autocompletar área, solo cargo, correo y teléfono
                 $('#caller-cargo').val(record.cargo || '').trigger('change');
                 $('#caller-email').val(record.correo || '').trigger('change');
                 $('#caller-phone').val(record.telefono || '');
@@ -1421,7 +1450,7 @@
             await batch.commit();
         }
 
-        // VERSIÓN 1.6: Mejorar importación de histórico con manejo correcto de fechas y duraciones
+        // VERSIÓN 1.7: Mejorar importación de histórico con manejo correcto de fechas y duraciones
         async function importHistoricalData(data) {
             try {
                 const batch = writeBatch(db);
@@ -1437,6 +1466,7 @@
             }
         }
         
+        // VERSIÓN 1.7: Mejorar la función updateCharts con filtros robustos
         function updateCharts() {
             const source = reportesDataSource.value;
             let data = [];
@@ -1444,11 +1474,11 @@
             else if (source === 'historico') data = historicalCalls;
             else data = [...calls, ...historicalCalls];
             
-            // VERSIÓN 1.6: Aplicar filtros de reporte
+            // VERSIÓN 1.7: Aplicar filtros de reporte con ajuste de fecha final
             if (reportFilter.type === 'period' && reportFilter.startDate && reportFilter.endDate) {
                 const startDate = new Date(reportFilter.startDate);
-                const endDate = new Date(reportFilter.endDate);
-                endDate.setHours(23, 59, 59, 999); // Incluir todo el día final
+                let endDate = new Date(reportFilter.endDate);
+                endDate.setHours(23, 59, 59, 999); // Ajustar para incluir todo el día
                 
                 data = data.filter(call => {
                     if (!call.fecha) return false;
@@ -1461,7 +1491,26 @@
                 });
             }
             
-            if (data.length === 0) return;
+            // VERSIÓN 1.7: Proporcionar retroalimentación al usuario
+            if (data.length === 0) {
+                showAlert("No se encontraron datos para el periodo y fuente seleccionados.", "warning");
+                
+                // Limpiar gráficos existentes
+                if (statusChart) statusChart.destroy();
+                if (asuntoChart) asuntoChart.destroy();
+                if (dayOfWeekChart) dayOfWeekChart.destroy();
+                if (atendioChart) atendioChart.destroy();
+                
+                // Crear gráficos vacíos
+                statusChart = new Chart(statusChartCanvas, { type: 'pie', data: { labels: [], datasets: [] } });
+                asuntoChart = new Chart(asuntoChartCanvas, { type: 'bar', data: { labels: [], datasets: [] } });
+                dayOfWeekChart = new Chart(dayOfWeekChartCanvas, { type: 'line', data: { labels: [], datasets: [] } });
+                atendioChart = new Chart(atendioChartCanvas, { type: 'polarArea', data: { labels: [], datasets: [] } });
+                
+                return;
+            } else {
+                showAlert(`Se encontraron ${data.length} registros. Actualizando reportes.`, "success");
+            }
             
             const statusCounts = {}, asuntoCounts = {}, dayOfWeekCounts = {}, atendioCounts = {};
             data.forEach(call => {
@@ -1557,7 +1606,7 @@
             });
         }
 
-        // VERSIÓN 1.6: Configurar el modal de configuración de reportes
+        // VERSIÓN 1.7: Configurar el modal de configuración de reportes
         function setupReportConfig() {
             configReportBtn.addEventListener('click', () => {
                 openModal(configReportModal);
@@ -1598,7 +1647,7 @@
             });
         }
 
-        // Función para generar reporte ejecutivo en PDF
+        // VERSIÓN 1.7: Función para generar reporte ejecutivo en PDF con animaciones deshabilitadas
         function generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio) {
             const source = reportesDataSource.value;
             let data = [];
@@ -1609,8 +1658,8 @@
             // Aplicar filtros de reporte
             if (reportFilter.type === 'period' && reportFilter.startDate && reportFilter.endDate) {
                 const startDate = new Date(reportFilter.startDate);
-                const endDate = new Date(reportFilter.endDate);
-                endDate.setHours(23, 59, 59, 999); // Incluir todo el día final
+                let endDate = new Date(reportFilter.endDate);
+                endDate.setHours(23, 59, 59, 999); // Ajustar para incluir todo el día
                 
                 data = data.filter(call => {
                     if (!call.fecha) return false;
@@ -1776,7 +1825,7 @@
                 </div>
                 
                 <div class="reporte-footer">
-                    <p>Sistema de Registro de Llamadas Alpha 1.6 - Reporte generado automáticamente</p>
+                    <p>Sistema de Registro de Llamadas Alpha 1.7 - Reporte generado automáticamente</p>
                 </div>
             </div>
             `;
@@ -1784,7 +1833,7 @@
             // Mostrar previsualización
             reportPreview.innerHTML = reportHTML;
             
-            // Generar gráficas en el reporte
+            // Generar gráficas en el reporte con animaciones deshabilitadas
             setTimeout(() => {
                 if (includeStatus) {
                     const statusCounts = {};
@@ -1801,7 +1850,12 @@
                                 backgroundColor: ['#10B981', '#EF4444', '#FCD34D', '#3B82F6']
                             }]
                         },
-                        options: { responsive: true }
+                        options: { 
+                            responsive: true,
+                            animation: {
+                                duration: 0 // Deshabilita la animación
+                            }
+                        }
                     });
                 }
                 
@@ -1820,7 +1874,12 @@
                                 backgroundColor: '#6A002C'
                             }]
                         },
-                        options: { responsive: true }
+                        options: { 
+                            responsive: true,
+                            animation: {
+                                duration: 0 // Deshabilita la animación
+                            }
+                        }
                     });
                 }
                 
@@ -1847,7 +1906,12 @@
                                 fill: true
                             }]
                         },
-                        options: { responsive: true }
+                        options: { 
+                            responsive: true,
+                            animation: {
+                                duration: 0 // Deshabilita la animación
+                            }
+                        }
                     });
                 }
                 
@@ -1866,7 +1930,12 @@
                                 backgroundColor: ['#6A002C', '#10B981', '#EF4444', '#FCD34D', '#3B82F6']
                             }]
                         },
-                        options: { responsive: true }
+                        options: { 
+                            responsive: true,
+                            animation: {
+                                duration: 0 // Deshabilita la animación
+                            }
+                        }
                     });
                 }
                 
@@ -2129,7 +2198,7 @@
                             const keyMapping = { 'no.': 'no', 'duración': 'duracion', 'área': 'area', 'institución': 'institucion', 'teléfono': 'telefono', 'atendió': 'atendio' };
                             const mappedRow = mapKeys(row, keyMapping);
 
-                            // VERSIÓN 1.6: No asignar fechas/horas actuales si vienen vacías
+                            // VERSIÓN 1.7: No asignar fechas/horas actuales si vienen vacías
                             let fecha = mappedRow.fecha;
                             let inicio = mappedRow.inicio;
                             let fin = mappedRow.fin;
@@ -2152,7 +2221,7 @@
                                 fin = ''; // Dejar vacío
                             }
                             
-                            // VERSIÓN 1.6: Procesar correctamente la duración
+                            // VERSIÓN 1.7: Procesar correctamente la duración
                             let duracion = mappedRow.duracion;
                             if (typeof duracion === 'number') {
                                 // Si es un número menor a 1, podría ser una fracción de día en formato Excel
@@ -2242,7 +2311,7 @@
             closeModal(reportModal);
         });
 
-        // VERSIÓN 1.6: Inicializar configuración de reportes
+        // VERSIÓN 1.7: Inicializar configuración de reportes
         setupReportConfig();
         setupAddEditButtons();
         setupPasswordVerification();
@@ -2259,4 +2328,4 @@
 
     </script>
 </body>
-</html> 
+</html>
