@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro de Llamadas v1.2</title>
+    <title>Sistema de Registro de Llamadas v1.3</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -425,6 +425,95 @@
             margin-bottom: 2rem; /* Espacio extra al final */
         }
 
+        /* Nuevos estilos para la versión 1.3 */
+        .dynamic-chart-container {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .dynamic-chart-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+        
+        .dynamic-chart-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .dynamic-table-container {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .dynamic-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .dynamic-table th, .dynamic-table td {
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        .dynamic-table th {
+            background-color: #9C2348;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .dynamic-table tr:nth-child(even) {
+            background-color: #f3f4f6;
+        }
+        
+        .info-tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .info-tooltip .tooltip-text {
+            visibility: hidden;
+            width: 250px;
+            background-color: #1E5B4F;
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+        }
+        
+        .info-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .migrate-btn {
+            background-color: #1E5B4F !important;
+        }
+        
+        .migrate-btn:hover {
+            background-color: #16463c !important;
+        }
+
     </style>
     
     <!-- Configuración de Tailwind con nueva paleta de colores -->
@@ -466,7 +555,7 @@
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div class="flex items-center space-x-4">
                     <img src="https://www.gob.mx/static/images/logo-gobmex.png" alt="Gobierno de México" class="h-14 w-auto">
-                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas v1.2</h1>
+                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas v1.3</h1>
                 </div>
                 <div id="user-info" class="text-white text-sm font-mono"></div>
             </div>
@@ -490,6 +579,14 @@
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-4">
                         <h2 class="text-2xl font-bold text-primary mb-2 sm:mb-0">Dashboard General</h2>
                         <div class="flex items-center space-x-4">
+                            <button id="migrate-calls-btn" class="migrate-btn text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
+                                <i class="fa-solid fa-database"></i>
+                                <span>Migrar Llamadas</span>
+                                <div class="info-tooltip">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span class="tooltip-text">Mover todas las llamadas de Registro y Control al Histórico</span>
+                                </div>
+                            </button>
                             <label for="dashboard-data-source" class="block text-sm font-medium text-gray-700">Fuente de datos:</label>
                             <select id="dashboard-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                                 <option value="registro">Registro y Control</option>
@@ -622,6 +719,41 @@
                         <div class="chart-wrapper">
                             <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas atendidas por Servidor Público</h3>
                             <canvas id="atendioChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Nueva gráfica dinámica -->
+                    <div class="dynamic-chart-container">
+                        <div class="dynamic-chart-header">
+                            <h3 class="text-xl font-semibold text-slate-800">Llamadas por</h3>
+                            <select id="dynamic-chart-variable" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                                <option value="area">Área</option>
+                                <option value="institucion">Institución</option>
+                                <option value="asunto">Asunto</option>
+                                <option value="consulta">Consulta</option>
+                                <option value="nombre">Nombre</option>
+                                <option value="cargo">Cargo</option>
+                            </select>
+                        </div>
+                        <div class="dynamic-chart-content">
+                            <div class="chart-wrapper">
+                                <canvas id="dynamicChart"></canvas>
+                            </div>
+                            <div class="dynamic-table-container">
+                                <h4 class="text-lg font-semibold text-slate-800 mb-2 text-center">Distribución por Estatus</h4>
+                                <table class="dynamic-table">
+                                    <thead>
+                                        <tr>
+                                            <th id="dynamic-table-header">Variable</th>
+                                            <th>Atendida</th>
+                                            <th>Pendiente</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dynamic-table-body">
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -915,6 +1047,10 @@
                             <input type="checkbox" id="include-atendio" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
                             <label for="include-atendio" class="ml-2 block text-sm text-gray-700">Llamadas por Servidor Público</label>
                         </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="include-dynamic" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                            <label for="include-dynamic" class="ml-2 block text-sm text-gray-700">Llamadas por Variable Seleccionada</label>
+                        </div>
                     </div>
                 </div>
                 
@@ -974,6 +1110,17 @@
                     <button type="button" id="save-config-report-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Guardar Configuración</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="migrate-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
+            <h3 class="text-xl font-bold text-primary mb-4">Migrar Llamadas</h3>
+            <p class="text-slate-600 mb-6">¿Está seguro de que desea migrar todas las llamadas de Registro y Control al Histórico? Esta acción no se puede deshacer.</p>
+            <div class="flex justify-center space-x-4">
+                <button id="cancel-migrate-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="confirm-migrate-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Migrar</button>
+            </div>
         </div>
     </div>
 
@@ -1039,7 +1186,11 @@
         const asuntoChartCanvas = document.getElementById('asuntoChart');
         const dayOfWeekChartCanvas = document.getElementById('dayOfWeekChart');
         const atendioChartCanvas = document.getElementById('atendioChart');
-        let statusChart, asuntoChart, dayOfWeekChart, atendioChart;
+        const dynamicChartCanvas = document.getElementById('dynamicChart');
+        const dynamicChartVariable = document.getElementById('dynamic-chart-variable');
+        const dynamicTableBody = document.getElementById('dynamic-table-body');
+        const dynamicTableHeader = document.getElementById('dynamic-table-header');
+        let statusChart, asuntoChart, dayOfWeekChart, atendioChart, dynamicChart;
         const callModal = document.getElementById('call-modal');
         const callForm = document.getElementById('call-form');
         const closeModalBtn = document.getElementById('close-modal-btn');
@@ -1083,6 +1234,11 @@
         const reportPreview = document.getElementById('report-preview');
         const chartSizeSlider = document.getElementById('chart-size-slider');
         const chartSizeValue = document.getElementById('chart-size-value');
+        const migrateCallsBtn = document.getElementById('migrate-calls-btn');
+        const migrateModal = document.getElementById('migrate-modal');
+        const cancelMigrateBtn = document.getElementById('cancel-migrate-btn');
+        const confirmMigrateBtn = document.getElementById('confirm-migrate-btn');
+        const includeDynamicCheckbox = document.getElementById('include-dynamic');
         
         let currentEditIsHistorical = false;
         
@@ -1639,6 +1795,17 @@
                         fieldOptions[currentEditingField].push(newOption);
                         fieldOptions[currentEditingField].sort();
                         updateSelectOptions(currentEditingField, fieldOptions[currentEditingField]);
+                        // Seleccionar la nueva opción automáticamente
+                        $(`#${currentEditingField === 'instituciones' ? 'caller-institution' : 
+                            currentEditingField === 'areas' ? 'call-area' :
+                            currentEditingField === 'asuntos' ? 'call-subject' :
+                            currentEditingField === 'consultas' ? 'call-query' :
+                            currentEditingField === 'nombres' ? 'caller-name' :
+                            currentEditingField === 'cargos' ? 'caller-cargo' :
+                            currentEditingField === 'correos' ? 'caller-email' :
+                            currentEditingField === 'telefonos' ? 'caller-phone' :
+                            currentEditingField === 'comentarios' ? 'call-comments' :
+                            'call-atendio'}`).val(newOption).trigger('change');
                     }
                     showAlert(`Opción "${newOption}" añadida.`, "success");
                     closeModal(addOptionModal);
@@ -1650,6 +1817,19 @@
                 if (newValue && currentEditingField && currentEditingValue) {
                     requirePassword(() => {
                         findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue);
+                        // Actualizar la opción en el select correspondiente
+                        updateSelectOptions(currentEditingField, fieldOptions[currentEditingField]);
+                        // Seleccionar la opción editada
+                        $(`#${currentEditingField === 'instituciones' ? 'caller-institution' : 
+                            currentEditingField === 'areas' ? 'call-area' :
+                            currentEditingField === 'asuntos' ? 'call-subject' :
+                            currentEditingField === 'consultas' ? 'call-query' :
+                            currentEditingField === 'nombres' ? 'caller-name' :
+                            currentEditingField === 'cargos' ? 'caller-cargo' :
+                            currentEditingField === 'correos' ? 'caller-email' :
+                            currentEditingField === 'telefonos' ? 'caller-phone' :
+                            currentEditingField === 'comentarios' ? 'call-comments' :
+                            'call-atendio'}`).val(newValue).trigger('change');
                         closeModal(editOptionModal);
                     });
                 }
@@ -1804,6 +1984,9 @@
             atendioChart = createOrUpdateChart(atendioChartCanvas, atendioChart, 'polarArea', atendioCounts);
             dayOfWeekChart = createOrUpdateChart(dayOfWeekChartCanvas, dayOfWeekChart, 'line', dayOfWeekCounts, ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo']);
 
+            // Actualizar gráfica dinámica
+            updateDynamicChart();
+
             $.pivotUtilities.locales.es = {
                 localeStrings: { renderError: "Error al renderizar.", computeError: "Error al calcular.", uiRenderError: "Error de UI.", selectAll: "Seleccionar Todo", selectNone: "Seleccionar Ninguno", tooMany: "(demasiados)", filterResults: "Filtrar", apply: "Aplicar", cancel: "Cancelar", totals: "Totales", vs: "vs", by: "por" },
                 aggregators: { "Conteo": "Conteo", "Suma": "Suma", "Promedio": "Promedio", "Mínimo": "Mínimo", "Máximo": "Máximo" },
@@ -1813,6 +1996,89 @@
             $(pivotTableContainer).pivotUI(data, {
                 rows: ["area"], cols: ["estatus"], vals: ["duracion"],
                 aggregatorName: "Conteo", rendererName: "Tabla", locale: "es"
+            });
+        }
+
+        function updateDynamicChart() {
+            const source = reportesDataSource.value;
+            let data = [];
+            if (source === 'registro') data = calls;
+            else if (source === 'historico') data = historicalCalls;
+            else data = [...calls, ...historicalCalls];
+            
+            if (reportFilter.type === 'period' && reportFilter.startDate && reportFilter.endDate) {
+                const startDate = new Date(reportFilter.startDate);
+                let endDate = new Date(reportFilter.endDate);
+                endDate.setHours(23, 59, 59, 999);
+                data = data.filter(call => {
+                    if (!call.fecha) return false;
+                    try {
+                        const callDate = new Date(call.fecha.split('/').reverse().join('-'));
+                        return callDate >= startDate && callDate <= endDate;
+                    } catch (e) { return false; }
+                });
+            }
+            
+            const selectedVariable = dynamicChartVariable.value;
+            const variableCounts = {};
+            const variableStatusCounts = {};
+            
+            data.forEach(call => {
+                const value = call[selectedVariable] || 'N/A';
+                variableCounts[value] = (variableCounts[value] || 0) + 1;
+                
+                if (!variableStatusCounts[value]) {
+                    variableStatusCounts[value] = { 'Atendida': 0, 'Pendiente': 0 };
+                }
+                
+                if (call.estatus === 'Atendida') {
+                    variableStatusCounts[value].Atendida += 1;
+                } else {
+                    variableStatusCounts[value].Pendiente += 1;
+                }
+            });
+            
+            // Actualizar tabla dinámica
+            dynamicTableBody.innerHTML = '';
+            dynamicTableHeader.textContent = selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1);
+            
+            Object.entries(variableStatusCounts).forEach(([value, counts]) => {
+                const total = counts.Atendida + counts.Pendiente;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${value}</td>
+                    <td>${counts.Atendida}</td>
+                    <td>${counts.Pendiente}</td>
+                    <td>${total}</td>
+                `;
+                dynamicTableBody.appendChild(row);
+            });
+            
+            // Actualizar gráfico
+            if (dynamicChart) dynamicChart.destroy();
+            
+            const labels = Object.keys(variableCounts);
+            const chartData = Object.values(variableCounts);
+            
+            dynamicChart = new Chart(dynamicChartCanvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Cantidad',
+                        data: chartData,
+                        backgroundColor: '#9C2348'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
             });
         }
 
@@ -1844,7 +2110,7 @@
             });
         }
 
-        function generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio) {
+        function generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio, includeDynamic) {
             const source = reportesDataSource.value;
             let data = [];
             if (source === 'registro') data = calls;
@@ -1955,9 +2221,67 @@
                 `;
             }
             
+            if (includeDynamic) {
+                const selectedVariable = dynamicChartVariable.value;
+                const variableCounts = {};
+                const variableStatusCounts = {};
+                
+                data.forEach(call => {
+                    const value = call[selectedVariable] || 'N/A';
+                    variableCounts[value] = (variableCounts[value] || 0) + 1;
+                    
+                    if (!variableStatusCounts[value]) {
+                        variableStatusCounts[value] = { 'Atendida': 0, 'Pendiente': 0 };
+                    }
+                    
+                    if (call.estatus === 'Atendida') {
+                        variableStatusCounts[value].Atendida += 1;
+                    } else {
+                        variableStatusCounts[value].Pendiente += 1;
+                    }
+                });
+                
+                reportHTML += `
+                    <div class="grafica">
+                        <h3>Llamadas por ${selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1)}</h3>
+                        <canvas id="report-dynamic-chart" width="400" height="300"></canvas>
+                    </div>
+                    <div class="tabla-datos">
+                        <h3>Distribución por Estatus - ${selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1)}</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>${selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1)}</th>
+                                    <th>Atendida</th>
+                                    <th>Pendiente</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                Object.entries(variableStatusCounts).forEach(([value, counts]) => {
+                    const total = counts.Atendida + counts.Pendiente;
+                    reportHTML += `
+                        <tr>
+                            <td>${value}</td>
+                            <td>${counts.Atendida}</td>
+                            <td>${counts.Pendiente}</td>
+                            <td>${total}</td>
+                        </tr>
+                    `;
+                });
+                
+                reportHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            
             reportHTML += `
                     <div class="reporte-footer">
-                        <p>Sistema de Registro de Llamadas v1.2 - Gobierno de México</p>
+                        <p>Sistema de Registro de Llamadas v1.3 - Gobierno de México</p>
                     </div>
                 </div>
             `;
@@ -2024,6 +2348,28 @@
                     });
                 }
                 
+                if (includeDynamic) {
+                    const selectedVariable = dynamicChartVariable.value;
+                    const variableCounts = {};
+                    
+                    data.forEach(call => {
+                        const value = call[selectedVariable] || 'N/A';
+                        variableCounts[value] = (variableCounts[value] || 0) + 1;
+                    });
+                    
+                    new Chart(document.getElementById('report-dynamic-chart'), {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(variableCounts),
+                            datasets: [{
+                                label: 'Cantidad',
+                                data: Object.values(variableCounts),
+                                backgroundColor: '#9C2348'
+                            }]
+                        }
+                    });
+                }
+                
                 // Generar PDF
                 const element = reportPreview;
                 const opt = {
@@ -2034,13 +2380,13 @@
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
                 
-                try {
-                    html2pdf().set(opt).from(element).save();
+                // Usar html2pdf con promesas para asegurar que se complete la generación
+                html2pdf().set(opt).from(element).save().then(() => {
                     showAlert("Reporte generado y descargado con éxito", "success");
-                } catch (error) {
+                }).catch(error => {
                     console.error("Error al generar PDF:", error);
                     showAlert("Error al generar el PDF: " + error.message, "error");
-                }
+                });
             }, 500);
         }
 
@@ -2062,6 +2408,43 @@
         }
 
         // =============================================
+        // MÓDULO: Migración de datos
+        // =============================================
+        
+        async function migrateCallsToHistorical() {
+            try {
+                if (calls.length === 0) {
+                    showAlert("No hay llamadas para migrar.", "warning");
+                    return;
+                }
+                
+                const batch = writeBatch(db);
+                
+                // Agregar todas las llamadas al histórico
+                calls.forEach(call => {
+                    const historicalDocRef = doc(historicalCallsCollectionRef);
+                    batch.set(historicalDocRef, { 
+                        ...call, 
+                        migratedAt: serverTimestamp(),
+                        originalId: call.id
+                    });
+                });
+                
+                // Eliminar todas las llamadas del registro actual
+                calls.forEach(call => {
+                    const callDocRef = doc(callsCollectionRef, call.id);
+                    batch.delete(callDocRef);
+                });
+                
+                await batch.commit();
+                showAlert(`Se migraron ${calls.length} llamadas al histórico.`, "success");
+            } catch (error) {
+                console.error("Error al migrar llamadas:", error);
+                showAlert(`Error al migrar: ${error.message}`, "error");
+            }
+        }
+
+        // =============================================
         // MÓDULO: Configuración de eventos
         // =============================================
         
@@ -2075,6 +2458,7 @@
             
             dashboardDataSource.addEventListener('change', updateDashboard);
             reportesDataSource.addEventListener('change', updateCharts);
+            dynamicChartVariable.addEventListener('change', updateDynamicChart);
             
             startCallBtn.addEventListener('click', () => {
                 startCallBtn.dataset.state === 'active' ? (stopTimer(false), closeModal(callModal)) : startTimer();
@@ -2087,150 +2471,171 @@
             
             callForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                if (!callForm.checkValidity()) return showAlert("Por favor, completa los campos requeridos.", "error");
-                stopTimer(true);
+                if (!callForm.checkValidity()) return showAlert("Por favor, complete todos los campos obligatorios.", "warning");
+                stopTimer();
                 closeModal(callModal);
             });
             
             closeEditModalBtn.addEventListener('click', () => closeModal(editModal));
-
             editForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                if (!editForm.checkValidity()) return showAlert("Por favor, completa los campos requeridos.", "error");
+                if (!editForm.checkValidity()) return showAlert("Por favor, complete todos los campos obligatorios.", "warning");
                 
-                const callId = editForm['edit-id'].value;
-                const updateData = Object.fromEntries(new FormData(editForm).entries());
-                delete updateData['edit-id'];
-
-                await updateCall(callId, updateData, currentEditIsHistorical);
+                const formData = new FormData(editForm);
+                const updateData = Object.fromEntries(formData.entries());
+                const id = document.getElementById('edit-id').value;
+                
+                await updateCall(id, updateData, currentEditIsHistorical);
                 closeModal(editModal);
             });
             
-            let callToDeleteId = null, callToDeleteIsHistorical = false;
+            document.body.addEventListener('click', (e) => {
+                if (e.target.matches('.toggle-status-btn')) handleStatusToggle(e);
+                else if (e.target.matches('.edit-btn') || e.target.closest('.edit-btn')) handleEditClick(e);
+                else if (e.target.matches('.delete-btn') || e.target.closest('.delete-btn')) handleDeleteClick(e);
+            });
+            
+            let callToDeleteId, callToDeleteIsHistorical;
             cancelDeleteBtn.addEventListener('click', () => closeModal(confirmModal));
             confirmDeleteBtn.addEventListener('click', async () => {
-                if (callToDeleteId) await deleteCall(callToDeleteId, callToDeleteIsHistorical);
+                await deleteCall(callToDeleteId, callToDeleteIsHistorical);
                 closeModal(confirmModal);
             });
             
-            document.body.addEventListener('click', e => {
-                const target = e.target.closest('button');
-                if (!target) return;
-                if (target.classList.contains('edit-btn')) handleEditClick({ currentTarget: target });
-                if (target.classList.contains('delete-btn')) handleDeleteClick({ currentTarget: target });
-                if (target.classList.contains('toggle-status-btn')) handleStatusToggle({ currentTarget: target });
+            historicalFileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    historicalFileName.textContent = file.name;
+                    importHistoricalBtn.disabled = false;
+                } else {
+                    historicalFileName.textContent = 'Seleccionar archivo Excel (.xlsx)';
+                    importHistoricalBtn.disabled = true;
+                }
+            });
+            
+            importHistoricalBtn.addEventListener('click', () => {
+                const file = historicalFileInput.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[sheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                        
+                        if (jsonData.length === 0) return showAlert("El archivo no contiene datos válidos.", "warning");
+                        
+                        const historicalData = jsonData.map(item => ({
+                            fecha: item.Fecha || '',
+                            inicio: item.Inicio || '',
+                            fin: item.Fin || '',
+                            duracion: typeof item.Duración === 'number' ? item.Duración : 0,
+                            area: item.Área || '',
+                            institucion: item.Institución || '',
+                            asunto: item.Asunto || '',
+                            consulta: item.Consulta || '',
+                            nombre: item.Nombre || '',
+                            cargo: item.Cargo || '',
+                            correo: item.Correo || '',
+                            telefono: item.Teléfono ? String(item.Teléfono) : '',
+                            estatus: item.Estatus || '',
+                            atendio: item.Atendió || '',
+                            comentarios: item.Comentarios || ''
+                        }));
+                        
+                        if (historicalCalls.length > 0) {
+                            openModal(replaceHistoricalModal);
+                            confirmReplaceBtn.onclick = async () => {
+                                await deleteAllHistorical();
+                                await importHistoricalData(historicalData);
+                                closeModal(replaceHistoricalModal);
+                            };
+                            cancelReplaceBtn.onclick = () => closeModal(replaceHistoricalModal);
+                        } else {
+                            importHistoricalData(historicalData);
+                        }
+                    } catch (error) {
+                        console.error("Error al procesar el archivo:", error);
+                        showAlert("Error al procesar el archivo. Asegúrese de que es un Excel válido.", "error");
+                    }
+                };
+                reader.readAsArrayBuffer(file);
             });
             
             downloadExcelBtn.addEventListener('click', () => {
-                if (calls.length === 0) return showAlert("No hay datos para descargar.", "warning");
-                const ws = XLSX.utils.json_to_sheet(prepareExportData(calls), { header: exportHeaders });
+                const data = prepareExportData(calls);
+                const ws = XLSX.utils.json_to_sheet(data, { header: exportHeaders });
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Llamadas");
                 XLSX.writeFile(wb, "registro_llamadas.xlsx");
             });
             
             document.getElementById('download-historical-excel-btn').addEventListener('click', () => {
-                if (historicalCalls.length === 0) return showAlert("No hay datos históricos.", "warning");
-                const ws = XLSX.utils.json_to_sheet(prepareExportData(historicalCalls), { header: exportHeaders });
+                const data = prepareExportData(historicalCalls);
+                const ws = XLSX.utils.json_to_sheet(data, { header: exportHeaders });
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Historico");
-                XLSX.writeFile(wb, "registro_historico.xlsx");
+                XLSX.utils.book_append_sheet(wb, ws, "Llamadas Históricas");
+                XLSX.writeFile(wb, "historico_llamadas.xlsx");
             });
-
-            historicalFileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                historicalFileName.textContent = file ? file.name : 'Seleccionar archivo Excel (.xlsx)';
-                importHistoricalBtn.disabled = !file;
-            });
-
-            importHistoricalBtn.addEventListener('click', () => {
-                requirePassword(() => {
-                    const file = historicalFileInput.files[0];
-                    if (!file) return showAlert("Selecciona un archivo.", "warning");
-                    
-                    const reader = new FileReader();
-                    reader.onload = async (event) => {
-                        try {
-                            const workbook = XLSX.read(event.target.result, { type: 'binary', cellDates: true });
-                            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                            const json = XLSX.utils.sheet_to_json(worksheet);
-
-                            const processedData = json.map(row => {
-                                const keyMapping = { 'no.': 'no', 'duración': 'duracion', 'área': 'area', 'institución': 'institucion', 'teléfono': 'telefono', 'atendió': 'atendio' };
-                                const mappedRow = Object.keys(row).reduce((acc, key) => {
-                                    acc[keyMapping[key.toLowerCase().trim()] || key.toLowerCase().trim()] = row[key];
-                                    return acc;
-                                }, {});
-
-                                let duracion = mappedRow.duracion;
-                                if (typeof duracion === 'number' && duracion < 1) duracion = Math.round(duracion * 86400);
-                                else if (typeof duracion === 'string') {
-                                    const parts = duracion.split(':');
-                                    duracion = parts.length === 3 ? (+parts[0]) * 3600 + (+parts[1]) * 60 + (+parts[2]) : parseInt(duracion) || 0;
-                                } else if (duracion instanceof Date) duracion = duracion.getHours() * 3600 + duracion.getMinutes() * 60 + duracion.getSeconds();
-                                else duracion = 0;
-
-                                return {
-                                    fecha: mappedRow.fecha instanceof Date ? mappedRow.fecha.toLocaleDateString('es-ES') : (mappedRow.fecha || ''),
-                                    inicio: mappedRow.inicio instanceof Date ? mappedRow.inicio.toLocaleTimeString('es-ES', { hour12: false }) : (mappedRow.inicio || ''),
-                                    fin: mappedRow.fin instanceof Date ? mappedRow.fin.toLocaleTimeString('es-ES', { hour12: false }) : (mappedRow.fin || ''),
-                                    duracion,
-                                    area: mappedRow.area || '', institucion: mappedRow.institucion || '', asunto: mappedRow.asunto || '',
-                                    consulta: mappedRow.consulta || '', nombre: mappedRow.nombre || '', cargo: mappedRow.cargo || '',
-                                    correo: mappedRow.correo || '', telefono: String(mappedRow.telefono || ''), estatus: mappedRow.estatus || 'Pendiente',
-                                    atendio: mappedRow.atendio || '', comentarios: mappedRow.comentarios || ''
-                                };
-                            });
-
-                            if (processedData.length === 0) return showAlert("El archivo está vacío o no es válido.", "warning");
-                            
-                            if (historicalCalls.length > 0) {
-                                openModal(replaceHistoricalModal);
-                                const replace = await new Promise(resolve => {
-                                    confirmReplaceBtn.onclick = () => resolve(true);
-                                    cancelReplaceBtn.onclick = () => resolve(false);
-                                }).finally(() => closeModal(replaceHistoricalModal));
-                                if (replace) await deleteAllHistorical();
-                            }
-                            await importHistoricalData(processedData);
-                            historicalFileInput.value = '';
-                            historicalFileName.textContent = 'Seleccionar archivo Excel (.xlsx)';
-                            importHistoricalBtn.disabled = true;
-                        } catch (error) {
-                            showAlert(`Error al procesar el archivo: ${error.message}`, "error");
-                        }
-                    };
-                    reader.readAsBinaryString(file);
-                });
-            });
-
+            
             generateReportBtn.addEventListener('click', () => openModal(reportModal));
             closeReportModalBtn.addEventListener('click', () => closeModal(reportModal));
+            
             generatePdfBtn.addEventListener('click', () => {
                 const includeStatus = document.getElementById('include-status').checked;
                 const includeAsunto = document.getElementById('include-asunto').checked;
                 const includeDay = document.getElementById('include-day').checked;
                 const includeAtendio = document.getElementById('include-atendio').checked;
-                generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio);
+                const includeDynamic = document.getElementById('include-dynamic').checked;
+                
                 closeModal(reportModal);
+                generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio, includeDynamic);
             });
-
-            setupReportConfig();
-            setupAddEditButtons();
-            setupPasswordVerification();
+            
+            chartSizeSlider.addEventListener('input', () => {
+                const size = chartSizeSlider.value;
+                chartSizeValue.textContent = `${size}px`;
+                updateCharts();
+            });
+            
+            migrateCallsBtn.addEventListener('click', () => {
+                requirePassword(() => openModal(migrateModal));
+            });
+            
+            cancelMigrateBtn.addEventListener('click', () => closeModal(migrateModal));
+            confirmMigrateBtn.addEventListener('click', () => {
+                migrateCallsToHistorical();
+                closeModal(migrateModal);
+            });
         }
 
         // =============================================
-        // MÓDULO: Inicialización de la aplicación
+        // MÓDULO: Inicialización
         // =============================================
         
-        function startApp() {
-            setupEventListeners();
+        function initialize() {
             initializeAppWithAuth();
+            setupEventListeners();
+            setupAddEditButtons();
+            setupPasswordVerification();
+            setupReportConfig();
+            
+            // Configurar Select2 para todos los selects
+            $('#call-form select, #edit-form select').each(function() {
+                $(this).select2({
+                    tags: true,
+                    placeholder: "Seleccione o escriba una opción",
+                    allowClear: true,
+                    width: '100%'
+                });
+            });
         }
 
-        document.addEventListener('DOMContentLoaded', startApp);
-
-    </script> 
-</body> 
+        // Iniciar la aplicación
+        initialize();
+    </script>
+</body>
 </html>
