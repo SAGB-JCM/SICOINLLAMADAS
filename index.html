@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro de Llamadas Alpha 1.7</title>
+    <title>Sistema de Registro de Llamadas Alpha 1.0</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,7 +37,7 @@
     
     <!-- Hoja de estilos personalizada -->
     <style>
-        html { font-size: 75%; } /* Simula zoom negativo al 75% */
+        html { font-size: 55%; } /* Simula zoom negativo al 75% */
         body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
         .bg-gob-maroon { background-color: #6A002C; }
         .text-gob-maroon { color: #6A002C; }
@@ -84,6 +84,56 @@
         .table-container table {
             width: 100%;
             min-width: 1200px; /* Ancho mínimo aumentado */
+        }
+
+        /* Asegurar que el contenedor de la tabla ocupe todo el ancho */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        /* Ajustar el ancho de las columnas específicas si es necesario */
+        .table-container th:nth-child(1), /* No. */
+        .table-container td:nth-child(1),
+        .table-container th:nth-child(15), /* Atendió */
+        .table-container td:nth-child(15) {
+            width: 30px;
+        }
+
+        .table-container th:nth-child(2), /* Fecha */
+        .table-container td:nth-child(2){
+            width: 60px;
+        }
+        
+        .table-container th:nth-child(3), /* Inicio */
+        .table-container td:nth-child(3),
+        .table-container th:nth-child(4), /* Fin */
+        .table-container td:nth-child(4),
+        .table-container th:nth-child(5), /* Duración */
+        .table-container td:nth-child(5),
+        .table-container th:nth-child(6), /* Área */
+        .table-container td:nth-child(6){
+            width: 60px;
+        }
+        
+        .table-container th:nth-child(16),
+        .table-container td:nth-child(16) {
+            max-width: 70px; /* Ancho máximo para la columna */
+            white-space: normal; /* Permite que el texto se divida en líneas */
+            word-wrap: break-word; /* Rompe palabras largas si es necesario */
+        }
+
+        .table-container th:nth-child(7), /* Institución */
+        .table-container td:nth-child(7),
+        .table-container th:nth-child(8), /* Asunto */
+        .table-container td:nth-child(8),
+        .table-container th:nth-child(9), /* Consulta */
+        .table-container td:nth-child(9),
+        .table-container th:nth-child(10), /* Nombre */
+        .table-container td:nth-child(10),
+        .table-container th:nth-child(11), /* Cargo */
+        .table-container td:nth-child(11){
+            width: 70px;
         }
 
         .flex-with-buttons {
@@ -289,6 +339,21 @@
             max-width: 72rem !important; /* equivalente a max-w-6xl */
         }
 
+
+        /* Eliminar el hueco entre el encabezado y las pestañas */
+        .bg-white.shadow-sm.sticky {
+            margin-top: -1px !important;
+        }
+        
+        #tabs {
+            margin-top: 0 !important;
+        }
+        
+        /* Asegurar que el encabezado y las pestañas estén perfectamente alineados */
+        header + div {
+            top: 56px !important;
+        }
+
     </style>
 </head>
 <body class="antialiased text-slate-700">
@@ -303,7 +368,7 @@
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div class="flex items-center space-x-4">
                     <svg class="h-14 w-auto" fill="#FFFFFF" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas Alpha 1.7</h1>
+                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas Alpha 1.0</h1>
                 </div>
                 <div id="user-info" class="text-white text-sm font-mono"></div>
             </div>
@@ -1000,9 +1065,6 @@
         }
 
 
-
-
-        
         function renderTable(tableBody, data, isHistorical = false) {
             const noDataMessage = isHistorical ? noHistoricalMessage : noCallsMessage;
             tableBody.innerHTML = '';
@@ -1125,7 +1187,7 @@
             renderTable(tableBody, sortedData, isHistorical);
         }
 
-        // VERSIÓN 1.7: Actualizar opciones dinámicas desde la base de datos
+        // Actualizar opciones dinámicas desde la base de datos
         function updateDynamicSelectOptions() {
             const allData = [...calls, ...historicalCalls];
             
@@ -1176,7 +1238,7 @@
             }
         }
 
-        // VERSIÓN 1.7: Función para buscar y reemplazar valores en toda la base de datos
+        // Función para buscar y reemplazar valores en toda la base de datos
         async function findAndReplaceInDatabase(field, oldValue, newValue) {
             const fieldToDbFieldMap = {
                 'instituciones': 'institucion',
@@ -1218,7 +1280,7 @@
             }
         }
 
-        // VERSIÓN 1.7: Configurar event listeners para los botones de añadir y editar con navegación DOM
+        // Configurar event listeners para los botones de añadir y editar con navegación DOM
         function setupAddEditButtons() {
             // Mapeo de botones a campos
             const buttonToFieldMap = {
@@ -1270,7 +1332,7 @@
                 }
             });
             
-            // VERSIÓN 1.7: Configurar event listeners para botones de editar con navegación DOM
+            // Configurar event listeners para botones de editar con navegación DOM
             Object.entries(buttonToFieldMap).forEach(([buttonId, field]) => {
                 if (buttonId.startsWith('edit-')) {
                     document.getElementById(buttonId)?.addEventListener('click', (e) => {
@@ -1327,7 +1389,7 @@
             });
         }
 
-        // VERSIÓN 1.7: Verificación de contraseña simplificada
+        // Verificación de contraseña simplificada
         function verifyPassword() {
             const password = passwordInput.value;
             if (password === 'admin') {
@@ -1356,7 +1418,7 @@
             openModal(passwordModal);
         }
 
-        // VERSIÓN 1.7: Configurar vinculación institución-nombre para autocompletado (sin área)
+        // Configurar vinculación institución-nombre para autocompletado (sin área)
         function setupInstitutionNameLinking() {
             $('#caller-institution').on('change', function() {
                 const institution = $(this).val();
@@ -1391,7 +1453,7 @@
                 width: '100%'
             });
 
-            // VERSIÓN 1.7: Actualizar también las listas de cargo y correo (pero NO área)
+            // Actualizar también las listas de cargo y correo (pero NO área)
             const cargos = [...new Set(allData
                 .filter(c => c.institucion === institution)
                 .map(c => c.cargo)
@@ -1420,7 +1482,7 @@
             });
         }
 
-        // VERSIÓN 1.7: Autocompletar campos (sin área)
+        // Autocompletar campos (sin área)
         function autofillFields(name, institution) {
             const allData = [...calls, ...historicalCalls];
             // Buscar el último registro con ese nombre e institución
@@ -1485,7 +1547,7 @@
             await batch.commit();
         }
 
-        // VERSIÓN 1.7: Mejorar importación de histórico con manejo correcto de fechas y duraciones
+        // Mejorar importación de histórico con manejo correcto de fechas y duraciones
         async function importHistoricalData(data) {
             try {
                 const batch = writeBatch(db);
@@ -1501,7 +1563,7 @@
             }
         }
         
-        // VERSIÓN 1.7: Mejorar la función updateCharts con filtros robustos
+        // Mejorar la función updateCharts con filtros robustos
         function updateCharts() {
             const source = reportesDataSource.value;
             let data = [];
@@ -1526,7 +1588,7 @@
                 });
             }
             
-            // VERSIÓN 1.7: Proporcionar retroalimentación al usuario
+            // Proporcionar retroalimentación al usuario
             if (data.length === 0) {
                 showAlert("No se encontraron datos para el periodo y fuente seleccionados.", "warning");
                 
@@ -1641,7 +1703,7 @@
             });
         }
 
-        // VERSIÓN 1.7: Configurar el modal de configuración de reportes
+        // Configurar el modal de configuración de reportes
         function setupReportConfig() {
             configReportBtn.addEventListener('click', () => {
                 openModal(configReportModal);
@@ -1682,7 +1744,7 @@
             });
         }
 
-        // VERSIÓN 1.7: Función para generar reporte ejecutivo en PDF con animaciones deshabilitadas
+        // Función para generar reporte ejecutivo en PDF con animaciones deshabilitadas
         function generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio) {
             const source = reportesDataSource.value;
             let data = [];
@@ -2433,7 +2495,7 @@
             closeModal(reportModal);
         });
 
-        // VERSIÓN 1.7: Inicializar configuración de reportes
+        // Inicializar configuración de reportes
         setupReportConfig();
         setupAddEditButtons();
         setupPasswordVerification();
