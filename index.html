@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro de Llamadas v1.1</title>
+    <title>Sistema de Registro de Llamadas v1.2</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -466,7 +466,7 @@
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div class="flex items-center space-x-4">
                     <img src="https://www.gob.mx/static/images/logo-gobmex.png" alt="Gobierno de México" class="h-14 w-auto">
-                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas v1.1</h1>
+                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas v1.2</h1>
                 </div>
                 <div id="user-info" class="text-white text-sm font-mono"></div>
             </div>
@@ -741,7 +741,6 @@
             </div>
         </div>
     </div>
-
     <div id="edit-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-edit-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
@@ -1498,38 +1497,8 @@
         }
 
         function setupAutofill() {
-            $('#caller-institution, #edit-caller-institution').on('change', function() {
-                const institution = $(this).val();
-                const isEditModal = $(this).attr('id').includes('edit');
-                const nameSelect = isEditModal ? $('#edit-caller-name') : $('#caller-name');
-                
-                const allData = [...calls, ...historicalCalls];
-                const namesForInstitution = [...new Set(allData
-                    .filter(c => c.institucion === institution)
-                    .map(c => c.nombre)
-                    .filter(Boolean))].sort();
-                
-                nameSelect.empty().select2({
-                    data: namesForInstitution,
-                    tags: true,
-                    placeholder: "Seleccione un nombre",
-                    allowClear: true,
-                    width: '100%'
-                });
-
-                // Limpiar campos dependientes
-                if (isEditModal) {
-                    $('#edit-caller-cargo, #edit-caller-email, #edit-caller-phone').val(null).trigger('change');
-                } else {
-                    $('#caller-cargo, #caller-email, #caller-phone').val(null).trigger('change');
-                }
-            });
-
-            $('#caller-name, #edit-caller-name').on('change', function() {
-                const name = $(this).val();
-                const isEditModal = $(this).attr('id').includes('edit');
-                const institution = isEditModal ? $('#edit-caller-institution').val() : $('#caller-institution').val();
-                
+            // Función para cargar los detalles del contacto
+            function loadContactDetails(name, institution, isEditModal) {
                 if (!name || !institution) return;
 
                 const allData = [...calls, ...historicalCalls];
@@ -1553,6 +1522,48 @@
                         $('#caller-phone').val(phone).trigger('change');
                     }
                 }
+            }
+
+            $('#caller-institution, #edit-caller-institution').on('change', function() {
+                const institution = $(this).val();
+                const isEditModal = $(this).attr('id').includes('edit');
+                const nameSelect = isEditModal ? $('#edit-caller-name') : $('#caller-name');
+                
+                const allData = [...calls, ...historicalCalls];
+                const namesForInstitution = [...new Set(allData
+                    .filter(c => c.institucion === institution)
+                    .map(c => c.nombre)
+                    .filter(Boolean))].sort();
+                
+                nameSelect.empty().select2({
+                    data: namesForInstitution,
+                    tags: true,
+                    placeholder: "Seleccione un nombre",
+                    allowClear: true,
+                    width: '100%'
+                });
+
+                // MEJORA: Si solo hay un nombre, seleccionarlo automáticamente y cargar sus datos
+                if (namesForInstitution.length === 1) {
+                    nameSelect.val(namesForInstitution[0]).trigger('change');
+                    // Llamar directamente a la función para cargar los detalles
+                    loadContactDetails(namesForInstitution[0], institution, isEditModal);
+                } else {
+                    // Limpiar campos dependientes solo si no hay un nombre único
+                    if (isEditModal) {
+                        $('#edit-caller-cargo, #edit-caller-email, #edit-caller-phone').val(null).trigger('change');
+                    } else {
+                        $('#caller-cargo, #caller-email, #caller-phone').val(null).trigger('change');
+                    }
+                }
+            });
+
+            // Evento change para el nombre
+            $('#caller-name, #edit-caller-name').on('change', function() {
+                const name = $(this).val();
+                const isEditModal = $(this).attr('id').includes('edit');
+                const institution = isEditModal ? $('#edit-caller-institution').val() : $('#caller-institution').val();
+                loadContactDetails(name, institution, isEditModal);
             });
         }
 
@@ -1646,6 +1657,21 @@
             
             cancelAddOptionBtn.addEventListener('click', () => closeModal(addOptionModal));
             cancelEditOptionBtn.addEventListener('click', () => closeModal(editOptionModal));
+            
+            // MEJORA: Permitir activar con tecla Enter
+            newOptionInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmAddOptionBtn.click();
+                }
+            });
+            
+            editOptionInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmEditOptionBtn.click();
+                }
+            });
         }
 
         // =============================================
@@ -1819,7 +1845,203 @@
         }
 
         function generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio) {
-            // ... (La lógica interna de esta función no necesita cambios significativos)
+            const source = reportesDataSource.value;
+            let data = [];
+            if (source === 'registro') data = calls;
+            else if (source === 'historico') data = historicalCalls;
+            else data = [...calls, ...historicalCalls];
+            
+            if (reportFilter.type === 'period' && reportFilter.startDate && reportFilter.endDate) {
+                const startDate = new Date(reportFilter.startDate);
+                let endDate = new Date(reportFilter.endDate);
+                endDate.setHours(23, 59, 59, 999);
+                data = data.filter(call => {
+                    if (!call.fecha) return false;
+                    try {
+                        const callDate = new Date(call.fecha.split('/').reverse().join('-'));
+                        return callDate >= startDate && callDate <= endDate;
+                    } catch (e) { return false; }
+                });
+            }
+            
+            const statusCounts = {}, asuntoCounts = {}, dayOfWeekCounts = {}, atendioCounts = {};
+            data.forEach(call => {
+                statusCounts[call.estatus || 'N/A'] = (statusCounts[call.estatus || 'N/A'] || 0) + 1;
+                asuntoCounts[call.asunto || 'N/A'] = (asuntoCounts[call.asunto || 'N/A'] || 0) + 1;
+                atendioCounts[call.atendio || 'N/A'] = (atendioCounts[call.atendio || 'N/A'] || 0) + 1;
+                if (call.fecha && typeof call.fecha === 'string') {
+                    try {
+                        const date = new Date(call.fecha.split('/').reverse().join('-'));
+                        const day = date.toLocaleDateString('es-ES', { weekday: 'long' });
+                        dayOfWeekCounts[day] = (dayOfWeekCounts[day] || 0) + 1;
+                    } catch (e) { /* Ignorar */ }
+                }
+            });
+            
+            const totalCalls = data.length;
+            const atendidas = data.filter(c => c.estatus === 'Atendida').length;
+            const pendientes = totalCalls - atendidas;
+            const totalDuration = data.reduce((sum, c) => sum + (Number(c.duracion) || 0), 0);
+            const avgDuration = totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0;
+            
+            const currentDate = new Date().toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            let reportHTML = `
+                <div class="reporte-ejecutivo">
+                    <div class="reporte-header">
+                        <h1>Reporte Ejecutivo de Llamadas</h1>
+                        <p>Generado el: ${currentDate}</p>
+                        <p>Total de registros: ${totalCalls}</p>
+                    </div>
+                    
+                    <div class="reporte-metricas">
+                        <div class="metrica">
+                            <h3>Llamadas Atendidas</h3>
+                            <p>${atendidas}</p>
+                        </div>
+                        <div class="metrica">
+                            <h3>Llamadas Pendientes</h3>
+                            <p>${pendientes}</p>
+                        </div>
+                        <div class="metrica">
+                            <h3>Duración Promedio</h3>
+                            <p>${formatDuration(avgDuration)}</p>
+                        </div>
+                        <div class="metrica">
+                            <h3>Total de Llamadas</h3>
+                            <p>${totalCalls}</p>
+                        </div>
+                    </div>
+            `;
+            
+            if (includeStatus) {
+                reportHTML += `
+                    <div class="grafica">
+                        <h3>Llamadas por Estatus</h3>
+                        <canvas id="report-status-chart" width="400" height="300"></canvas>
+                    </div>
+                `;
+            }
+            
+            if (includeAsunto) {
+                reportHTML += `
+                    <div class="grafica">
+                        <h3>Llamadas por Asunto</h3>
+                        <canvas id="report-asunto-chart" width="400" height="300"></canvas>
+                    </div>
+                `;
+            }
+            
+            if (includeDay) {
+                reportHTML += `
+                    <div class="grafica">
+                        <h3>Llamadas por Día de la Semana</h3>
+                        <canvas id="report-day-chart" width="400" height="300"></canvas>
+                    </div>
+                `;
+            }
+            
+            if (includeAtendio) {
+                reportHTML += `
+                    <div class="grafica">
+                        <h3>Llamadas por Servidor Público</h3>
+                        <canvas id="report-atendio-chart" width="400" height="300"></canvas>
+                    </div>
+                `;
+            }
+            
+            reportHTML += `
+                    <div class="reporte-footer">
+                        <p>Sistema de Registro de Llamadas v1.2 - Gobierno de México</p>
+                    </div>
+                </div>
+            `;
+            
+            reportPreview.innerHTML = reportHTML;
+            
+            // Generar gráficos para el reporte
+            setTimeout(() => {
+                if (includeStatus) {
+                    new Chart(document.getElementById('report-status-chart'), {
+                        type: 'pie',
+                        data: {
+                            labels: Object.keys(statusCounts),
+                            datasets: [{
+                                data: Object.values(statusCounts),
+                                backgroundColor: ['#9C2348', '#1E5B4F', '#A6802D', '#EF4444', '#3B82F6']
+                            }]
+                        }
+                    });
+                }
+                
+                if (includeAsunto) {
+                    new Chart(document.getElementById('report-asunto-chart'), {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(asuntoCounts),
+                            datasets: [{
+                                label: 'Cantidad',
+                                data: Object.values(asuntoCounts),
+                                backgroundColor: '#9C2348'
+                            }]
+                        }
+                    });
+                }
+                
+                if (includeDay) {
+                    const daysOrder = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+                    const orderedData = daysOrder.map(day => dayOfWeekCounts[day] || 0);
+                    
+                    new Chart(document.getElementById('report-day-chart'), {
+                        type: 'line',
+                        data: {
+                            labels: daysOrder,
+                            datasets: [{
+                                label: 'Llamadas',
+                                data: orderedData,
+                                borderColor: '#9C2348',
+                                tension: 0.1
+                            }]
+                        }
+                    });
+                }
+                
+                if (includeAtendio) {
+                    new Chart(document.getElementById('report-atendio-chart'), {
+                        type: 'polarArea',
+                        data: {
+                            labels: Object.keys(atendioCounts),
+                            datasets: [{
+                                data: Object.values(atendioCounts),
+                                backgroundColor: ['#9C2348', '#1E5B4F', '#A6802D', '#EF4444', '#3B82F6']
+                            }]
+                        }
+                    });
+                }
+                
+                // Generar PDF
+                const element = reportPreview;
+                const opt = {
+                    margin: 10,
+                    filename: `reporte_llamadas_${new Date().toISOString().slice(0, 10)}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                
+                try {
+                    html2pdf().set(opt).from(element).save();
+                    showAlert("Reporte generado y descargado con éxito", "success");
+                } catch (error) {
+                    console.error("Error al generar PDF:", error);
+                    showAlert("Error al generar el PDF: " + error.message, "error");
+                }
+            }, 500);
         }
 
         // =============================================
@@ -2010,5 +2232,5 @@
         document.addEventListener('DOMContentLoaded', startApp);
 
     </script> 
-</body>
+</body> 
 </html>
