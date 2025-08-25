@@ -37,7 +37,7 @@
     
     <!-- Hoja de estilos personalizada -->
     <style>
-        html { font-size: 75%; } /* Simula zoom negativo al 65% */
+        html { font-size: 75%; } /* Simula zoom negativo al 75% */
         body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
         .bg-gob-maroon { background-color: #6A002C; }
         .text-gob-maroon { color: #6A002C; }
@@ -289,7 +289,7 @@
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div class="flex items-center space-x-4">
                     <svg class="h-14 w-auto" fill="#FFFFFF" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas v1.7  (Avance al 22/08/2025)</h1>
+                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas Alpha 1.7</h1>
                 </div>
                 <div id="user-info" class="text-white text-sm font-mono"></div>
             </div>
@@ -408,22 +408,25 @@
                 <section class="bg-white p-6 rounded-xl shadow-md mb-8">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-2xl font-bold text-gob-maroon">Reportes</h2>
+
                         <div class="flex items-center space-x-4">
                             <button id="generate-report-btn" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
                                 <i class="fa-solid fa-file-pdf"></i>
                                 <span>Generar Reporte</span>
                             </button>
-                            <button id="config-report-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
-                                <i class="fa-solid fa-cog"></i>
-                                <span>Configurar</span>
-                            </button>
-                            <label for="reportes-data-source" class="block text-sm font-medium text-gray-700">Fuente de datos:</label>
-                            <select id="reportes-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
-                                <option value="registro">Registro y Control</option>
-                                <option value="historico">Histórico</option>
-                                <option value="combinado">Registro y Control + Histórico</option>
-                            </select>
+                            <div class="flex items-center space-x-2">
+                                <label for="reportes-data-source" class="block text-sm font-medium text-gray-700">Fuente de datos:</label>
+                                <select id="reportes-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
+                                    <option value="registro">Registro y Control</option>
+                                    <option value="historico">Histórico</option>
+                                    <option value="combinado">Registro y Control + Histórico</option>
+                                </select>
+                                <button id="config-report-btn" class="text-gray-500 hover:text-gray-700 transition-colors duration-200 ease-in-out ml-2">
+                                    <i class="fa-solid fa-cog fa-lg"></i>
+                                </button>
+                            </div>
                         </div>
+
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div><h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Estatus</h3><canvas id="statusChart"></canvas></div>
@@ -736,7 +739,19 @@
     <div id="config-report-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl mx-4">
             <button id="close-config-report-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
-            <h3 class="text-2xl font-bold text-gob-maroon mb-6">Configuración de Reportes</h3>
+            
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-gob-maroon">Configuración de Reportes</h3>
+            <div class="relative group">
+                <button type="button" class="text-gob-maroon hover:text-[#5a0025] focus:outline-none">
+                    <i class="fa-solid fa-circle-info fa-lg"></i>
+                </button>
+                <div class="absolute hidden group-hover:block right-0 top-full mt-2 w-64 p-2 bg-white shadow-lg rounded-lg border border-gray-200 z-10 text-sm text-gray-600">
+                    Seleccione un período para filtrar los reportes. Ejemplo: para ver datos del 15/04/2025, establezca la fecha de inicio 14/04/2025 y decha de fin en 16/04/2025. 
+                </div>
+            </div>
+        </div>
+            
             <form id="config-report-form" class="space-y-6">
                 <div class="config-report-grid">
                     <div class="config-option">
@@ -940,6 +955,8 @@
             pendientesCountElem.textContent = pendientes;
         }
 
+
+        //Dar formato a Duración
         function formatDuration(seconds) {
             if (isNaN(seconds) || seconds < 0) seconds = 0;
             const h = Math.floor(seconds / 3600);
@@ -953,20 +970,24 @@
             if (!timeString) return 'N/A';
             
             try {
-                // Intentar parsear el formato HH:MM:SS
-                const [hours, minutes, seconds] = timeString.split(':');
-                let h = parseInt(hours);
-                const m = minutes || '00';
-                const s = seconds || '00';
+                // Asegurar que tenga formato HH:MM:SS
+                const [hours, minutes, seconds = '00'] = timeString.split(':');
+                let h = parseInt(hours, 10);
+                const m = minutes.padStart(2, '0');
+                const s = seconds.padStart(2, '0');
                 
                 const period = h >= 12 ? 'p. m.' : 'a. m.';
-                h = h % 12 || 12; // Convertir a formato 12 horas
+                h = h % 12 || 12; // Convertir a 12h
                 
-                return `${h}:${m} ${period}`;
+                return `${h.toString().padStart(2, '0')}:${m}:${s} ${period}`;
             } catch (e) {
-                return timeString; // Devolver original si hay error
+                return timeString; // fallback si no parsea
             }
         }
+
+
+
+
         
         function renderTable(tableBody, data, isHistorical = false) {
             const noDataMessage = isHistorical ? noHistoricalMessage : noCallsMessage;
@@ -2147,10 +2168,82 @@
             if (target.classList.contains('delete-btn')) handleDeleteClick({ currentTarget: target });
             if (target.classList.contains('toggle-status-btn')) handleStatusToggle({ currentTarget: target });
         });
-        
+
+
+//lineas agregadas para exportacion
+
+        // Encabezados de exportación (orden correcto)
+        const exportHeaders = [
+        "No.", "Fecha", "Inicio", "Fin", "Duración", "Área", "Institución",
+        "Asunto", "Consulta", "Nombre", "Cargo", "Correo", "Teléfono",
+        "Estatus", "Atendió", "Comentarios"
+        ];
+
+        function secondsToExcelDate(seconds) {
+        // Convertir segundos a objeto Date (para que Excel lo interprete como tiempo)
+        return new Date(0, 0, 0, 0, 0, seconds || 0);
+        }
+
+        function prepareExportDataRegistro(data) {
+        return data.map((call, index) => ({
+            "No.": index + 1,
+            "Fecha": call.fecha || "",
+            "Inicio": formatTimeWithAmPm(call.inicio),
+            "Fin": formatTimeWithAmPm(call.fin),
+            "Duración": formatDuration(
+                call.duracion instanceof Date 
+                    ? (call.duracion.getHours() * 3600 + call.duracion.getMinutes() * 60 + call.duracion.getSeconds()) 
+                    : (Number(call.duracion) || 0)
+            ),
+            "Área": call.area || "",
+            "Institución": call.institucion || "",
+            "Asunto": call.asunto || "",
+            "Consulta": call.consulta || "",
+            "Nombre": call.nombre || "",
+            "Cargo": call.cargo || "",
+            "Correo": call.correo || "",
+            "Teléfono": call.telefono || "",
+            "Estatus": call.estatus || "",
+            "Atendió": call.atendio || "",
+            "Comentarios": call.comentarios || ""
+        }));
+        } 
+
+        function prepareExportDataHistorico(data) {
+        return data.map((call, index) => ({
+            "No.": index + 1,
+            "Fecha": call.fecha || "",
+            "Inicio": formatTimeWithAmPm(call.inicio),
+            "Fin": formatTimeWithAmPm(call.fin),
+            "Duración": formatDuration(
+                call.duracion instanceof Date 
+                    ? (call.duracion.getHours() * 3600 + call.duracion.getMinutes() * 60 + call.duracion.getSeconds()) 
+                    : (Number(call.duracion) || 0)
+            ),
+            "Área": call.area || "",
+            "Institución": call.institucion || "",
+            "Asunto": call.asunto || "",
+            "Consulta": call.consulta || "",
+            "Nombre": call.nombre || "",
+            "Cargo": call.cargo || "",
+            "Correo": call.correo || "",
+            "Teléfono": call.telefono || "",
+            "Estatus": call.estatus || "",
+            "Atendió": call.atendio || "",
+            "Comentarios": call.comentarios || ""
+        }));
+        }
+
+     //fin de lineas agregadas
+
+
+
+        //Botón para descargar histótico e historial
+
+         
         downloadExcelBtn.addEventListener('click', () => {
             if (calls.length === 0) return showAlert("No hay datos para descargar.", "warning");
-            const ws = XLSX.utils.json_to_sheet(calls);
+            const ws = XLSX.utils.json_to_sheet(prepareExportDataRegistro(calls), { header: exportHeaders });
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Llamadas");
             XLSX.writeFile(wb, "registro_llamadas.xlsx");
@@ -2158,7 +2251,7 @@
         
         document.getElementById('download-historical-excel-btn').addEventListener('click', () => {
             if (historicalCalls.length === 0) return showAlert("No hay datos históricos para descargar.", "warning");
-            const ws = XLSX.utils.json_to_sheet(historicalCalls);
+            const ws = XLSX.utils.json_to_sheet(prepareExportDataHistorico(historicalCalls), { header: exportHeaders });
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Historico");
             XLSX.writeFile(wb, "registro_historico.xlsx");
@@ -2221,39 +2314,54 @@
                                 fin = ''; // Dejar vacío
                             }
                             
+
+                            
                             // VERSIÓN 1.7: Procesar correctamente la duración
+
                             let duracion = mappedRow.duracion;
+
                             if (typeof duracion === 'number') {
-                                // Si es un número menor a 1, podría ser una fracción de día en formato Excel
+                                // Caso: Excel en formato decimal de día
                                 if (duracion < 1) {
-                                    duracion = Math.round(duracion * 86400); // Convertir a segundos
+                                    duracion = Math.round(duracion * 86400); // a segundos
                                 }
-                                // Si es un número mayor a 86400, probablemente ya está en segundos
                             } else if (typeof duracion === 'string') {
-                                // Intentar parsear formato de tiempo HH:MM:SS
+                                // Caso: texto "HH:MM:SS"
                                 const timeParts = duracion.split(':');
                                 if (timeParts.length === 3) {
-                                    duracion = (parseInt(timeParts[0]) * 3600) + (parseInt(timeParts[1]) * 60) + parseInt(timeParts[2]);
+                                    duracion = (parseInt(timeParts[0]) * 3600) +
+                                            (parseInt(timeParts[1]) * 60) +
+                                            parseInt(timeParts[2]);
+                                } else {
+                                    duracion = parseInt(duracion) || 0;
                                 }
+                            } else if (duracion instanceof Date) {
+                                // Caso: Excel lo manda como fecha
+                                duracion = (duracion.getHours() * 3600) +
+                                        (duracion.getMinutes() * 60) +
+                                        duracion.getSeconds();
                             } else {
                                 duracion = 0;
                             }
+
+
+
 
                             return {
                                 fecha: fecha,
                                 inicio: inicio,
                                 fin: fin,
                                 duracion: duracion,
-                                area: mappedRow.area || 'N/A',
-                                institucion: mappedRow.institucion || 'N/A',
-                                asunto: mappedRow.asunto || 'N/A',
-                                consulta: mappedRow.consulta || 'N/A',
-                                nombre: mappedRow.nombre || 'N/A',
-                                cargo: mappedRow.cargo || 'N/A',
-                                correo: mappedRow.correo || 'N/A',
-                                telefono: String(mappedRow.telefono || 'N/A'),
+                                area: mappedRow.area || '',
+                                institucion: mappedRow.institucion || '',
+                                asunto: mappedRow.asunto || '',
+                                consulta: mappedRow.consulta || '',
+                                nombre: mappedRow.nombre || '',
+                                cargo: mappedRow.cargo || '',
+                                correo: mappedRow.correo || '',
+                                telefono: String(mappedRow.telefono || ''),
                                 estatus: mappedRow.estatus || 'Pendiente',
-                                atendio: mappedRow.atendio || 'N/A',
+                                atendio: mappedRow.atendio || '',
                                 comentarios: mappedRow.comentarios || ''
                             };
                         });
@@ -2326,6 +2434,77 @@
             });
         });
 
+
+        // Función para manejar eventos de tecla Enter en modales
+        function setupEnterKeySupport() {
+            // Modal de contraseña
+            document.getElementById('password-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('confirm-password-btn').click();
+                }
+            });
+
+            // Modal de edición
+            const editFormInputs = document.querySelectorAll('#edit-form input, #edit-form select');
+            editFormInputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.querySelector('#edit-form button[type="submit"]').click();
+                    }
+                });
+            });
+
+            // Modal de llamada
+            const callFormInputs = document.querySelectorAll('#call-form input, #call-form select');
+            callFormInputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.querySelector('#call-form button[type="submit"]').click();
+                    }
+                });
+            });
+
+            // Modal de confirmación
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const activeModal = document.querySelector('.modal:not(.hidden)');
+                    if (activeModal) {
+                        if (activeModal.id === 'confirm-modal') {
+                            document.getElementById('confirm-delete-btn').click();
+                        } else if (activeModal.id === 'replace-historical-modal') {
+                            document.getElementById('confirm-replace-btn').click();
+                        }
+                    }
+                }
+            });
+
+            // Modales de opciones
+            document.getElementById('new-option-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('confirm-add-option-btn').click();
+                }
+            });
+
+            document.getElementById('edit-option-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('confirm-edit-option-btn').click();
+                }
+            });
+        }
+
+        // Llamar a la función después de que la página se cargue
+        document.addEventListener('DOMContentLoaded', function() {
+            // Esperar a que todos los elementos estén cargados
+            setTimeout(setupEnterKeySupport, 500);
+        });
+
+
+
     </script>
 </body>
-</html>
+</html> 
