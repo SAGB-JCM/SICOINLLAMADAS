@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro de Llamadas v1.3</title>
+    <title>Sistema de Registro de Llamadas Alpha 1.0</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,71 +39,24 @@
     <style>
         html { font-size: 55%; } /* Simula zoom negativo al 75% */
         body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
-        
-        /* Nueva paleta de colores */
-        .bg-primary { background-color: #9C2348; }
-        .text-primary { color: #9C2348; }
-        .border-primary { border-color: #9C2348; }
-        .focus\:ring-primary:focus { --tw-ring-color: #9C2348; }
-        
-        .bg-secondary { background-color: #A6802D; }
-        .text-secondary { color: #A6802D; }
-        .border-secondary { border-color: #A6802D; }
-        
-        .bg-accent { background-color: #1E5B4F; }
-        .text-accent { color: #1E5B4F; }
-        .border-accent { border-color: #1E5B4F; }
-        
-        .bg-success { background-color: #10B981; }
-        .hover\:bg-success-dark:hover { background-color: #059669; }
-        
-        .bg-danger { background-color: #EF4444; }
-        .hover\:bg-danger-dark:hover { background-color: #DC2626; }
-        
+        .bg-gob-maroon { background-color: #6A002C; }
+        .text-gob-maroon { color: #6A002C; }
+        .border-gob-maroon { border-color: #6A002C; }
+        .focus\:ring-gob-maroon:focus { --tw-ring-color: #6A002C; }
+        .bg-subtle-green { background-color: #10B981; }
+        .hover\:bg-subtle-green-dark:hover { background-color: #059669; }
+        .bg-subtle-red { background-color: #EF4444; }
+        .hover\:bg-subtle-red-dark:hover { background-color: #DC2626; }
         .modal-enter { animation: fadeIn 0.3s ease-out forwards; }
         .modal-leave { animation: fadeOut 0.3s ease-in forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
-        
         .hidden { display: none; }
-        .tab-btn.active { border-color: #9C2348; color: #9C2348; font-weight: bold; }
-        
-        .loader { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background-color: rgba(255, 255, 255, 0.9); z-index: 9999; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-        }
-        .loader .spinner { 
-            border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; 
-            border-left-color: #9C2348; animation: spin 1s ease infinite; 
-        }
+        .tab-btn.active { border-color: #6A002C; color: #6A002C; font-weight: bold; }
+        .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.9); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .loader .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #6A002C; animation: spin 1s ease infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .table-container { 
-            overflow-x: auto; 
-            max-height: 500px; /* Altura máxima para scroll vertical */
-            overflow-y: auto;
-        }
-        
-        .table-container::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        .table-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        
-        .table-container::-webkit-scrollbar-thumb {
-            background: #c5c5c5;
-            border-radius: 10px;
-        }
-        
-        .table-container::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-        
+        .table-container { overflow-x: auto; }
         .status-button {
             transition: background-color 0.3s ease, transform 0.2s ease;
             cursor: pointer; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem;
@@ -111,16 +64,14 @@
         }
         .status-atendida { background-color: #10B981; color: #fff; border-color: #059669; }
         .status-pendiente { background-color: #EF4444; color: #fff; border-color: #DC2626; }
-        
         .sortable-header { cursor: pointer; }
         .sortable-header .sort-icon { display: none; }
         .sortable-header.asc .sort-icon.asc,
         .sortable-header.desc .sort-icon.desc { display: inline-block; }
-        
         input:invalid, select:invalid { border-color: #ef4444; }
-        
-        .section-title { font-weight: bold; color: #9C2348; margin-bottom: 1rem; }
+        .section-title { font-weight: bold; color: #6A002C; margin-bottom: 1rem; }
         header + div { top: 56px !important; } /* Ajuste para eliminar hueco entre header y tabs */
+
 
         /* Aumentar el ancho máximo del contenedor principal */
         .max-w-7xl {
@@ -221,12 +172,12 @@
         }
 
         .flex-with-buttons button.edit-btn {
-            background-color: #A6802D; /* Color secundario */
+            background-color: #f59e0b; /* Ámbar */
             color: white;
         }
 
         .flex-with-buttons button.edit-btn:hover {
-            background-color: #8a6b22; /* Color secundario más oscuro */
+            background-color: #d97706; /* Ámbar más oscuro */
         }
 
         .select2-container--default .select2-selection--single {
@@ -303,7 +254,7 @@
         .reporte-header {
             text-align: center;
             margin-bottom: 30px;
-            border-bottom: 2px solid #9C2348;
+            border-bottom: 2px solid #6A002C;
             padding-bottom: 20px;
         }
         
@@ -318,7 +269,7 @@
             background: #f9fafb;
             padding: 15px;
             border-radius: 8px;
-            border-left: 4px solid #9C2348;
+            border-left: 4px solid #6A002C;
         }
         
         .graficas-container {
@@ -359,7 +310,7 @@
             color: #6b7280;
         }
 
-        /* Nuevos estilos para la versión 1.1 */
+        /* Nuevos estilos para la versión 1.7 */
         .config-report-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -383,10 +334,13 @@
             margin-right: 0.5rem;
         }
 
+        /* VERSIÓN 1.7: Aumentar ancho de modales */
         .wide-modal .relative {
             max-width: 72rem !important; /* equivalente a max-w-6xl */
         }
 
+
+        /* Eliminar el hueco entre el encabezado y las pestañas */
         .bg-white.shadow-sm.sticky {
             margin-top: -1px !important;
         }
@@ -395,153 +349,12 @@
             margin-top: 0 !important;
         }
         
+        /* Asegurar que el encabezado y las pestañas estén perfectamente alineados */
         header + div {
             top: 56px !important;
         }
-        
-        .chart-size-control {
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .chart-size-control label {
-            font-size: 14px;
-            color: #374151;
-        }
-        
-        .chart-size-control input {
-            width: 150px;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            height: 300px; /* Altura por defecto, se ajustará con JS */
-        }
-
-        #reportes .grid {
-            gap: 3rem 2rem; /* Aumenta el gap vertical y horizontal */
-            margin-bottom: 2rem; /* Espacio extra al final */
-        }
-
-        /* Nuevos estilos para la versión 1.3 */
-        .dynamic-chart-container {
-            margin-top: 2rem;
-            margin-bottom: 2rem;
-            background: white;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .dynamic-chart-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-            gap: 1rem;
-        }
-        
-        .dynamic-chart-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-        
-        .dynamic-table-container {
-            background: #f9fafb;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .dynamic-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .dynamic-table th, .dynamic-table td {
-            border: 1px solid #e5e7eb;
-            padding: 0.5rem;
-            text-align: left;
-        }
-        
-        .dynamic-table th {
-            background-color: #9C2348;
-            color: white;
-            font-weight: 600;
-        }
-        
-        .dynamic-table tr:nth-child(even) {
-            background-color: #f3f4f6;
-        }
-        
-        .info-tooltip {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-        }
-        
-        .info-tooltip .tooltip-text {
-            visibility: hidden;
-            width: 250px;
-            background-color: #1E5B4F;
-            color: white;
-            text-align: center;
-            border-radius: 6px;
-            padding: 8px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -125px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 12px;
-        }
-        
-        .info-tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-        
-        .migrate-btn {
-            background-color: #1E5B4F !important;
-        }
-        
-        .migrate-btn:hover {
-            background-color: #16463c !important;
-        }
 
     </style>
-    
-    <!-- Configuración de Tailwind con nueva paleta de colores -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            DEFAULT: '#9C2348',
-                            light: '#b52e5a',
-                            dark: '#7d1c3a'
-                        },
-                        secondary: {
-                            DEFAULT: '#A6802D',
-                            light: '#bf9a41',
-                            dark: '#8a6b22'
-                        },
-                        accent: {
-                            DEFAULT: '#1E5B4F',
-                            light: '#267c6c',
-                            dark: '#16463c'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="antialiased text-slate-700">
 
@@ -551,11 +364,11 @@
     </div>
 
     <div id="app" class="min-h-screen hidden">
-        <header class="bg-primary shadow-lg sticky top-0 z-10">
+        <header class="bg-gob-maroon shadow-lg sticky top-0 z-10">
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div class="flex items-center space-x-4">
-                    <img src="https://www.gob.mx/static/images/logo-gobmex.png" alt="Gobierno de México" class="h-14 w-auto">
-                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas v1.3</h1>
+                    <svg class="h-14 w-auto" fill="#FFFFFF" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas Alpha 1.0</h1>
                 </div>
                 <div id="user-info" class="text-white text-sm font-mono"></div>
             </div>
@@ -577,18 +390,10 @@
             <main id="tab-content-registro" class="tab-content">
                 <section id="dashboard" class="mb-8">
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-4">
-                        <h2 class="text-2xl font-bold text-primary mb-2 sm:mb-0">Dashboard General</h2>
+                        <h2 class="text-2xl font-bold text-gob-maroon mb-2 sm:mb-0">Dashboard General</h2>
                         <div class="flex items-center space-x-4">
-                            <button id="migrate-calls-btn" class="migrate-btn text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
-                                <i class="fa-solid fa-database"></i>
-                                <span>Migrar Llamadas</span>
-                                <div class="info-tooltip">
-                                    <i class="fa-solid fa-circle-info"></i>
-                                    <span class="tooltip-text">Mover todas las llamadas de Registro y Control al Histórico</span>
-                                </div>
-                            </button>
                             <label for="dashboard-data-source" class="block text-sm font-medium text-gray-700">Fuente de datos:</label>
-                            <select id="dashboard-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                            <select id="dashboard-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
                                 <option value="registro">Registro y Control</option>
                                 <option value="historico">Histórico</option>
                                 <option value="combinado">Registro y Control + Histórico</option>
@@ -596,20 +401,20 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        <div class="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4"><div class="bg-primary/10 p-3 rounded-full"><i class="fa-solid fa-phone-volume text-primary text-2xl"></i></div><div><p class="text-slate-500">Total de Llamadas</p><p id="total-calls" class="text-3xl font-bold text-primary">0</p></div></div>
-                        <div class="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4"><div class="bg-primary/10 p-3 rounded-full"><i class="fa-solid fa-hourglass-half text-primary text-2xl"></i></div><div><p class="text-slate-500">Duración Promedio</p><p id="avg-duration" class="text-3xl font-bold text-primary">00:00</p></div></div>
-                        <div class="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4"><div class="bg-accent/10 p-3 rounded-full"><i class="fa-solid fa-circle-check text-accent text-2xl"></i></div><div><p class="text-slate-500">Llamadas Atendidas</p><p id="atendidas-count" class="text-3xl font-bold text-accent">0</p></div></div>
-                        <div class="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4"><div class="bg-danger/10 p-3 rounded-full"><i class="fa-solid fa-circle-xmark text-danger text-2xl"></i></div><div><p class="text-slate-500">Llamadas Pendientes</p><p id="pendientes-count" class="text-3xl font-bold text-danger">0</p></div></div>
+                        <div class="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4"><div class="bg-gob-maroon/10 p-3 rounded-full"><i class="fa-solid fa-phone-volume text-gob-maroon text-2xl"></i></div><div><p class="text-slate-500">Total de Llamadas</p><p id="total-calls" class="text-3xl font-bold text-gob-maroon">0</p></div></div>
+                        <div class="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4"><div class="bg-gob-maroon/10 p-3 rounded-full"><i class="fa-solid fa-hourglass-half text-gob-maroon text-2xl"></i></div><div><p class="text-slate-500">Duración Promedio</p><p id="avg-duration" class="text-3xl font-bold text-gob-maroon">00:00</p></div></div>
+                        <div class="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4"><div class="bg-subtle-green/10 p-3 rounded-full"><i class="fa-solid fa-circle-check text-subtle-green text-2xl"></i></div><div><p class="text-slate-500">Llamadas Atendidas</p><p id="atendidas-count" class="text-3xl font-bold text-subtle-green">0</p></div></div>
+                        <div class="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4"><div class="bg-subtle-red/10 p-3 rounded-full"><i class="fa-solid fa-circle-xmark text-subtle-red text-2xl"></i></div><div><p class="text-slate-500">Llamadas Pendientes</p><p id="pendientes-count" class="text-3xl font-bold text-subtle-red">0</p></div></div>
                     </div>
                 </section>
 
                 <section class="bg-white p-6 rounded-xl shadow-md mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div class="text-center md:text-left"><h3 class="text-xl font-semibold text-slate-800">Control de Llamadas</h3><p class="text-slate-500">Inicia una nueva llamada para activar el cronómetro y el formulario.</p></div>
-                    <div class="flex items-center gap-6"><div class="text-center"><p class="text-sm font-medium text-slate-500">TIEMPO DE LLAMADA ACTUAL</p><p id="timer" class="text-4xl font-bold text-primary tracking-wider">00:00:00</p></div><button id="start-call-btn" class="bg-success hover:bg-success-dark text-white font-bold py-4 px-8 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center space-x-3"><i class="fa-solid fa-phone-alt h-6 w-6"></i><span>Iniciar Nueva Llamada</span></button></div>
+                    <div class="flex items-center gap-6"><div class="text-center"><p class="text-sm font-medium text-slate-500">TIEMPO DE LLAMADA ACTUAL</p><p id="timer" class="text-4xl font-bold text-gob-maroon tracking-wider">00:00:00</p></div><button id="start-call-btn" class="bg-subtle-green hover:bg-subtle-green-dark text-white font-bold py-4 px-8 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center space-x-3"><i class="fa-solid fa-phone-alt h-6 w-6"></i><span>Iniciar Nueva Llamada</span></button></div>
                 </section>
                 
                 <section id="call-log">
-                    <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-primary">Historial de Llamadas</h2><div class="flex items-center space-x-2"><div class="relative w-full"><input type="text" id="filter-input-main" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"><i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i><button id="clear-filter-btn-main" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden"><i class="fa-solid fa-times-circle"></i></button></div><button id="download-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2"><i class="fa-solid fa-file-excel"></i><span>Descargar Excel</span></button></div></div>
+                    <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-gob-maroon">Historial de Llamadas</h2><div class="flex items-center space-x-2"><div class="relative w-full"><input type="text" id="filter-input-main" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gob-maroon"><i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i><button id="clear-filter-btn-main" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden"><i class="fa-solid fa-times-circle"></i></button></div><button id="download-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2"><i class="fa-solid fa-file-excel"></i><span>Descargar Excel</span></button></div></div>
                     <div class="bg-white rounded-xl shadow-md table-container">
                         <table class="w-full text-sm text-left text-slate-500">
                             <thead class="text-xs text-slate-700 uppercase bg-slate-100">
@@ -642,12 +447,12 @@
 
             <div id="tab-content-historico" class="tab-content hidden">
                 <section class="bg-white p-6 rounded-xl shadow-md">
-                    <h2 class="text-2xl font-bold text-primary mb-4">Cargar Histórico desde Excel</h2>
-                    <div class="flex flex-col md:flex-row items-center gap-4"><label for="historical-file-input" class="w-full md:w-auto cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-lg shadow-sm transition-all duration-200 ease-in-out text-center flex-grow"><i class="fa-solid fa-file-upload mr-2"></i><span id="file-name">Seleccionar archivo Excel (.xlsx)</span><input type="file" id="historical-file-input" class="hidden" accept=".xlsx, .xls"></label><button id="import-historical-btn" class="w-full md:w-auto bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" disabled><i class="fa-solid fa-database mr-2"></i>Importar a la Base de Datos</button></div>
+                    <h2 class="text-2xl font-bold text-gob-maroon mb-4">Cargar Histórico desde Excel</h2>
+                    <div class="flex flex-col md:flex-row items-center gap-4"><label for="historical-file-input" class="w-full md:w-auto cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-lg shadow-sm transition-all duration-200 ease-in-out text-center flex-grow"><i class="fa-solid fa-file-upload mr-2"></i><span id="file-name">Seleccionar archivo Excel (.xlsx)</span><input type="file" id="historical-file-input" class="hidden" accept=".xlsx, .xls"></label><button id="import-historical-btn" class="w-full md:w-auto bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" disabled><i class="fa-solid fa-database mr-2"></i>Importar a la Base de Datos</button></div>
                 </section>
                 
                 <section id="historical-log" class="mt-8">
-                    <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-primary">Registro Histórico</h2><div class="flex items-center space-x-2"><div class="relative w-full"><input type="text" id="filter-input-historical" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"><i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i><button id="clear-filter-btn-historical" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden"><i class="fa-solid fa-times-circle"></i></button></div><button id="download-historical-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2"><i class="fa-solid fa-file-excel"></i><span>Descargar Histórico</span></button></div></div>
+                    <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-gob-maroon">Registro Histórico</h2><div class="flex items-center space-x-2"><div class="relative w-full"><input type="text" id="filter-input-historical" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gob-maroon"><i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i><button id="clear-filter-btn-historical" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden"><i class="fa-solid fa-times-circle"></i></button></div><button id="download-historical-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2"><i class="fa-solid fa-file-excel"></i><span>Descargar Histórico</span></button></div></div>
                     <div class="bg-white rounded-xl shadow-md table-container">
                         <table class="w-full text-sm text-left text-slate-500">
                             <thead class="text-xs text-slate-700 uppercase bg-slate-100">
@@ -679,18 +484,18 @@
             </div>
 
             <div id="tab-content-reportes" class="tab-content hidden">
-                <section id="reportes" class="bg-white p-6 rounded-xl shadow-md mb-8">
+                <section class="bg-white p-6 rounded-xl shadow-md mb-8">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-2xl font-bold text-primary">Reportes</h2>
+                        <h2 class="text-2xl font-bold text-gob-maroon">Reportes</h2>
 
                         <div class="flex items-center space-x-4">
-                            <button id="generate-report-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
+                            <button id="generate-report-btn" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
                                 <i class="fa-solid fa-file-pdf"></i>
                                 <span>Generar Reporte</span>
                             </button>
                             <div class="flex items-center space-x-2">
                                 <label for="reportes-data-source" class="block text-sm font-medium text-gray-700">Fuente de datos:</label>
-                                <select id="reportes-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                                <select id="reportes-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
                                     <option value="registro">Registro y Control</option>
                                     <option value="historico">Histórico</option>
                                     <option value="combinado">Registro y Control + Histórico</option>
@@ -702,63 +507,15 @@
                         </div>
 
                     </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2">
-                        <div class="chart-wrapper">
-                            <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Estatus</h3>
-                            <canvas id="statusChart"></canvas>
-                        </div>
-                        <div class="chart-wrapper">
-                            <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Asunto</h3>
-                            <canvas id="asuntoChart"></canvas>
-                        </div>
-                        <div class="chart-wrapper">
-                            <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Día de la Semana</h3>
-                            <canvas id="dayOfWeekChart"></canvas>
-                        </div>
-                        <div class="chart-wrapper">
-                            <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas atendidas por Servidor Público</h3>
-                            <canvas id="atendioChart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <!-- Nueva gráfica dinámica -->
-                    <div class="dynamic-chart-container">
-                        <div class="dynamic-chart-header">
-                            <h3 class="text-xl font-semibold text-slate-800">Llamadas por</h3>
-                            <select id="dynamic-chart-variable" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
-                                <option value="area">Área</option>
-                                <option value="institucion">Institución</option>
-                                <option value="asunto">Asunto</option>
-                                <option value="consulta">Consulta</option>
-                                <option value="nombre">Nombre</option>
-                                <option value="cargo">Cargo</option>
-                            </select>
-                        </div>
-                        <div class="dynamic-chart-content">
-                            <div class="chart-wrapper">
-                                <canvas id="dynamicChart"></canvas>
-                            </div>
-                            <div class="dynamic-table-container">
-                                <h4 class="text-lg font-semibold text-slate-800 mb-2 text-center">Distribución por Estatus</h4>
-                                <table class="dynamic-table">
-                                    <thead>
-                                        <tr>
-                                            <th id="dynamic-table-header">Variable</th>
-                                            <th>Atendida</th>
-                                            <th>Pendiente</th>
-                                            <th>Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dynamic-table-body">
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div><h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Estatus</h3><canvas id="statusChart"></canvas></div>
+                        <div><h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Asunto</h3><canvas id="asuntoChart"></canvas></div>
+                        <div><h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Día de la Semana</h3><canvas id="dayOfWeekChart"></canvas></div>
+                        <div><h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas atendidas por Servidor Público</h3><canvas id="atendioChart"></canvas></div>
                     </div>
                 </section>
                 <section class="bg-white p-6 rounded-xl shadow-md">
-                    <h2 class="text-2xl font-bold text-primary mb-4">Tabla Dinámica Interactiva</h2>
+                    <h2 class="text-2xl font-bold text-gob-maroon mb-4">Tabla Dinámica Interactiva</h2>
                     <p class="text-slate-500 mb-4">Selecciona variables para cruzar datos y genera gráficos dinámicos (tablas, barras, líneas, heatmaps, etc.).</p>
                     <div id="pivot-table"></div>
                 </section>
@@ -766,11 +523,11 @@
         </div>
     </div>
     
-    <!-- Modales -->
+    <!-- VERSIÓN 1.7: Modales más anchos con clase wide-modal -->
     <div id="call-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
-            <div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-bold text-primary">Detalles de la Llamada</h3><div class="text-right"><p class="text-sm font-medium text-slate-500">TIEMPO DE LLAMADA ACTUAL</p><p id="modal-timer" class="text-2xl font-bold text-primary tracking-wider">00:00:00</p></div></div>
+            <div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-bold text-gob-maroon">Detalles de la Llamada</h3><div class="text-right"><p class="text-sm font-medium text-slate-500">TIEMPO DE LLAMADA ACTUAL</p><p id="modal-timer" class="text-2xl font-bold text-gob-maroon tracking-wider">00:00:00</p></div></div>
             <div class="call-form-container">
                 <form id="call-form" class="space-y-6" novalidate>
                     <div> 
@@ -784,6 +541,7 @@
                                     <button type="button" id="edit-institution-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="call-area">Área o Departamento</label>
                                 <div class="flex-with-buttons">
@@ -792,6 +550,7 @@
                                     <button type="button" id="edit-area-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="call-subject">Asunto</label>
                                 <div class="flex-with-buttons">
@@ -800,6 +559,7 @@
                                     <button type="button" id="edit-subject-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="call-query">Consulta</label>
                                 <div class="flex-with-buttons">
@@ -821,6 +581,7 @@
                                     <button type="button" id="edit-name-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="caller-cargo">Cargo del Solicitante</label>
                                 <div class="flex-with-buttons">
@@ -829,6 +590,7 @@
                                     <button type="button" id="edit-cargo-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="caller-email">Correo Electrónico</label>
                                 <div class="flex-with-buttons">
@@ -837,13 +599,10 @@
                                     <button type="button" id="edit-email-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="caller-phone">Teléfono (opcional)</label>
-                                <div class="flex-with-buttons">
-                                    <select id="caller-phone" name="telefono"></select>
-                                    <button type="button" id="add-phone-btn" class="add-btn">+</button>
-                                    <button type="button" id="edit-phone-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
-                                </div>
+                                <input type="text" id="caller-phone" name="telefono" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
                             </div>
                         </div>
                     </div>
@@ -858,25 +617,24 @@
                                     <button type="button" id="edit-atendio-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="call-comments">Comentarios</label>
-                                <div class="flex-with-buttons">
-                                     <select id="call-comments" name="comentarios"></select>
-                                     <button type="button" id="add-comments-btn" class="add-btn">+</button>
-                                     <button type="button" id="edit-comments-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
-                                </div>
+                                <input type="text" id="call-comments" name="comentarios" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center justify-end pt-4"><button type="submit" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Guardar y Finalizar Llamada</button></div>
+                    <div class="flex items-center justify-end pt-4"><button type="submit" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Guardar y Finalizar Llamada</button></div>
                 </form>
             </div>
         </div>
     </div>
+
+    <!-- VERSIÓN 1.7: Modal de edición más ancho -->
     <div id="edit-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-edit-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
-            <h3 class="text-2xl font-bold text-primary mb-6">Editar Llamada</h3>
+            <h3 class="text-2xl font-bold text-gob-maroon mb-6">Editar Llamada</h3>
             <div class="call-form-container">
                 <form id="edit-form" class="space-y-6" novalidate>
                     <input type="hidden" id="edit-id">
@@ -886,31 +644,34 @@
                             <div class="form-field">
                                 <label for="edit-caller-institution" class="block text-sm font-medium text-gray-700">Institución</label>
                                 <div class="flex-with-buttons">
-                                    <select id="edit-caller-institution" name="institucion" class="mt-1 block w-full" required></select>
+                                    <select id="edit-caller-institution" name="institucion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
                                     <button type="button" id="add-institution-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-institution-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="edit-call-area" class="block text-sm font-medium text-gray-700">Área</label>
                                 <div class="flex-with-buttons">
-                                    <select id="edit-call-area" name="area" class="mt-1 block w-full" required></select>
+                                    <select id="edit-call-area" name="area" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
                                     <button type="button" id="add-area-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-area-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="edit-call-subject" class="block text-sm font-medium text-gray-700">Asunto</label>
                                 <div class="flex-with-buttons">
-                                    <select id="edit-call-subject" name="asunto" class="mt-1 block w-full" required></select>
+                                    <select id="edit-call-subject" name="asunto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
                                     <button type="button" id="add-subject-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-subject-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="edit-call-query" class="block text-sm font-medium text-gray-700">Consulta</label>
                                 <div class="flex-with-buttons">
-                                    <select id="edit-call-query" name="consulta" class="mt-1 block w-full" required></select>
+                                    <select id="edit-call-query" name="consulta" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
                                     <button type="button" id="add-query-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-query-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
@@ -923,34 +684,33 @@
                             <div class="form-field">
                                 <label for="edit-caller-name" class="block text-sm font-medium text-gray-700">Nombre</label>
                                 <div class="flex-with-buttons">
-                                    <select id="edit-caller-name" name="nombre" class="mt-1 block w-full" required></select>
+                                    <select id="edit-caller-name" name="nombre" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
                                     <button type="button" id="add-name-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-name-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="edit-caller-cargo" class="block text-sm font-medium text-gray-700">Cargo</label>
                                 <div class="flex-with-buttons">
-                                    <select id="edit-caller-cargo" name="cargo" class="mt-1 block w-full" required></select>
+                                    <select id="edit-caller-cargo" name="cargo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
                                     <button type="button" id="add-cargo-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-cargo-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="edit-caller-email" class="block text-sm font-medium text-gray-700">Correo</label>
                                 <div class="flex-with-buttons">
-                                    <select id="edit-caller-email" name="correo" class="mt-1 block w-full" required></select>
+                                    <select id="edit-caller-email" name="correo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
                                     <button type="button" id="add-email-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-email-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="edit-caller-phone" class="block text-sm font-medium text-gray-700">Teléfono (opcional)</label>
-                                <div class="flex-with-buttons">
-                                    <select id="edit-caller-phone" name="telefono" class="mt-1 block w-full"></select>
-                                    <button type="button" id="add-phone-edit-btn" class="add-btn">+</button>
-                                    <button type="button" id="edit-phone-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
-                                </div>
+                                <input type="text" id="edit-caller-phone" name="telefono" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
                             </div>
                         </div>
                     </div>
@@ -960,65 +720,62 @@
                             <div class="form-field">
                                 <label for="edit-call-atendio" class="block text-sm font-medium text-gray-700">Atendió</label>
                                 <div class="flex-with-buttons">
-                                    <select id="edit-call-atendio" name="atendio" class="mt-1 block w-full" required></select>
+                                    <select id="edit-call-atendio" name="atendio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" required></select>
                                     <button type="button" id="add-atendio-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-atendio-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
+
                             <div class="form-field">
                                 <label for="edit-call-comments" class="block text-sm font-medium text-gray-700">Comentarios</label>
-                                <div class="flex-with-buttons">
-                                    <select id="edit-call-comments" name="comentarios" class="mt-1 block w-full"></select>
-                                    <button type="button" id="add-comments-edit-btn" class="add-btn">+</button>
-                                    <button type="button" id="edit-comments-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
-                                </div>
+                                <input type="text" id="edit-call-comments" name="comentarios" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2">
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center justify-end pt-4"><button type="submit" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Guardar Cambios</button></div>
+                    <div class="flex items-center justify-end pt-4"><button type="submit" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Guardar Cambios</button></div>
                 </form>
             </div>
         </div>
     </div>
     
     <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center"><h3 class="text-xl font-bold text-slate-800 mb-4">Confirmar Eliminación</h3><p class="text-slate-600 mb-6">¿Estás seguro de que deseas eliminar este registro?</p><div class="flex justify-center space-x-4"><button id="cancel-delete-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button><button id="confirm-delete-btn" class="bg-danger hover:bg-danger-dark text-white font-bold py-2 px-4 rounded-lg">Eliminar</button></div></div>
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center"><h3 class="text-xl font-bold text-slate-800 mb-4">Confirmar Eliminación</h3><p class="text-slate-600 mb-6">¿Estás seguro de que deseas eliminar este registro?</p><div class="flex justify-center space-x-4"><button id="cancel-delete-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button><button id="confirm-delete-btn" class="bg-subtle-red hover:bg-subtle-red-dark text-white font-bold py-2 px-4 rounded-lg">Eliminar</button></div></div>
     </div>
 
     <div id="replace-historical-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center"><h3 class="text-xl font-bold text-primary mb-4">Reemplazar Histórico</h3><p class="text-slate-600 mb-6">¿Desea reemplazar el histórico actual?</p><div class="flex justify-center space-x-4"><button id="cancel-replace-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">No</button><button id="confirm-replace-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Sí</button></div></div>
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center"><h3 class="text-xl font-bold text-gob-maroon mb-4">Reemplazar Histórico</h3><p class="text-slate-600 mb-6">¿Desea reemplazar el histórico actual?</p><div class="flex justify-center space-x-4"><button id="cancel-replace-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">No</button><button id="confirm-replace-btn" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-2 px-4 rounded-lg">Sí</button></div></div>
     </div>
 
     <div id="add-option-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
-            <h3 class="text-xl font-bold text-primary mb-4">Agregar Nueva Opción</h3>
+            <h3 class="text-xl font-bold text-gob-maroon mb-4">Agregar Nueva Opción</h3>
             <input type="text" id="new-option-input" placeholder="Ingrese la nueva opción" class="w-full p-2 border border-gray-300 rounded-md mb-4">
             <div class="flex justify-center space-x-4">
                 <button id="cancel-add-option-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
-                <button id="confirm-add-option-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Agregar</button>
+                <button id="confirm-add-option-btn" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-2 px-4 rounded-lg">Agregar</button>
             </div>
         </div>
     </div>
 
     <div id="edit-option-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
-            <h3 class="text-xl font-bold text-primary mb-4">Editar Opción</h3>
+            <h3 class="text-xl font-bold text-gob-maroon mb-4">Editar Opción</h3>
             <input type="text" id="edit-option-input" placeholder="Edite la opción" class="w-full p-2 border border-gray-300 rounded-md mb-4">
             <div class="flex justify-center space-x-4">
                 <button id="cancel-edit-option-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
-                <button id="confirm-edit-option-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Guardar</button>
+                <button id="confirm-edit-option-btn" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-2 px-4 rounded-lg">Guardar</button>
             </div>
         </div>
     </div>
 
     <div id="password-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
-            <h3 class="text-xl font-bold text-primary mb-4">Verificación de Seguridad</h3>
+            <h3 class="text-xl font-bold text-gob-maroon mb-4">Verificación de Seguridad</h3>
             <p class="text-slate-600 mb-4">Esta acción requiere autenticación. Por favor, ingrese la contraseña.</p>
             <input type="password" id="password-input" placeholder="Contraseña" class="w-full p-2 border border-gray-300 rounded-md mb-4">
             <div class="flex justify-center space-x-4">
                 <button id="cancel-password-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
-                <button id="confirm-password-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Verificar</button>
+                <button id="confirm-password-btn" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-2 px-4 rounded-lg">Verificar</button>
             </div>
         </div>
     </div>
@@ -1026,110 +783,88 @@
     <div id="report-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl mx-4">
             <button id="close-report-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
-            <h3 class="text-2xl font-bold text-primary mb-6">Generar Reporte Ejecutivo</h3>
+            <h3 class="text-2xl font-bold text-gob-maroon mb-6">Generar Reporte Ejecutivo</h3>
             <form id="report-form" class="space-y-6">
                 <div>
                     <h4 class="section-title text-lg">Seleccionar gráficas a incluir</h4>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex items-center">
-                            <input type="checkbox" id="include-status" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                            <input type="checkbox" id="include-status" class="rounded border-gray-300 text-gob-maroon focus:ring-gob-maroon" checked>
                             <label for="include-status" class="ml-2 block text-sm text-gray-700">Llamadas por Estatus</label>
                         </div>
                         <div class="flex items-center">
-                            <input type="checkbox" id="include-asunto" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                            <input type="checkbox" id="include-asunto" class="rounded border-gray-300 text-gob-maroon focus:ring-gob-maroon" checked>
                             <label for="include-asunto" class="ml-2 block text-sm text-gray-700">Llamadas por Asunto</label>
                         </div>
                         <div class="flex items-center">
-                            <input type="checkbox" id="include-day" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                            <input type="checkbox" id="include-day" class="rounded border-gray-300 text-gob-maroon focus:ring-gob-maroon" checked>
                             <label for="include-day" class="ml-2 block text-sm text-gray-700">Llamadas por Día de la Semana</label>
                         </div>
                         <div class="flex items-center">
-                            <input type="checkbox" id="include-atendio" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                            <input type="checkbox" id="include-atendio" class="rounded border-gray-300 text-gob-maroon focus:ring-gob-maroon" checked>
                             <label for="include-atendio" class="ml-2 block text-sm text-gray-700">Llamadas por Servidor Público</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="include-dynamic" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
-                            <label for="include-dynamic" class="ml-2 block text-sm text-gray-700">Llamadas por Variable Seleccionada</label>
                         </div>
                     </div>
                 </div>
                 
                 <div class="flex items-center justify-end pt-4">
-                    <button type="button" id="generate-pdf-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Generar Reporte PDF</button>
+                    <button type="button" id="generate-pdf-btn" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Generar Reporte PDF</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Modal de configuración de reportes para la versión 1.7 -->
     <div id="config-report-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl mx-4">
             <button id="close-config-report-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
             
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-2xl font-bold text-primary">Configuración de Reportes</h3>
-                <div class="relative group">
-                    <button type="button" class="text-primary hover:text-primary-dark focus:outline-none">
-                        <i class="fa-solid fa-circle-info fa-lg"></i>
-                    </button>
-                    <div class="absolute hidden group-hover:block right-0 top-full mt-2 w-64 p-2 bg-white shadow-lg rounded-lg border border-gray-200 z-10 text-sm text-gray-600">
-                        Seleccione un período para filtrar los reportes. Ejemplo: para ver datos del 15/04/2025, establezca la fecha de inicio 14/04/2025 y fecha de fin en 16/04/2025. 
-                    </div>
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-gob-maroon">Configuración de Reportes</h3>
+            <div class="relative group">
+                <button type="button" class="text-gob-maroon hover:text-[#5a0025] focus:outline-none">
+                    <i class="fa-solid fa-circle-info fa-lg"></i>
+                </button>
+                <div class="absolute hidden group-hover:block right-0 top-full mt-2 w-64 p-2 bg-white shadow-lg rounded-lg border border-gray-200 z-10 text-sm text-gray-600">
+                    Seleccione un período para filtrar los reportes. Ejemplo: para ver datos del 15/04/2025, establezca la fecha de inicio 14/04/2025 y decha de fin en 16/04/2025. 
                 </div>
             </div>
+        </div>
             
             <form id="config-report-form" class="space-y-6">
                 <div class="config-report-grid">
                     <div class="config-option">
-                        <input type="radio" id="filter-all-data" name="data-filter" value="all" checked class="rounded border-gray-300 text-primary focus:ring-primary">
+                        <input type="radio" id="filter-all-data" name="data-filter" value="all" checked class="rounded border-gray-300 text-gob-maroon focus:ring-gob-maroon">
                         <label for="filter-all-data" class="block text-sm font-medium text-gray-700">Todos los datos</label>
                     </div>
                     
                     <div class="config-option">
-                        <input type="radio" id="filter-by-period" name="data-filter" value="period" class="rounded border-gray-300 text-primary focus:ring-primary">
+                        <input type="radio" id="filter-by-period" name="data-filter" value="period" class="rounded border-gray-300 text-gob-maroon focus:ring-gob-maroon">
                         <label for="filter-by-period" class="block text-sm font-medium text-gray-700">Seleccionar por periodo</label>
                     </div>
                     
                     <div class="form-field">
                         <label for="config-report-start-date">Fecha de inicio</label>
-                        <input type="date" id="config-report-start-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" disabled>
+                        <input type="date" id="config-report-start-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" disabled>
                     </div>
                     
                     <div class="form-field">
                         <label for="config-report-end-date">Fecha de fin</label>
-                        <input type="date" id="config-report-end-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" disabled>
+                        <input type="date" id="config-report-end-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gob-maroon focus:ring-gob-maroon sm:text-sm p-2" disabled>
                     </div>
-                </div>
-
-                <div class="chart-size-control">
-                    <label for="chart-size-slider" class="font-medium text-gray-700">Tamaño de gráficas:</label>
-                    <input type="range" id="chart-size-slider" min="200" max="400" value="200" class="w-40">
-                    <span id="chart-size-value" class="text-sm text-gray-600">200px</span>
                 </div>
                 
                 <div class="flex items-center justify-end pt-4">
-                    <button type="button" id="save-config-report-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Guardar Configuración</button>
+                    <button type="button" id="save-config-report-btn" class="bg-gob-maroon hover:bg-[#5a0025] text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Guardar Configuración</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <div id="migrate-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
-            <h3 class="text-xl font-bold text-primary mb-4">Migrar Llamadas</h3>
-            <p class="text-slate-600 mb-6">¿Está seguro de que desea migrar todas las llamadas de Registro y Control al Histórico? Esta acción no se puede deshacer.</p>
-            <div class="flex justify-center space-x-4">
-                <button id="cancel-migrate-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
-                <button id="confirm-migrate-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Migrar</button>
-            </div>
         </div>
     </div>
 
     <div id="report-preview" class="hidden"></div>
 
     <script type="module">
-        // =============================================
-        // MÓDULO: Configuración de Firebase
-        // =============================================
+        // INICIALIZACIÓN DE FIREBASE (v1.7)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, serverTimestamp, writeBatch, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -1148,9 +883,8 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // =============================================
-        // MÓDULO: Variables globales y estado de la aplicación
-        // =============================================
+        // LÓGICA DE LA APLICACIÓN (v1.7)
+
         let timerInterval;
         let callStartTime;
         let calls = [];
@@ -1160,7 +894,6 @@
         const callsCollectionRef = collection(db, "calls");
         const historicalCallsCollectionRef = collection(db, "historicalCalls");
         
-        // Elementos del DOM
         const loader = document.getElementById('loader');
         const appContainer = document.getElementById('app');
         const userInfo = document.getElementById('user-info');
@@ -1186,11 +919,7 @@
         const asuntoChartCanvas = document.getElementById('asuntoChart');
         const dayOfWeekChartCanvas = document.getElementById('dayOfWeekChart');
         const atendioChartCanvas = document.getElementById('atendioChart');
-        const dynamicChartCanvas = document.getElementById('dynamicChart');
-        const dynamicChartVariable = document.getElementById('dynamic-chart-variable');
-        const dynamicTableBody = document.getElementById('dynamic-table-body');
-        const dynamicTableHeader = document.getElementById('dynamic-table-header');
-        let statusChart, asuntoChart, dayOfWeekChart, atendioChart, dynamicChart;
+        let statusChart, asuntoChart, dayOfWeekChart, atendioChart;
         const callModal = document.getElementById('call-modal');
         const callForm = document.getElementById('call-form');
         const closeModalBtn = document.getElementById('close-modal-btn');
@@ -1232,16 +961,9 @@
         const configReportStartDate = document.getElementById('config-report-start-date');
         const configReportEndDate = document.getElementById('config-report-end-date');
         const reportPreview = document.getElementById('report-preview');
-        const chartSizeSlider = document.getElementById('chart-size-slider');
-        const chartSizeValue = document.getElementById('chart-size-value');
-        const migrateCallsBtn = document.getElementById('migrate-calls-btn');
-        const migrateModal = document.getElementById('migrate-modal');
-        const cancelMigrateBtn = document.getElementById('cancel-migrate-btn');
-        const confirmMigrateBtn = document.getElementById('confirm-migrate-btn');
-        const includeDynamicCheckbox = document.getElementById('include-dynamic');
-        
         let currentEditIsHistorical = false;
         
+        // Variables para la versión 1.7
         let fieldOptions = {
             areas: [],
             asuntos: [],
@@ -1249,8 +971,6 @@
             nombres: [],
             cargos: [],
             correos: [],
-            telefonos: [],
-            comentarios: [],
             instituciones: [],
             atendioUsers: []
         };
@@ -1264,10 +984,6 @@
             endDate: null
         };
 
-        // =============================================
-        // MÓDULO: Utilidades
-        // =============================================
-        
         function showApp() {
             loader.classList.add('hidden');
             appContainer.classList.remove('hidden');
@@ -1282,6 +998,44 @@
             setTimeout(() => { alertContainer.remove(); }, 3000);
         }
         
+        function setupTabs() {
+            tabsContainer.addEventListener('click', (e) => {
+                if (e.target.matches('.tab-btn')) {
+                    const tabName = e.target.dataset.tab;
+                    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    tabContents.forEach(content => content.classList.toggle('hidden', content.id !== `tab-content-${tabName}`));
+                    if (tabName === 'reportes') updateCharts();
+                }
+            });
+        }
+
+        function updateDashboard() {
+            const source = dashboardDataSource.value;
+            let data = [];
+            if (source === 'registro') data = calls;
+            else if (source === 'historico') data = historicalCalls;
+            else data = [...calls, ...historicalCalls];
+            
+            const totalCalls = data.length;
+            const atendidas = data.filter(c => c.estatus === 'Atendida').length;
+            const pendientes = totalCalls - atendidas;
+
+            // Convertir duraciones a número y sumarlas
+            const totalDuration = data.reduce((sum, c) => sum + (Number(c.duracion) || 0), 0);
+
+            // Promedio redondeado a segundos enteros
+            const avgDuration = totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0;
+
+            // Actualizar UI
+            totalCallsElem.textContent = totalCalls;
+            avgDurationElem.textContent = formatDuration(avgDuration);
+            atendidasCountElem.textContent = atendidas;
+            pendientesCountElem.textContent = pendientes;
+        }
+
+
+        //Dar formato a Duración
         function formatDuration(seconds) {
             if (isNaN(seconds) || seconds < 0) seconds = 0;
             const h = Math.floor(seconds / 3600);
@@ -1290,52 +1044,26 @@
             return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
         
+        // VERSIÓN 1.7: Formatear hora con a.m./p.m.
         function formatTimeWithAmPm(timeString) {
-            if (!timeString || typeof timeString !== 'string') return 'N/A';
-            if (timeString.toLowerCase().includes('a. m.') || timeString.toLowerCase().includes('p. m.')) {
-                return timeString;
-            }
+            if (!timeString) return 'N/A';
+            
             try {
+                // Asegurar que tenga formato HH:MM:SS
                 const [hours, minutes, seconds = '00'] = timeString.split(':');
                 let h = parseInt(hours, 10);
                 const m = minutes.padStart(2, '0');
                 const s = seconds.padStart(2, '0');
+                
                 const period = h >= 12 ? 'p. m.' : 'a. m.';
-                h = h % 12 || 12;
+                h = h % 12 || 12; // Convertir a 12h
+                
                 return `${h.toString().padStart(2, '0')}:${m}:${s} ${period}`;
             } catch (e) {
-                return timeString;
+                return timeString; // fallback si no parsea
             }
         }
 
-        function openModal(modal) {
-            modal.classList.remove('hidden', 'modal-leave');
-            modal.classList.add('modal-enter');
-        }
-
-        function closeModal(modal) {
-            modal.classList.remove('modal-enter');
-            modal.classList.add('modal-leave');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-
-        // =============================================
-        // MÓDULO: Interfaz de usuario
-        // =============================================
-        
-        function setupTabs() {
-            tabsContainer.addEventListener('click', (e) => {
-                if (e.target.matches('.tab-btn')) {
-                    const tabName = e.target.dataset.tab;
-                    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
-                    tabContents.forEach(content => content.classList.toggle('hidden', content.id !== `tab-content-${tabName}`));
-                    if (tabName === 'reportes') {
-                        setTimeout(updateCharts, 50); // Delay to ensure container is visible
-                    }
-                }
-            });
-        }
 
         function renderTable(tableBody, data, isHistorical = false) {
             const noDataMessage = isHistorical ? noHistoricalMessage : noCallsMessage;
@@ -1355,6 +1083,7 @@
                     else if (header === 'estatus') {
                         content = `<button data-id="${call.id}" class="status-button status-${call.estatus === 'Atendida' ? 'atendida' : 'pendiente'} toggle-status-btn" data-is-historical="${isHistorical}">${call.estatus || 'Pendiente'}</button>`;
                     } else if (header === 'inicio' || header === 'fin') {
+                        // VERSIÓN 1.7: Formatear horas con a.m./p.m.
                         content = formatTimeWithAmPm(call[header]);
                     } else {
                         content = call[header] || 'N/A';
@@ -1410,88 +1139,371 @@
             });
         }
 
+        async function initializeAppWithAuth() {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    userInfo.textContent = `Usuario Anónimo: ${userId.substring(0, 8)}...`;
+                    setupRealtimeListeners();
+                    showApp();
+                } else {
+                    await signInAnonymously(auth);
+                }
+            });
+        }
+        
+        function setupRealtimeListeners() {
+            onSnapshot(query(callsCollectionRef), (snapshot) => {
+                calls = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                sortAndRenderTable(callLogTableBody, calls, false);
+                updateDashboard();
+                updateCharts();
+                updateDynamicSelectOptions(); // Actualizar opciones dinámicas
+            }, (error) => {
+                console.error("Error en listener de llamadas:", error);
+                showAlert(`Error al cargar datos en tiempo real: ${error.message}`, "error");
+            });
+            
+            onSnapshot(query(historicalCallsCollectionRef), (snapshot) => {
+                historicalCalls = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                sortAndRenderTable(historicalTableBody, historicalCalls, true);
+                updateDashboard();
+                updateCharts();
+                updateDynamicSelectOptions(); // Actualizar opciones dinámicas
+            }, (error) => {
+                console.error("Error en listener de histórico:", error);
+                showAlert(`Error al cargar datos históricos: ${error.message}`, "error");
+            });
+        }
+
         function sortAndRenderTable(tableBody, data, isHistorical) {
             const sortedData = [...data].sort((a, b) => {
                 const dateA = new Date(a.fecha?.split('/').reverse().join('-'));
                 const dateB = new Date(b.fecha?.split('/').reverse().join('-'));
-                if (isNaN(dateA)) return 1;
+                if (isNaN(dateA)) return 1; // Mueve fechas inválidas/faltantes al final
                 if (isNaN(dateB)) return -1;
-                return dateB - dateA;
+                return dateB - dateA; // Descendente
             });
             renderTable(tableBody, sortedData, isHistorical);
         }
 
-        function updateDashboard() {
-            const source = dashboardDataSource.value;
-            let data = [];
-            if (source === 'registro') data = calls;
-            else if (source === 'historico') data = historicalCalls;
-            else data = [...calls, ...historicalCalls];
+        // Actualizar opciones dinámicas desde la base de datos
+        function updateDynamicSelectOptions() {
+            const allData = [...calls, ...historicalCalls];
             
-            const totalCalls = data.length;
-            const atendidas = data.filter(c => c.estatus === 'Atendida').length;
-            const pendientes = totalCalls - atendidas;
-            const totalDuration = data.reduce((sum, c) => sum + (Number(c.duracion) || 0), 0);
-            const avgDuration = totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0;
-
-            totalCallsElem.textContent = totalCalls;
-            avgDurationElem.textContent = formatDuration(avgDuration);
-            atendidasCountElem.textContent = atendidas;
-            pendientesCountElem.textContent = pendientes;
+            // Extraer valores únicos de cada campo
+            fieldOptions.areas = [...new Set(allData.map(c => c.area).filter(Boolean))].sort();
+            fieldOptions.asuntos = [...new Set(allData.map(c => c.asunto).filter(Boolean))].sort();
+            fieldOptions.consultas = [...new Set(allData.map(c => c.consulta).filter(Boolean))].sort();
+            fieldOptions.nombres = [...new Set(allData.map(c => c.nombre).filter(Boolean))].sort();
+            fieldOptions.cargos = [...new Set(allData.map(c => c.cargo).filter(Boolean))].sort();
+            fieldOptions.correos = [...new Set(allData.map(c => c.correo).filter(Boolean))].sort();
+            fieldOptions.instituciones = [...new Set(allData.map(c => c.institucion).filter(Boolean))].sort();
+            fieldOptions.atendioUsers = [...new Set(allData.map(c => c.atendio).filter(Boolean))].sort();
+            
+            // Actualizar todos los selects
+            updateSelectOptions('instituciones', fieldOptions.instituciones);
+            updateSelectOptions('areas', fieldOptions.areas);
+            updateSelectOptions('asuntos', fieldOptions.asuntos);
+            updateSelectOptions('consultas', fieldOptions.consultas);
+            updateSelectOptions('nombres', fieldOptions.nombres);
+            updateSelectOptions('cargos', fieldOptions.cargos);
+            updateSelectOptions('correos', fieldOptions.correos);
+            updateSelectOptions('atendioUsers', fieldOptions.atendioUsers);
         }
 
-        // =============================================
-        // MÓDULO: Gestión de llamadas
-        // =============================================
-        
-        function startTimer() {
-            startCallBtn.dataset.state = 'active';
-            startCallBtn.innerHTML = `<i class="fa-solid fa-stopwatch h-6 w-6"></i><span>Finalizar Llamada</span>`;
-            startCallBtn.classList.replace('bg-success', 'bg-danger');
-            startCallBtn.classList.replace('hover:bg-success-dark', 'hover:bg-danger-dark');
+        function updateSelectOptions(field, options) {
+            // Mapear field a select ID
+            const fieldToSelectMap = {
+                'instituciones': ['caller-institution', 'edit-caller-institution'],
+                'areas': ['call-area', 'edit-call-area'],
+                'asuntos': ['call-subject', 'edit-call-subject'],
+                'consultas': ['call-query', 'edit-call-query'],
+                'nombres': ['caller-name', 'edit-caller-name'],
+                'cargos': ['caller-cargo', 'edit-caller-cargo'],
+                'correos': ['caller-email', 'edit-caller-email'],
+                'atendioUsers': ['call-atendio', 'edit-call-atendio']
+            };
             
-            callForm.reset();
-            // Reset all select2 fields
-            $('#call-form select').val(null).trigger('change');
-            openModal(callModal);
-
-            callStartTime = Date.now();
-            timerInterval = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
-                const formattedTime = formatDuration(elapsed);
-                timerElem.textContent = formattedTime;
-                modalTimerElem.textContent = formattedTime;
-            }, 1000);
-        }
-        
-        function stopTimer(shouldSave = true) {
-            clearInterval(timerInterval);
-            if (shouldSave) {
-                const endTime = new Date();
-                const duration = Math.floor((endTime - callStartTime) / 1000);
-                const formData = new FormData(callForm);
-                const callData = Object.fromEntries(formData.entries());
-                
-                callData.fecha = new Date(callStartTime).toLocaleDateString('es-ES');
-                callData.inicio = new Date(callStartTime).toLocaleTimeString('es-ES', { hour12: false });
-                callData.fin = endTime.toLocaleTimeString('es-ES', { hour12: false });
-                callData.duracion = duration;
-                callData.estatus = 'Atendida';
-                saveCall(callData);
+            if (fieldToSelectMap[field]) {
+                fieldToSelectMap[field].forEach(selectId => {
+                    $(`#${selectId}`).empty().select2({
+                        data: options,
+                        tags: true,
+                        placeholder: "Seleccione o escriba una opción",
+                        allowClear: true,
+                        width: '100%'
+                    });
+                });
             }
-            
-            startCallBtn.dataset.state = 'inactive';
-            startCallBtn.innerHTML = `<i class="fa-solid fa-phone-alt h-6 w-6"></i><span>Iniciar Nueva Llamada</span>`;
-            startCallBtn.classList.replace('bg-danger', 'bg-success');
-            startCallBtn.classList.replace('hover:bg-danger-dark', 'hover:bg-success-dark');
-            resetTimer();
         }
 
-        function resetTimer() {
-            timerElem.textContent = '00:00:00';
-            modalTimerElem.textContent = '00:00:00';
+        // Función para buscar y reemplazar valores en toda la base de datos
+        async function findAndReplaceInDatabase(field, oldValue, newValue) {
+            const fieldToDbFieldMap = {
+                'instituciones': 'institucion',
+                'areas': 'area',
+                'asuntos': 'asunto',
+                'consultas': 'consulta',
+                'nombres': 'nombre',
+                'cargos': 'cargo',
+                'correos': 'correo',
+                'atendioUsers': 'atendio'
+            };
+            
+            const dbField = fieldToDbFieldMap[field];
+            if (!dbField) return;
+            
+            try {
+                // Actualizar registros en la colección principal
+                const callsQuery = query(callsCollectionRef, where(dbField, '==', oldValue));
+                const callsSnapshot = await getDocs(callsQuery);
+                
+                const batch = writeBatch(db);
+                callsSnapshot.forEach(doc => {
+                    batch.update(doc.ref, { [dbField]: newValue });
+                });
+                
+                // Actualizar registros en la colección histórica
+                const historicalQuery = query(historicalCallsCollectionRef, where(dbField, '==', oldValue));
+                const historicalSnapshot = await getDocs(historicalQuery);
+                
+                historicalSnapshot.forEach(doc => {
+                    batch.update(doc.ref, { [dbField]: newValue });
+                });
+                
+                await batch.commit();
+                showAlert(`Se actualizaron ${callsSnapshot.size + historicalSnapshot.size} registros.`, "success");
+            } catch (error) {
+                console.error("Error al actualizar registros:", error);
+                showAlert("Error al actualizar registros existentes", "error");
+            }
         }
-        
+
+        // Configurar event listeners para los botones de añadir y editar con navegación DOM
+        function setupAddEditButtons() {
+            // Mapeo de botones a campos
+            const buttonToFieldMap = {
+                'add-institution-btn': 'instituciones',
+                'edit-institution-btn': 'instituciones',
+                'add-area-btn': 'areas',
+                'edit-area-btn': 'areas',
+                'add-subject-btn': 'asuntos',
+                'edit-subject-btn': 'asuntos',
+                'add-query-btn': 'consultas',
+                'edit-query-btn': 'consultas',
+                'add-name-btn': 'nombres',
+                'edit-name-btn': 'nombres',
+                'add-cargo-btn': 'cargos',
+                'edit-cargo-btn': 'cargos',
+                'add-email-btn': 'correos',
+                'edit-email-btn': 'correos',
+                'add-atendio-btn': 'atendioUsers',
+                'edit-atendio-btn': 'atendioUsers',
+                // Botones de edición
+                'add-institution-edit-btn': 'instituciones',
+                'edit-institution-edit-btn': 'instituciones',
+                'add-area-edit-btn': 'areas',
+                'edit-area-edit-btn': 'areas',
+                'add-subject-edit-btn': 'asuntos',
+                'edit-subject-edit-btn': 'asuntos',
+                'add-query-edit-btn': 'consultas',
+                'edit-query-edit-btn': 'consultas',
+                'add-name-edit-btn': 'nombres',
+                'edit-name-edit-btn': 'nombres',
+                'add-cargo-edit-btn': 'cargos',
+                'edit-cargo-edit-btn': 'cargos',
+                'add-email-edit-btn': 'correos',
+                'edit-email-edit-btn': 'correos',
+                'add-atendio-edit-btn': 'atendioUsers',
+                'edit-atendio-edit-btn': 'atendioUsers'
+            };
+            
+            // Configurar event listeners para botones de añadir
+            Object.entries(buttonToFieldMap).forEach(([buttonId, field]) => {
+                if (buttonId.startsWith('add-')) {
+                    document.getElementById(buttonId)?.addEventListener('click', () => {
+                        currentEditingField = field;
+                        currentEditingValue = null;
+                        document.getElementById('new-option-input').value = '';
+                        document.getElementById('new-option-input').placeholder = `Ingrese nueva opción para ${field}`;
+                        openModal(addOptionModal);
+                    });
+                }
+            });
+            
+            // Configurar event listeners para botones de editar con navegación DOM
+            Object.entries(buttonToFieldMap).forEach(([buttonId, field]) => {
+                if (buttonId.startsWith('edit-')) {
+                    document.getElementById(buttonId)?.addEventListener('click', (e) => {
+                        // Usar navegación DOM para encontrar el select correspondiente
+                        const selectElement = e.currentTarget.parentElement.querySelector('select');
+                        const currentValue = $(selectElement).val(); // Usar jQuery para obtener el valor de Select2
+                        
+                        if (!currentValue) {
+                            showAlert("Por favor, seleccione una opción para editar.", "warning");
+                            return;
+                        }
+                        
+                        currentEditingField = field;
+                        currentEditingValue = currentValue;
+                        document.getElementById('edit-option-input').value = currentValue;
+                        document.getElementById('edit-option-input').placeholder = `Edite la opción para ${field}`;
+                        openModal(editOptionModal);
+                    });
+                }
+            });
+            
+            // Configurar botones de confirmación
+            confirmAddOptionBtn.addEventListener('click', () => {
+                const newOption = newOptionInput.value.trim();
+                if (newOption && currentEditingField) {
+                    // Agregar la nueva opción a la lista
+                    if (!fieldOptions[currentEditingField].includes(newOption)) {
+                        fieldOptions[currentEditingField].push(newOption);
+                        fieldOptions[currentEditingField].sort();
+                        updateSelectOptions(currentEditingField, fieldOptions[currentEditingField]);
+                    }
+                    showAlert(`Opción "${newOption}" añadida correctamente.`, "success");
+                    closeModal(addOptionModal);
+                }
+            });
+            
+            confirmEditOptionBtn.addEventListener('click', () => {
+                const newValue = editOptionInput.value.trim();
+                if (newValue && currentEditingField && currentEditingValue) {
+                    requirePassword(() => {
+                        findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue);
+                        closeModal(editOptionModal);
+                    });
+                }
+            });
+            
+            // Configurar botones de cancelación
+            cancelAddOptionBtn.addEventListener('click', () => {
+                closeModal(addOptionModal);
+            });
+            
+            cancelEditOptionBtn.addEventListener('click', () => {
+                closeModal(editOptionModal);
+            });
+        }
+
+        // Verificación de contraseña simplificada
+        function verifyPassword() {
+            const password = passwordInput.value;
+            if (password === 'admin') {
+                closeModal(passwordModal);
+                passwordInput.value = '';
+                if (pendingAction) {
+                    pendingAction();
+                    pendingAction = null;
+                }
+            } else {
+                showAlert("Contraseña incorrecta", "error");
+                passwordInput.value = '';
+            }
+        }
+
+        function setupPasswordVerification() {
+            confirmPasswordBtn.addEventListener('click', verifyPassword);
+            cancelPasswordBtn.addEventListener('click', () => {
+                closeModal(passwordModal);
+                pendingAction = null;
+            });
+        }
+
+        function requirePassword(action) {
+            pendingAction = action;
+            openModal(passwordModal);
+        }
+
+        // Configurar vinculación institución-nombre para autocompletado (sin área)
+        function setupInstitutionNameLinking() {
+            $('#caller-institution').on('change', function() {
+                const institution = $(this).val();
+                updateNamesByInstitution(institution);
+            });
+
+            $('#caller-name').on('change', function() {
+                const name = $(this).val();
+                const institution = $('#caller-institution').val();
+                if (name && institution) {
+                    autofillFields(name, institution);
+                }
+            });
+        }
+
+        function updateNamesByInstitution(institution) {
+            if (!institution) return;
+            
+            // Filtrar historicalCalls y calls por institución y obtener los nombres únicos
+            const allData = [...calls, ...historicalCalls];
+            const names = [...new Set(allData
+                .filter(c => c.institucion === institution)
+                .map(c => c.nombre)
+                .filter(Boolean))];
+            
+            // Actualizar el select de nombres
+            $('#caller-name').empty().select2({
+                data: names,
+                tags: true,
+                placeholder: "Seleccione o escriba un nombre",
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Actualizar también las listas de cargo y correo (pero NO área)
+            const cargos = [...new Set(allData
+                .filter(c => c.institucion === institution)
+                .map(c => c.cargo)
+                .filter(Boolean))];
+                
+            const correos = [...new Set(allData
+                .filter(c => c.institucion === institution)
+                .map(c => c.correo)
+                .filter(Boolean))];
+            
+            // Actualizar los selects correspondientes (excepto área)
+            $('#caller-cargo').empty().select2({
+                data: cargos,
+                tags: true,
+                placeholder: "Seleccione o escriba un cargo",
+                allowClear: true,
+                width: '100%'
+            });
+            
+            $('#caller-email').empty().select2({
+                data: correos,
+                tags: true,
+                placeholder: "Seleccione o escriba un correo",
+                allowClear: true,
+                width: '100%'
+            });
+        }
+
+        // Autocompletar campos (sin área)
+        function autofillFields(name, institution) {
+            const allData = [...calls, ...historicalCalls];
+            // Buscar el último registro con ese nombre e institución
+            const records = allData.filter(c => c.nombre === name && c.institucion === institution);
+            
+            if (records.length > 0) {
+                // Ordenar por fecha más reciente
+                records.sort((a, b) => {
+                    const dateA = new Date(a.fecha?.split('/').reverse().join('-'));
+                    const dateB = new Date(b.fecha?.split('/').reverse().join('-'));
+                    return dateB - dateA;
+                });
+                
+                const record = records[0];
+                // VERSIÓN 1.7: No autocompletar área, solo cargo, correo y teléfono
+                $('#caller-cargo').val(record.cargo || '').trigger('change');
+                $('#caller-email').val(record.correo || '').trigger('change');
+                $('#caller-phone').val(record.telefono || '');
+            }
+        }
+
         async function saveCall(callData) {
             try {
                 await addDoc(callsCollectionRef, { ...callData, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
@@ -1526,54 +1538,6 @@
             }
         }
 
-        function handleEditClick(e) {
-            requirePassword(() => {
-                const callId = e.currentTarget.dataset.id;
-                const isHistorical = e.currentTarget.dataset.isHistorical === 'true';
-                currentEditIsHistorical = isHistorical;
-                const allData = isHistorical ? historicalCalls : calls;
-                const callToEdit = allData.find(call => call.id === callId);
-                if (!callToEdit) return;
-
-                document.getElementById('edit-id').value = callId;
-                
-                // Actualizar Select2 para todos los campos
-                $('#edit-caller-institution').val(callToEdit.institucion || '').trigger('change');
-                $('#edit-call-area').val(callToEdit.area || '').trigger('change');
-                $('#edit-call-subject').val(callToEdit.asunto || '').trigger('change');
-                $('#edit-call-query').val(callToEdit.consulta || '').trigger('change');
-                $('#edit-caller-name').val(callToEdit.nombre || '').trigger('change');
-                $('#edit-caller-cargo').val(callToEdit.cargo || '').trigger('change');
-                $('#edit-caller-email').val(callToEdit.correo || '').trigger('change');
-                $('#edit-caller-phone').val(callToEdit.telefono || '').trigger('change');
-                $('#edit-call-comments').val(callToEdit.comentarios || '').trigger('change');
-                $('#edit-call-atendio').val(callToEdit.atendio || '').trigger('change');
-
-                openModal(editModal);
-            });
-        }
-
-        async function handleStatusToggle(e) {
-            const button = e.currentTarget;
-            const callId = button.dataset.id;
-            const isHistorical = button.dataset.isHistorical === 'true';
-            const currentStatus = button.textContent.trim();
-            const newStatus = currentStatus === 'Atendida' ? 'Pendiente' : 'Atendida';
-            await updateCall(callId, { estatus: newStatus }, isHistorical);
-        }
-
-        function handleDeleteClick(e) {
-            requirePassword(() => {
-                callToDeleteId = e.currentTarget.dataset.id;
-                callToDeleteIsHistorical = e.currentTarget.dataset.isHistorical === 'true';
-                openModal(confirmModal);
-            });
-        }
-
-        // =============================================
-        // MÓDULO: Gestión de datos históricos
-        // =============================================
-        
         async function deleteAllHistorical() {
             const batch = writeBatch(db);
             historicalCalls.forEach(call => {
@@ -1583,6 +1547,7 @@
             await batch.commit();
         }
 
+        // Mejorar importación de histórico con manejo correcto de fechas y duraciones
         async function importHistoricalData(data) {
             try {
                 const batch = writeBatch(db);
@@ -1597,335 +1562,8 @@
                 showAlert(`Error al importar: ${error.message}`, "error");
             }
         }
-
-        // =============================================
-        // MÓDULO: Gestión de opciones dinámicas y autocompletado
-        // =============================================
         
-        function updateDynamicSelectOptions() {
-            const allData = [...calls, ...historicalCalls];
-            
-            fieldOptions.areas = [...new Set(allData.map(c => c.area).filter(Boolean))].sort();
-            fieldOptions.asuntos = [...new Set(allData.map(c => c.asunto).filter(Boolean))].sort();
-            fieldOptions.consultas = [...new Set(allData.map(c => c.consulta).filter(Boolean))].sort();
-            fieldOptions.nombres = [...new Set(allData.map(c => c.nombre).filter(Boolean))].sort();
-            fieldOptions.cargos = [...new Set(allData.map(c => c.cargo).filter(Boolean))].sort();
-            fieldOptions.correos = [...new Set(allData.map(c => c.correo).filter(Boolean))].sort();
-            fieldOptions.telefonos = [...new Set(allData.map(c => c.telefono).filter(Boolean))].sort();
-            fieldOptions.comentarios = [...new Set(allData.map(c => c.comentarios).filter(Boolean))].sort();
-            fieldOptions.instituciones = [...new Set(allData.map(c => c.institucion).filter(Boolean))].sort();
-            fieldOptions.atendioUsers = [...new Set(allData.map(c => c.atendio).filter(Boolean))].sort();
-            
-            Object.keys(fieldOptions).forEach(field => {
-                updateSelectOptions(field, fieldOptions[field]);
-            });
-        }
-
-        function updateSelectOptions(field, options) {
-            const fieldToSelectMap = {
-                'instituciones': ['caller-institution', 'edit-caller-institution'],
-                'areas': ['call-area', 'edit-call-area'],
-                'asuntos': ['call-subject', 'edit-call-subject'],
-                'consultas': ['call-query', 'edit-call-query'],
-                'nombres': ['caller-name', 'edit-caller-name'],
-                'cargos': ['caller-cargo', 'edit-caller-cargo'],
-                'correos': ['caller-email', 'edit-caller-email'],
-                'telefonos': ['caller-phone', 'edit-caller-phone'],
-                'comentarios': ['call-comments', 'edit-call-comments'],
-                'atendioUsers': ['call-atendio', 'edit-call-atendio']
-            };
-            
-            if (fieldToSelectMap[field]) {
-                fieldToSelectMap[field].forEach(selectId => {
-                    const select = $(`#${selectId}`);
-                    if (select.length) {
-                        const currentValue = select.val();
-                        select.empty().select2({
-                            data: options,
-                            tags: true,
-                            placeholder: "Seleccione o escriba una opción",
-                            allowClear: true,
-                            width: '100%'
-                        }).val(currentValue).trigger('change.select2');
-                    }
-                });
-            }
-        }
-
-        function setupAutofill() {
-            // Función para cargar los detalles del contacto
-            function loadContactDetails(name, institution, isEditModal) {
-                if (!name || !institution) return;
-
-                const allData = [...calls, ...historicalCalls];
-                const records = allData
-                    .filter(c => c.nombre === name && c.institucion === institution)
-                    .sort((a, b) => new Date(b.createdAt?.toDate()) - new Date(a.createdAt?.toDate()));
-
-                if (records.length > 0) {
-                    const latestRecord = records[0];
-                    const cargo = latestRecord.cargo || '';
-                    const email = latestRecord.correo || '';
-                    const phone = latestRecord.telefono || '';
-                    
-                    if (isEditModal) {
-                        $('#edit-caller-cargo').val(cargo).trigger('change');
-                        $('#edit-caller-email').val(email).trigger('change');
-                        $('#edit-caller-phone').val(phone).trigger('change');
-                    } else {
-                        $('#caller-cargo').val(cargo).trigger('change');
-                        $('#caller-email').val(email).trigger('change');
-                        $('#caller-phone').val(phone).trigger('change');
-                    }
-                }
-            }
-
-            $('#caller-institution, #edit-caller-institution').on('change', function() {
-                const institution = $(this).val();
-                const isEditModal = $(this).attr('id').includes('edit');
-                const nameSelect = isEditModal ? $('#edit-caller-name') : $('#caller-name');
-                
-                const allData = [...calls, ...historicalCalls];
-                const namesForInstitution = [...new Set(allData
-                    .filter(c => c.institucion === institution)
-                    .map(c => c.nombre)
-                    .filter(Boolean))].sort();
-                
-                nameSelect.empty().select2({
-                    data: namesForInstitution,
-                    tags: true,
-                    placeholder: "Seleccione un nombre",
-                    allowClear: true,
-                    width: '100%'
-                });
-
-                // MEJORA: Si solo hay un nombre, seleccionarlo automáticamente y cargar sus datos
-                if (namesForInstitution.length === 1) {
-                    nameSelect.val(namesForInstitution[0]).trigger('change');
-                    // Llamar directamente a la función para cargar los detalles
-                    loadContactDetails(namesForInstitution[0], institution, isEditModal);
-                } else {
-                    // Limpiar campos dependientes solo si no hay un nombre único
-                    if (isEditModal) {
-                        $('#edit-caller-cargo, #edit-caller-email, #edit-caller-phone').val(null).trigger('change');
-                    } else {
-                        $('#caller-cargo, #caller-email, #caller-phone').val(null).trigger('change');
-                    }
-                }
-            });
-
-            // Evento change para el nombre
-            $('#caller-name, #edit-caller-name').on('change', function() {
-                const name = $(this).val();
-                const isEditModal = $(this).attr('id').includes('edit');
-                const institution = isEditModal ? $('#edit-caller-institution').val() : $('#caller-institution').val();
-                loadContactDetails(name, institution, isEditModal);
-            });
-        }
-
-        async function findAndReplaceInDatabase(field, oldValue, newValue) {
-            const fieldToDbFieldMap = {
-                'instituciones': 'institucion', 'areas': 'area', 'asuntos': 'asunto',
-                'consultas': 'consulta', 'nombres': 'nombre', 'cargos': 'cargo',
-                'correos': 'correo', 'telefonos': 'telefono', 'comentarios': 'comentarios',
-                'atendioUsers': 'atendio'
-            };
-            
-            const dbField = fieldToDbFieldMap[field];
-            if (!dbField) return;
-            
-            try {
-                const batch = writeBatch(db);
-                const callsQuery = query(callsCollectionRef, where(dbField, '==', oldValue));
-                const callsSnapshot = await getDocs(callsQuery);
-                callsSnapshot.forEach(doc => batch.update(doc.ref, { [dbField]: newValue }));
-                
-                const historicalQuery = query(historicalCallsCollectionRef, where(dbField, '==', oldValue));
-                const historicalSnapshot = await getDocs(historicalQuery);
-                historicalSnapshot.forEach(doc => batch.update(doc.ref, { [dbField]: newValue }));
-                
-                await batch.commit();
-                showAlert(`Se actualizaron ${callsSnapshot.size + historicalSnapshot.size} registros.`, "success");
-            } catch (error) {
-                console.error("Error al actualizar registros:", error);
-                showAlert("Error al actualizar registros existentes", "error");
-            }
-        }
-
-        function setupAddEditButtons() {
-            const buttonMap = {
-                'institution': 'instituciones', 'area': 'areas', 'subject': 'asuntos',
-                'query': 'consultas', 'name': 'nombres', 'cargo': 'cargos',
-                'email': 'correos', 'phone': 'telefonos', 'comments': 'comentarios',
-                'atendio': 'atendioUsers'
-            };
-
-            document.body.addEventListener('click', (e) => {
-                const button = e.target.closest('button.add-btn, button.edit-btn');
-                if (!button) return;
-
-                const idParts = button.id.split('-');
-                const action = idParts[0]; // add or edit
-                const fieldKey = idParts[1]; // institution, area, etc.
-                const field = buttonMap[fieldKey];
-
-                if (action === 'add') {
-                    currentEditingField = field;
-                    newOptionInput.value = '';
-                    newOptionInput.placeholder = `Ingrese nueva opción para ${field}`;
-                    openModal(addOptionModal);
-                } else if (action === 'edit') {
-                    const select = button.parentElement.querySelector('select');
-                    const currentValue = $(select).val();
-                    if (!currentValue) {
-                        return showAlert("Por favor, seleccione una opción para editar.", "warning");
-                    }
-                    currentEditingField = field;
-                    currentEditingValue = currentValue;
-                    editOptionInput.value = currentValue;
-                    editOptionInput.placeholder = `Edite la opción para ${field}`;
-                    openModal(editOptionModal);
-                }
-            });
-            
-            confirmAddOptionBtn.addEventListener('click', () => {
-                const newOption = newOptionInput.value.trim();
-                if (newOption && currentEditingField) {
-                    if (!fieldOptions[currentEditingField].includes(newOption)) {
-                        fieldOptions[currentEditingField].push(newOption);
-                        fieldOptions[currentEditingField].sort();
-                        updateSelectOptions(currentEditingField, fieldOptions[currentEditingField]);
-                        // Seleccionar la nueva opción automáticamente
-                        $(`#${currentEditingField === 'instituciones' ? 'caller-institution' : 
-                            currentEditingField === 'areas' ? 'call-area' :
-                            currentEditingField === 'asuntos' ? 'call-subject' :
-                            currentEditingField === 'consultas' ? 'call-query' :
-                            currentEditingField === 'nombres' ? 'caller-name' :
-                            currentEditingField === 'cargos' ? 'caller-cargo' :
-                            currentEditingField === 'correos' ? 'caller-email' :
-                            currentEditingField === 'telefonos' ? 'caller-phone' :
-                            currentEditingField === 'comentarios' ? 'call-comments' :
-                            'call-atendio'}`).val(newOption).trigger('change');
-                    }
-                    showAlert(`Opción "${newOption}" añadida.`, "success");
-                    closeModal(addOptionModal);
-                }
-            });
-            
-            confirmEditOptionBtn.addEventListener('click', () => {
-                const newValue = editOptionInput.value.trim();
-                if (newValue && currentEditingField && currentEditingValue) {
-                    requirePassword(() => {
-                        findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue);
-                        // Actualizar la opción en el select correspondiente
-                        updateSelectOptions(currentEditingField, fieldOptions[currentEditingField]);
-                        // Seleccionar la opción editada
-                        $(`#${currentEditingField === 'instituciones' ? 'caller-institution' : 
-                            currentEditingField === 'areas' ? 'call-area' :
-                            currentEditingField === 'asuntos' ? 'call-subject' :
-                            currentEditingField === 'consultas' ? 'call-query' :
-                            currentEditingField === 'nombres' ? 'caller-name' :
-                            currentEditingField === 'cargos' ? 'caller-cargo' :
-                            currentEditingField === 'correos' ? 'caller-email' :
-                            currentEditingField === 'telefonos' ? 'caller-phone' :
-                            currentEditingField === 'comentarios' ? 'call-comments' :
-                            'call-atendio'}`).val(newValue).trigger('change');
-                        closeModal(editOptionModal);
-                    });
-                }
-            });
-            
-            cancelAddOptionBtn.addEventListener('click', () => closeModal(addOptionModal));
-            cancelEditOptionBtn.addEventListener('click', () => closeModal(editOptionModal));
-            
-            // MEJORA: Permitir activar con tecla Enter
-            newOptionInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    confirmAddOptionBtn.click();
-                }
-            });
-            
-            editOptionInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    confirmEditOptionBtn.click();
-                }
-            });
-        }
-
-        // =============================================
-        // MÓDULO: Autenticación y seguridad
-        // =============================================
-        
-        function verifyPassword() {
-            const password = passwordInput.value;
-            if (password === 'admin') {
-                closeModal(passwordModal);
-                passwordInput.value = '';
-                if (pendingAction) {
-                    pendingAction();
-                    pendingAction = null;
-                }
-            } else {
-                showAlert("Contraseña incorrecta", "error");
-                passwordInput.value = '';
-            }
-        }
-
-        function setupPasswordVerification() {
-            confirmPasswordBtn.addEventListener('click', verifyPassword);
-            cancelPasswordBtn.addEventListener('click', () => {
-                closeModal(passwordModal);
-                pendingAction = null;
-            });
-            passwordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    verifyPassword();
-                }
-            });
-        }
-
-        function requirePassword(action) {
-            pendingAction = action;
-            openModal(passwordModal);
-        }
-
-        async function initializeAppWithAuth() {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    userInfo.textContent = `Usuario Anónimo: ${userId.substring(0, 8)}...`;
-                    setupRealtimeListeners();
-                    showApp();
-                } else {
-                    await signInAnonymously(auth);
-                }
-            });
-        }
-        
-        function setupRealtimeListeners() {
-            onSnapshot(query(callsCollectionRef), (snapshot) => {
-                calls = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                sortAndRenderTable(callLogTableBody, calls, false);
-                updateDashboard();
-                updateCharts();
-                updateDynamicSelectOptions();
-            }, (error) => console.error("Error en listener de llamadas:", error));
-            
-            onSnapshot(query(historicalCallsCollectionRef), (snapshot) => {
-                historicalCalls = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                sortAndRenderTable(historicalTableBody, historicalCalls, true);
-                updateDashboard();
-                updateCharts();
-                updateDynamicSelectOptions();
-            }, (error) => console.error("Error en listener de histórico:", error));
-        }
-
-        // =============================================
-        // MÓDULO: Gráficos y reportes
-        // =============================================
-        
+        // Mejorar la función updateCharts con filtros robustos
         function updateCharts() {
             const source = reportesDataSource.value;
             let data = [];
@@ -1933,36 +1571,55 @@
             else if (source === 'historico') data = historicalCalls;
             else data = [...calls, ...historicalCalls];
             
+            // VERSIÓN 1.7: Aplicar filtros de reporte con ajuste de fecha final
             if (reportFilter.type === 'period' && reportFilter.startDate && reportFilter.endDate) {
                 const startDate = new Date(reportFilter.startDate);
                 let endDate = new Date(reportFilter.endDate);
-                endDate.setHours(23, 59, 59, 999);
+                endDate.setHours(23, 59, 59, 999); // Ajustar para incluir todo el día
+                
                 data = data.filter(call => {
                     if (!call.fecha) return false;
                     try {
                         const callDate = new Date(call.fecha.split('/').reverse().join('-'));
                         return callDate >= startDate && callDate <= endDate;
-                    } catch (e) { return false; }
+                    } catch (e) {
+                        return false;
+                    }
                 });
             }
             
-            const chartWrappers = document.querySelectorAll('.chart-wrapper');
-            const chartSize = chartSizeSlider.value;
-            chartWrappers.forEach(wrapper => {
-                wrapper.style.height = `${chartSize}px`;
-            });
-
+            // Proporcionar retroalimentación al usuario
+            if (data.length === 0) {
+                showAlert("No se encontraron datos para el periodo y fuente seleccionados.", "warning");
+                
+                // Limpiar gráficos existentes
+                if (statusChart) statusChart.destroy();
+                if (asuntoChart) asuntoChart.destroy();
+                if (dayOfWeekChart) dayOfWeekChart.destroy();
+                if (atendioChart) atendioChart.destroy();
+                
+                // Crear gráficos vacíos
+                statusChart = new Chart(statusChartCanvas, { type: 'pie', data: { labels: [], datasets: [] } });
+                asuntoChart = new Chart(asuntoChartCanvas, { type: 'bar', data: { labels: [], datasets: [] } });
+                dayOfWeekChart = new Chart(dayOfWeekChartCanvas, { type: 'line', data: { labels: [], datasets: [] } });
+                atendioChart = new Chart(atendioChartCanvas, { type: 'polarArea', data: { labels: [], datasets: [] } });
+                
+                return;
+            } else {
+                showAlert(`Se encontraron ${data.length} registros. Actualizando reportes.`, "success");
+            }
+            
             const statusCounts = {}, asuntoCounts = {}, dayOfWeekCounts = {}, atendioCounts = {};
             data.forEach(call => {
-                statusCounts[call.estatus || 'N/A'] = (statusCounts[call.estatus || 'N/A'] || 0) + 1;
-                asuntoCounts[call.asunto || 'N/A'] = (asuntoCounts[call.asunto || 'N/A'] || 0) + 1;
-                atendioCounts[call.atendio || 'N/A'] = (atendioCounts[call.atendio || 'N/A'] || 0) + 1;
+                statusCounts[call.estatus] = (statusCounts[call.estatus] || 0) + 1;
+                asuntoCounts[call.asunto] = (asuntoCounts[call.asunto] || 0) + 1;
+                atendioCounts[call.atendio] = (atendioCounts[call.atendio] || 0) + 1;
                 if (call.fecha && typeof call.fecha === 'string') {
                     try {
                         const date = new Date(call.fecha.split('/').reverse().join('-'));
                         const day = date.toLocaleDateString('es-ES', { weekday: 'long' });
                         dayOfWeekCounts[day] = (dayOfWeekCounts[day] || 0) + 1;
-                    } catch (e) { /* Ignorar */ }
+                    } catch (e) { /* Ignorar fechas inválidas */ }
                 }
             });
             
@@ -1971,12 +1628,7 @@
                 let labels = Object.keys(data);
                 if (labelsOrder) labels.sort((a, b) => labelsOrder.indexOf(a) - labelsOrder.indexOf(b));
                 const chartData = labels.map(label => data[label]);
-                
-                return new Chart(canvas, { 
-                    type, 
-                    data: { labels, datasets: [{ data: chartData, backgroundColor: ['#9C2348', '#1E5B4F', '#A6802D', '#EF4444', '#3B82F6'] }] }, 
-                    options: { responsive: true, maintainAspectRatio: false } 
-                });
+                return new Chart(canvas, { type, data: { labels, datasets: [{ data: chartData, backgroundColor: ['#6A002C', '#10B981', '#EF4444', '#FCD34D', '#3B82F6'] }] }, options: { responsive: true } });
             };
 
             statusChart = createOrUpdateChart(statusChartCanvas, statusChart, 'pie', statusCounts);
@@ -1984,107 +1636,82 @@
             atendioChart = createOrUpdateChart(atendioChartCanvas, atendioChart, 'polarArea', atendioCounts);
             dayOfWeekChart = createOrUpdateChart(dayOfWeekChartCanvas, dayOfWeekChart, 'line', dayOfWeekCounts, ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo']);
 
-            // Actualizar gráfica dinámica
-            updateDynamicChart();
-
+            // Locale en español para PivotTable.js
             $.pivotUtilities.locales.es = {
-                localeStrings: { renderError: "Error al renderizar.", computeError: "Error al calcular.", uiRenderError: "Error de UI.", selectAll: "Seleccionar Todo", selectNone: "Seleccionar Ninguno", tooMany: "(demasiados)", filterResults: "Filtrar", apply: "Aplicar", cancel: "Cancelar", totals: "Totales", vs: "vs", by: "por" },
-                aggregators: { "Conteo": "Conteo", "Suma": "Suma", "Promedio": "Promedio", "Mínimo": "Mínimo", "Máximo": "Máximo" },
-                renderers: { "Tabla": "Tabla", "Gráfico de Barras": "Gráfico de Barras", "Gráfico de Líneas": "Gráfico de Líneas", "Mapa de Calor": "Mapa de Calor" }
+                localeStrings: {
+                    renderError: "Error al renderizar los resultados.",
+                    computeError: "Error al calcular los resultados.",
+                    uiRenderError: "Error al renderizar la interfaz.",
+                    selectAll: "Seleccionar Todo",
+                    selectNone: "Seleccionar Ninguno",
+                    tooMany: "(demasiados para listar)",
+                    filterResults: "Filtrar resultados",
+                    apply: "Aplicar",
+                    cancel: "Cancelar",
+                    totals: "Totales",
+                    vs: "vs",
+                    by: "por"
+                },
+                aggregators: {
+                    "Count": "Conteo",
+                    "Count Unique Values": "Conteo de Valores Únicos",
+                    "List Unique Values": "Lista de Valores Únicos",
+                    "Sum": "Suma",
+                    "Integer Sum": "Suma Entera",
+                    "Average": "Promedio",
+                    "Median": "Mediana",
+                    "Sample Variance": "Varianza Muestral",
+                    "Sample Standard Deviation": "Desviación Estándar Muestral",
+                    "Minimum": "Mínimo",
+                    "Maximum": "Máximo",
+                    "First": "Primero",
+                    "Last": "Último",
+                    "Sum over Sum": "Suma sobre Suma",
+                    "80% Upper Bound": "Límite Superior 80%",
+                    "80% Lower Bound": "Límite Inferior 80%",
+                    "Sum as Fraction of Total": "Suma como Fracción del Total",
+                    "Sum as Fraction of Rows": "Suma como Fracción de Filas",
+                    "Sum as Fraction of Columns": "Suma como Fracción de Columnas",
+                    "Count as Fraction of Total": "Conteo como Fracción del Total",
+                    "Count as Fraction of Rows": "Conteo como Fracción de Filas",
+                    "Count as Fraction of Columns": "Conteo como Fracción de Columnas"
+                },
+                renderers: {
+                    "Table": "Tabla",
+                    "Table Barchart": "Tabla con Gráfico de Barras",
+                    "Heatmap": "Mapa de Calor",
+                    "Row Heatmap": "Mapa de Calor por Fila",
+                    "Col Heatmap": "Mapa de Calor por Columna",
+                    "Line Chart": "Gráfico de Líneas",
+                    "Bar Chart": "Gráfico de Barras",
+                    "Stacked Bar Chart": "Gráfico de Barras Apiladas",
+                    "Area Chart": "Gráfico de Área",
+                    "Scatter Chart": "Gráfico de Dispersión",
+                    "Multiple Pie Chart": "Gráfico de Pastel Múltiple",
+                    "Treemap": "Mapa de Árbol"
+                }
             };
 
+            // Inicializar tabla dinámica con locale 'es'
             $(pivotTableContainer).pivotUI(data, {
-                rows: ["area"], cols: ["estatus"], vals: ["duracion"],
-                aggregatorName: "Conteo", rendererName: "Tabla", locale: "es"
+                rows: ["area"],
+                cols: ["estatus"],
+                vals: ["duracion"],
+                aggregatorName: "Conteo",
+                rendererName: "Tabla",
+                locale: "es"
             });
         }
 
-        function updateDynamicChart() {
-            const source = reportesDataSource.value;
-            let data = [];
-            if (source === 'registro') data = calls;
-            else if (source === 'historico') data = historicalCalls;
-            else data = [...calls, ...historicalCalls];
-            
-            if (reportFilter.type === 'period' && reportFilter.startDate && reportFilter.endDate) {
-                const startDate = new Date(reportFilter.startDate);
-                let endDate = new Date(reportFilter.endDate);
-                endDate.setHours(23, 59, 59, 999);
-                data = data.filter(call => {
-                    if (!call.fecha) return false;
-                    try {
-                        const callDate = new Date(call.fecha.split('/').reverse().join('-'));
-                        return callDate >= startDate && callDate <= endDate;
-                    } catch (e) { return false; }
-                });
-            }
-            
-            const selectedVariable = dynamicChartVariable.value;
-            const variableCounts = {};
-            const variableStatusCounts = {};
-            
-            data.forEach(call => {
-                const value = call[selectedVariable] || 'N/A';
-                variableCounts[value] = (variableCounts[value] || 0) + 1;
-                
-                if (!variableStatusCounts[value]) {
-                    variableStatusCounts[value] = { 'Atendida': 0, 'Pendiente': 0 };
-                }
-                
-                if (call.estatus === 'Atendida') {
-                    variableStatusCounts[value].Atendida += 1;
-                } else {
-                    variableStatusCounts[value].Pendiente += 1;
-                }
-            });
-            
-            // Actualizar tabla dinámica
-            dynamicTableBody.innerHTML = '';
-            dynamicTableHeader.textContent = selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1);
-            
-            Object.entries(variableStatusCounts).forEach(([value, counts]) => {
-                const total = counts.Atendida + counts.Pendiente;
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${value}</td>
-                    <td>${counts.Atendida}</td>
-                    <td>${counts.Pendiente}</td>
-                    <td>${total}</td>
-                `;
-                dynamicTableBody.appendChild(row);
-            });
-            
-            // Actualizar gráfico
-            if (dynamicChart) dynamicChart.destroy();
-            
-            const labels = Object.keys(variableCounts);
-            const chartData = Object.values(variableCounts);
-            
-            dynamicChart = new Chart(dynamicChartCanvas, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Cantidad',
-                        data: chartData,
-                        backgroundColor: '#9C2348'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
+        // Configurar el modal de configuración de reportes
         function setupReportConfig() {
-            configReportBtn.addEventListener('click', () => openModal(configReportModal));
-            closeConfigReportModalBtn.addEventListener('click', () => closeModal(configReportModal));
+            configReportBtn.addEventListener('click', () => {
+                openModal(configReportModal);
+            });
+            
+            closeConfigReportModalBtn.addEventListener('click', () => {
+                closeModal(configReportModal);
+            });
             
             filterAllDataRadio.addEventListener('change', () => {
                 configReportStartDate.disabled = true;
@@ -2097,545 +1724,863 @@
             });
             
             saveConfigReportBtn.addEventListener('click', () => {
-                if (filterByPeriodRadio.checked && (!configReportStartDate.value || !configReportEndDate.value)) {
-                    return showAlert("Por favor, seleccione un rango de fechas válido.", "warning");
+                if (filterAllDataRadio.checked) {
+                    reportFilter.type = 'all';
+                    reportFilter.startDate = null;
+                    reportFilter.endDate = null;
+                } else if (filterByPeriodRadio.checked) {
+                    if (!configReportStartDate.value || !configReportEndDate.value) {
+                        showAlert("Por favor, seleccione un rango de fechas válido.", "warning");
+                        return;
+                    }
+                    reportFilter.type = 'period';
+                    reportFilter.startDate = configReportStartDate.value;
+                    reportFilter.endDate = configReportEndDate.value;
                 }
-                reportFilter.type = filterAllDataRadio.checked ? 'all' : 'period';
-                reportFilter.startDate = configReportStartDate.value;
-                reportFilter.endDate = configReportEndDate.value;
                 
-                showAlert("Configuración de reportes guardada.", "success");
+                showAlert("Configuración de reportes guardada correctamente.", "success");
                 closeModal(configReportModal);
                 updateCharts();
             });
         }
 
-        function generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio, includeDynamic) {
+        // Función para generar reporte ejecutivo en PDF con animaciones deshabilitadas
+        function generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio) {
             const source = reportesDataSource.value;
             let data = [];
             if (source === 'registro') data = calls;
             else if (source === 'historico') data = historicalCalls;
             else data = [...calls, ...historicalCalls];
             
+            // Aplicar filtros de reporte
             if (reportFilter.type === 'period' && reportFilter.startDate && reportFilter.endDate) {
                 const startDate = new Date(reportFilter.startDate);
                 let endDate = new Date(reportFilter.endDate);
-                endDate.setHours(23, 59, 59, 999);
+                endDate.setHours(23, 59, 59, 999); // Ajustar para incluir todo el día
+                
                 data = data.filter(call => {
                     if (!call.fecha) return false;
                     try {
                         const callDate = new Date(call.fecha.split('/').reverse().join('-'));
                         return callDate >= startDate && callDate <= endDate;
-                    } catch (e) { return false; }
+                    } catch (e) {
+                        return false;
+                    }
                 });
             }
             
-            const statusCounts = {}, asuntoCounts = {}, dayOfWeekCounts = {}, atendioCounts = {};
-            data.forEach(call => {
-                statusCounts[call.estatus || 'N/A'] = (statusCounts[call.estatus || 'N/A'] || 0) + 1;
-                asuntoCounts[call.asunto || 'N/A'] = (asuntoCounts[call.asunto || 'N/A'] || 0) + 1;
-                atendioCounts[call.atendio || 'N/A'] = (atendioCounts[call.atendio || 'N/A'] || 0) + 1;
-                if (call.fecha && typeof call.fecha === 'string') {
-                    try {
-                        const date = new Date(call.fecha.split('/').reverse().join('-'));
-                        const day = date.toLocaleDateString('es-ES', { weekday: 'long' });
-                        dayOfWeekCounts[day] = (dayOfWeekCounts[day] || 0) + 1;
-                    } catch (e) { /* Ignorar */ }
-                }
-            });
+            if (data.length === 0) {
+                showAlert("No hay datos en el rango de fechas seleccionado.", "warning");
+                return;
+            }
             
+            // Calcular métricas
             const totalCalls = data.length;
             const atendidas = data.filter(c => c.estatus === 'Atendida').length;
             const pendientes = totalCalls - atendidas;
+            const porcentajeAtendidas = totalCalls > 0 ? ((atendidas / totalCalls) * 100).toFixed(2) : 0;
+            const porcentajePendientes = totalCalls > 0 ? ((pendientes / totalCalls) * 100).toFixed(2) : 0;
+            
+            // Duración promedio
             const totalDuration = data.reduce((sum, c) => sum + (Number(c.duracion) || 0), 0);
             const avgDuration = totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0;
             
-            const currentDate = new Date().toLocaleDateString('es-ES', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            
+            // Preparar HTML del reporte
             let reportHTML = `
                 <div class="reporte-ejecutivo">
                     <div class="reporte-header">
                         <h1>Reporte Ejecutivo de Llamadas</h1>
-                        <p>Generado el: ${currentDate}</p>
-                        <p>Total de registros: ${totalCalls}</p>
+                        <p>Período: ${reportFilter.type === 'period' ? `${new Date(reportFilter.startDate).toLocaleDateString('es-ES')} - ${new Date(reportFilter.endDate).toLocaleDateString('es-ES')}` : 'Todos los datos'}</p>
+                        <p>Generado el: ${new Date().toLocaleDateString('es-ES')}</p>
                     </div>
                     
                     <div class="reporte-metricas">
                         <div class="metrica">
+                            <h3>Total de Llamadas</h3>
+                            <p class="valor">${totalCalls}</p>
+                        </div>
+                        <div class="metrica">
                             <h3>Llamadas Atendidas</h3>
-                            <p>${atendidas}</p>
+                            <p class="valor">${atendidas} (${porcentajeAtendidas}%)</p>
                         </div>
                         <div class="metrica">
                             <h3>Llamadas Pendientes</h3>
-                            <p>${pendientes}</p>
+                            <p class="valor">${pendientes} (${porcentajePendientes}%)</p>
                         </div>
                         <div class="metrica">
                             <h3>Duración Promedio</h3>
-                            <p>${formatDuration(avgDuration)}</p>
-                        </div>
-                        <div class="metrica">
-                            <h3>Total de Llamadas</h3>
-                            <p>${totalCalls}</p>
+                            <p class="valor">${formatDuration(avgDuration)}</p>
                         </div>
                     </div>
             `;
             
-            if (includeStatus) {
-                reportHTML += `
-                    <div class="grafica">
-                        <h3>Llamadas por Estatus</h3>
-                        <canvas id="report-status-chart" width="400" height="300"></canvas>
-                    </div>
-                `;
-            }
-            
-            if (includeAsunto) {
-                reportHTML += `
-                    <div class="grafica">
-                        <h3>Llamadas por Asunto</h3>
-                        <canvas id="report-asunto-chart" width="400" height="300"></canvas>
-                    </div>
-                `;
-            }
-            
-            if (includeDay) {
-                reportHTML += `
-                    <div class="grafica">
-                        <h3>Llamadas por Día de la Semana</h3>
-                        <canvas id="report-day-chart" width="400" height="300"></canvas>
-                    </div>
-                `;
-            }
-            
-            if (includeAtendio) {
-                reportHTML += `
-                    <div class="grafica">
-                        <h3>Llamadas por Servidor Público</h3>
-                        <canvas id="report-atendio-chart" width="400" height="300"></canvas>
-                    </div>
-                `;
-            }
-            
-            if (includeDynamic) {
-                const selectedVariable = dynamicChartVariable.value;
-                const variableCounts = {};
-                const variableStatusCounts = {};
+            // Añadir gráficas seleccionadas
+            if (includeStatus || includeAsunto || includeDay || includeAtendio) {
+                reportHTML += `<div class="graficas-container">`;
                 
-                data.forEach(call => {
-                    const value = call[selectedVariable] || 'N/A';
-                    variableCounts[value] = (variableCounts[value] || 0) + 1;
+                if (includeStatus) {
+                    const statusCounts = {};
+                    data.forEach(call => {
+                        statusCounts[call.estatus] = (statusCounts[call.estatus] || 0) + 1;
+                    });
                     
-                    if (!variableStatusCounts[value]) {
-                        variableStatusCounts[value] = { 'Atendida': 0, 'Pendiente': 0 };
-                    }
-                    
-                    if (call.estatus === 'Atendida') {
-                        variableStatusCounts[value].Atendida += 1;
-                    } else {
-                        variableStatusCounts[value].Pendiente += 1;
-                    }
-                });
-                
-                reportHTML += `
-                    <div class="grafica">
-                        <h3>Llamadas por ${selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1)}</h3>
-                        <canvas id="report-dynamic-chart" width="400" height="300"></canvas>
-                    </div>
-                    <div class="tabla-datos">
-                        <h3>Distribución por Estatus - ${selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1)}</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>${selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1)}</th>
-                                    <th>Atendida</th>
-                                    <th>Pendiente</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-                
-                Object.entries(variableStatusCounts).forEach(([value, counts]) => {
-                    const total = counts.Atendida + counts.Pendiente;
                     reportHTML += `
-                        <tr>
-                            <td>${value}</td>
-                            <td>${counts.Atendida}</td>
-                            <td>${counts.Pendiente}</td>
-                            <td>${total}</td>
-                        </tr>
+                        <div class="grafica">
+                            <h3>Llamadas por Estatus</h3>
+                            <canvas id="report-status-chart"></canvas>
+                        </div>
                     `;
-                });
+                }
                 
-                reportHTML += `
-                            </tbody>
-                        </table>
-                    </div>
-                `;
+                if (includeAsunto) {
+                    const asuntoCounts = {};
+                    data.forEach(call => {
+                        asuntoCounts[call.asunto] = (asuntoCounts[call.asunto] || 0) + 1;
+                    });
+                    
+                    reportHTML += `
+                        <div class="grafica">
+                            <h3>Llamadas por Asunto</h3>
+                            <canvas id="report-asunto-chart"></canvas>
+                        </div>
+                    `;
+                }
+                
+                if (includeDay) {
+                    const dayOfWeekCounts = {};
+                    data.forEach(call => {
+                        if (call.fecha && typeof call.fecha === 'string') {
+                            try {
+                                const date = new Date(call.fecha.split('/').reverse().join('-'));
+                                const day = date.toLocaleDateString('es-ES', { weekday: 'long' });
+                                dayOfWeekCounts[day] = (dayOfWeekCounts[day] || 0) + 1;
+                            } catch (e) { /* Ignorar fechas inválidas */ }
+                        }
+                    });
+                    
+                    reportHTML += `
+                        <div class="grafica">
+                            <h3>Llamadas por Día de la Semana</h3>
+                            <canvas id="report-day-chart"></canvas>
+                        </div>
+                    `;
+                }
+                
+                if (includeAtendio) {
+                    const atendioCounts = {};
+                    data.forEach(call => {
+                        atendioCounts[call.atendio] = (atendioCounts[call.atendio] || 0) + 1;
+                    });
+                    
+                    reportHTML += `
+                        <div class="grafica">
+                            <h3>Llamadas por Servidor Público</h3>
+                            <canvas id="report-atendio-chart"></canvas>
+                        </div>
+                    `;
+                }
+                
+                reportHTML += `</div>`;
             }
+            
+            // Añadir tabla resumen
+            reportHTML += `
+                <div class="tabla-resumen">
+                    <h3>Resumen de Llamadas</h3>
+                    <table class="tabla-datos">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Institución</th>
+                                <th>Área</th>
+                                <th>Asunto</th>
+                                <th>Estatus</th>
+                                <th>Duración</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            // Limitar a 10 registros para el resumen
+            data.slice(0, 10).forEach(call => {
+                reportHTML += `
+                    <tr>
+                        <td>${call.fecha || 'N/A'}</td>
+                        <td>${call.institucion || 'N/A'}</td>
+                        <td>${call.area || 'N/A'}</td>
+                        <td>${call.asunto || 'N/A'}</td>
+                        <td>${call.estatus || 'N/A'}</td>
+                        <td>${formatDuration(call.duracion)}</td>
+                    </tr>
+                `;
+            });
             
             reportHTML += `
-                    <div class="reporte-footer">
-                        <p>Sistema de Registro de Llamadas v1.3 - Gobierno de México</p>
-                    </div>
+                        </tbody>
+                    </table>
+                    ${data.length > 10 ? `<p>... y ${data.length - 10} registros más</p>` : ''}
                 </div>
+                
+                <div class="reporte-footer">
+                    <p>Sistema de Registro de Llamadas Alpha 1.7 - Reporte generado automáticamente</p>
+                </div>
+            </div>
             `;
             
+            // Mostrar previsualización
             reportPreview.innerHTML = reportHTML;
             
-            // Generar gráficos para el reporte
+            // Generar gráficas en el reporte con animaciones deshabilitadas
             setTimeout(() => {
                 if (includeStatus) {
+                    const statusCounts = {};
+                    data.forEach(call => {
+                        statusCounts[call.estatus] = (statusCounts[call.estatus] || 0) + 1;
+                    });
+                    
                     new Chart(document.getElementById('report-status-chart'), {
                         type: 'pie',
                         data: {
                             labels: Object.keys(statusCounts),
                             datasets: [{
                                 data: Object.values(statusCounts),
-                                backgroundColor: ['#9C2348', '#1E5B4F', '#A6802D', '#EF4444', '#3B82F6']
+                                backgroundColor: ['#10B981', '#EF4444', '#FCD34D', '#3B82F6']
                             }]
+                        },
+                        options: { 
+                            responsive: true,
+                            animation: {
+                                duration: 0 // Deshabilita la animación
+                            }
                         }
                     });
                 }
                 
                 if (includeAsunto) {
+                    const asuntoCounts = {};
+                    data.forEach(call => {
+                        asuntoCounts[call.asunto] = (asuntoCounts[call.asunto] || 0) + 1;
+                    });
+                    
                     new Chart(document.getElementById('report-asunto-chart'), {
                         type: 'bar',
                         data: {
                             labels: Object.keys(asuntoCounts),
                             datasets: [{
-                                label: 'Cantidad',
                                 data: Object.values(asuntoCounts),
-                                backgroundColor: '#9C2348'
+                                backgroundColor: '#6A002C'
                             }]
+                        },
+                        options: { 
+                            responsive: true,
+                            animation: {
+                                duration: 0 // Deshabilita la animación
+                            }
                         }
                     });
                 }
                 
                 if (includeDay) {
-                    const daysOrder = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
-                    const orderedData = daysOrder.map(day => dayOfWeekCounts[day] || 0);
+                    const dayOfWeekCounts = {};
+                    data.forEach(call => {
+                        if (call.fecha && typeof call.fecha === 'string') {
+                            try {
+                                const date = new Date(call.fecha.split('/').reverse().join('-'));
+                                const day = date.toLocaleDateString('es-ES', { weekday: 'long' });
+                                dayOfWeekCounts[day] = (dayOfWeekCounts[day] || 0) + 1;
+                            } catch (e) { /* Ignorar fechas inválidas */ }
+                        }
+                    });
                     
                     new Chart(document.getElementById('report-day-chart'), {
                         type: 'line',
                         data: {
-                            labels: daysOrder,
+                            labels: Object.keys(dayOfWeekCounts),
                             datasets: [{
-                                label: 'Llamadas',
-                                data: orderedData,
-                                borderColor: '#9C2348',
-                                tension: 0.1
+                                data: Object.values(dayOfWeekCounts),
+                                borderColor: '#6A002C',
+                                backgroundColor: 'rgba(106, 0, 44, 0.1)',
+                                fill: true
                             }]
+                        },
+                        options: { 
+                            responsive: true,
+                            animation: {
+                                duration: 0 // Deshabilita la animación
+                            }
                         }
                     });
                 }
                 
                 if (includeAtendio) {
+                    const atendioCounts = {};
+                    data.forEach(call => {
+                        atendioCounts[call.atendio] = (atendioCounts[call.atendio] || 0) + 1;
+                    });
+                    
                     new Chart(document.getElementById('report-atendio-chart'), {
                         type: 'polarArea',
                         data: {
                             labels: Object.keys(atendioCounts),
                             datasets: [{
                                 data: Object.values(atendioCounts),
-                                backgroundColor: ['#9C2348', '#1E5B4F', '#A6802D', '#EF4444', '#3B82F6']
+                                backgroundColor: ['#6A002C', '#10B981', '#EF4444', '#FCD34D', '#3B82F6']
                             }]
-                        }
-                    });
-                }
-                
-                if (includeDynamic) {
-                    const selectedVariable = dynamicChartVariable.value;
-                    const variableCounts = {};
-                    
-                    data.forEach(call => {
-                        const value = call[selectedVariable] || 'N/A';
-                        variableCounts[value] = (variableCounts[value] || 0) + 1;
-                    });
-                    
-                    new Chart(document.getElementById('report-dynamic-chart'), {
-                        type: 'bar',
-                        data: {
-                            labels: Object.keys(variableCounts),
-                            datasets: [{
-                                label: 'Cantidad',
-                                data: Object.values(variableCounts),
-                                backgroundColor: '#9C2348'
-                            }]
+                        },
+                        options: { 
+                            responsive: true,
+                            animation: {
+                                duration: 0 // Deshabilita la animación
+                            }
                         }
                     });
                 }
                 
                 // Generar PDF
-                const element = reportPreview;
+                const element = document.getElementById('report-preview');
                 const opt = {
                     margin: 10,
-                    filename: `reporte_llamadas_${new Date().toISOString().slice(0, 10)}.pdf`,
+                    filename: `reporte_llamadas_${new Date().toISOString().split('T')[0]}.pdf`,
                     image: { type: 'jpeg', quality: 0.98 },
                     html2canvas: { scale: 2 },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
                 
-                // Usar html2pdf con promesas para asegurar que se complete la generación
-                html2pdf().set(opt).from(element).save().then(() => {
-                    showAlert("Reporte generado y descargado con éxito", "success");
-                }).catch(error => {
-                    console.error("Error al generar PDF:", error);
-                    showAlert("Error al generar el PDF: " + error.message, "error");
-                });
+                html2pdf().set(opt).from(element).save();
             }, 500);
         }
-
-        // =============================================
-        // MÓDULO: Exportación/Importación
-        // =============================================
         
-        const exportHeaders = ["No.", "Fecha", "Inicio", "Fin", "Duración", "Área", "Institución", "Asunto", "Consulta", "Nombre", "Cargo", "Correo", "Teléfono", "Estatus", "Atendió", "Comentarios"];
-
-        function prepareExportData(data) {
-            return data.map((call, index) => ({
-                "No.": index + 1, "Fecha": call.fecha || "", "Inicio": formatTimeWithAmPm(call.inicio),
-                "Fin": formatTimeWithAmPm(call.fin), "Duración": formatDuration(Number(call.duracion) || 0),
-                "Área": call.area || "", "Institución": call.institucion || "", "Asunto": call.asunto || "",
-                "Consulta": call.consulta || "", "Nombre": call.nombre || "", "Cargo": call.cargo || "",
-                "Correo": call.correo || "", "Teléfono": String(call.telefono || ""), "Estatus": call.estatus || "",
-                "Atendió": call.atendio || "", "Comentarios": call.comentarios || ""
-            }));
-        }
-
-        // =============================================
-        // MÓDULO: Migración de datos
-        // =============================================
+        // MANEJO DE EVENTOS Y LÓGICA DE UI
         
-        async function migrateCallsToHistorical() {
-            try {
-                if (calls.length === 0) {
-                    showAlert("No hay llamadas para migrar.", "warning");
-                    return;
-                }
-                
-                const batch = writeBatch(db);
-                
-                // Agregar todas las llamadas al histórico
-                calls.forEach(call => {
-                    const historicalDocRef = doc(historicalCallsCollectionRef);
-                    batch.set(historicalDocRef, { 
-                        ...call, 
-                        migratedAt: serverTimestamp(),
-                        originalId: call.id
-                    });
-                });
-                
-                // Eliminar todas las llamadas del registro actual
-                calls.forEach(call => {
-                    const callDocRef = doc(callsCollectionRef, call.id);
-                    batch.delete(callDocRef);
-                });
-                
-                await batch.commit();
-                showAlert(`Se migraron ${calls.length} llamadas al histórico.`, "success");
-            } catch (error) {
-                console.error("Error al migrar llamadas:", error);
-                showAlert(`Error al migrar: ${error.message}`, "error");
+        document.addEventListener('DOMContentLoaded', initializeAppWithAuth);
+        
+        setupTabs();
+        setupSorting('main-table-header', callLogTableBody, () => calls, renderTable);
+        setupSorting('historical-table-header', historicalTableBody, () => historicalCalls, renderTable);
+        setupFiltering('filter-input-main', callLogTableBody, () => calls, renderTable, false);
+        setupFiltering('filter-input-historical', historicalTableBody, () => historicalCalls, renderTable, true);
+        
+        dashboardDataSource.addEventListener('change', updateDashboard);
+        reportesDataSource.addEventListener('change', updateCharts);
+        
+        startCallBtn.addEventListener('click', () => {
+            if (startCallBtn.dataset.state === 'active') {
+                stopTimer(false); 
+                closeModal(callModal);
+            } else {
+                startTimer();
             }
+        });
+        
+        function startTimer() {
+            startCallBtn.dataset.state = 'active';
+            startCallBtn.innerHTML = `<i class="fa-solid fa-stopwatch h-6 w-6"></i><span>Finalizar Llamada</span>`;
+            startCallBtn.classList.replace('bg-subtle-green', 'bg-subtle-red');
+            startCallBtn.classList.replace('hover:bg-subtle-green-dark', 'hover:bg-subtle-red-dark');
+            
+            callForm.reset();
+            openModal(callModal);
+
+            callStartTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+                const formattedTime = formatDuration(elapsed);
+                timerElem.textContent = formattedTime;
+                modalTimerElem.textContent = formattedTime;
+            }, 1000);
+        }
+        
+        function stopTimer(shouldSave = true) {
+            clearInterval(timerInterval);
+            if (shouldSave) {
+                const endTime = new Date();
+                const duration = Math.floor((endTime - callStartTime) / 1000);
+                const formData = new FormData(callForm);
+                const callData = Object.fromEntries(formData.entries());
+                
+                callData.fecha = new Date(callStartTime).toLocaleDateString('es-ES');
+                callData.inicio = new Date(callStartTime).toLocaleTimeString('es-ES', { hour12: false });
+                callData.fin = endTime.toLocaleTimeString('es-ES', { hour12: false });
+                callData.duracion = duration;
+                callData.estatus = 'Atendida'; // Se asume atendida al guardar
+                saveCall(callData);
+            }
+            
+            startCallBtn.dataset.state = 'inactive';
+            startCallBtn.innerHTML = `<i class="fa-solid fa-phone-alt h-6 w-6"></i><span>Iniciar Nueva Llamada</span>`;
+            startCallBtn.classList.replace('bg-subtle-red', 'bg-subtle-green');
+            startCallBtn.classList.replace('hover:bg-subtle-red-dark', 'hover:bg-subtle-green-dark');
+            resetTimer();
         }
 
-        // =============================================
-        // MÓDULO: Configuración de eventos
-        // =============================================
+        function resetTimer() {
+            timerElem.textContent = '00:00:00';
+            modalTimerElem.textContent = '00:00:00';
+        }
         
-        function setupEventListeners() {
-            setupTabs();
-            setupSorting('main-table-header', callLogTableBody, () => calls, renderTable);
-            setupSorting('historical-table-header', historicalTableBody, () => historicalCalls, renderTable);
-            setupFiltering('filter-input-main', callLogTableBody, () => calls, renderTable, false);
-            setupFiltering('filter-input-historical', historicalTableBody, () => historicalCalls, renderTable, true);
-            setupAutofill();
-            
-            dashboardDataSource.addEventListener('change', updateDashboard);
-            reportesDataSource.addEventListener('change', updateCharts);
-            dynamicChartVariable.addEventListener('change', updateDynamicChart);
-            
-            startCallBtn.addEventListener('click', () => {
-                startCallBtn.dataset.state === 'active' ? (stopTimer(false), closeModal(callModal)) : startTimer();
+        function openModal(modal) {
+            modal.classList.remove('hidden', 'modal-leave');
+            modal.classList.add('modal-enter');
+        }
+
+        function closeModal(modal) {
+            modal.classList.remove('modal-enter');
+            modal.classList.add('modal-leave');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        closeModalBtn.addEventListener('click', () => {
+            closeModal(callModal);
+            if (startCallBtn.dataset.state === 'active') stopTimer(false);
+        });
+        
+        callForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!callForm.checkValidity()) {
+                showAlert("Por favor, completa todos los campos requeridos.", "error");
+                return;
+            }
+            stopTimer(true);
+            closeModal(callModal);
+        });
+
+        function handleEditClick(e) {
+            requirePassword(() => {
+                const callId = e.currentTarget.dataset.id;
+                const isHistorical = e.currentTarget.dataset.isHistorical === 'true';
+                currentEditIsHistorical = isHistorical;
+                const allData = isHistorical ? historicalCalls : calls;
+                const callToEdit = allData.find(call => call.id === callId);
+                if (!callToEdit) return;
+
+                // Llenar campos del formulario
+                document.getElementById('edit-id').value = callId;
+                document.getElementById('edit-caller-phone').value = callToEdit.telefono || '';
+                document.getElementById('edit-call-comments').value = callToEdit.comentarios || '';
+
+                // Actualizar Select2 para todos los campos
+                $('#edit-caller-institution').val(callToEdit.institucion || '').trigger('change');
+                $('#edit-call-area').val(callToEdit.area || '').trigger('change');
+                $('#edit-call-subject').val(callToEdit.asunto || '').trigger('change');
+                $('#edit-call-query').val(callToEdit.consulta || '').trigger('change');
+                $('#edit-caller-name').val(callToEdit.nombre || '').trigger('change');
+                $('#edit-caller-cargo').val(callToEdit.cargo || '').trigger('change');
+                $('#edit-caller-email').val(callToEdit.correo || '').trigger('change');
+                $('#edit-call-atendio').val(callToEdit.atendio || '').trigger('change');
+
+                openModal(editModal);
             });
+        }
+
+        closeEditModalBtn.addEventListener('click', () => closeModal(editModal));
+
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!editForm.checkValidity()) {
+                showAlert("Por favor, completa todos los campos requeridos.", "error");
+                return;
+            }
             
-            closeModalBtn.addEventListener('click', () => {
-                closeModal(callModal);
-                if (startCallBtn.dataset.state === 'active') stopTimer(false);
+            const callId = editForm['edit-id'].value;
+            const updateData = {
+                area: document.getElementById('edit-call-area').value,
+                asunto: document.getElementById('edit-call-subject').value,
+                consulta: document.getElementById('edit-call-query').value,
+                nombre: document.getElementById('edit-caller-name').value,
+                cargo: document.getElementById('edit-caller-cargo').value,
+                correo: document.getElementById('edit-caller-email').value,
+                telefono: document.getElementById('edit-caller-phone').value,
+                comentarios: document.getElementById('edit-call-comments').value,
+                institucion: document.getElementById('edit-caller-institution').value,
+                atendio: document.getElementById('edit-call-atendio').value
+            };
+
+            await updateCall(callId, updateData, currentEditIsHistorical);
+            closeModal(editModal);
+        });
+
+        async function handleStatusToggle(e) {
+            const button = e.currentTarget;
+            const callId = button.dataset.id;
+            const isHistorical = button.dataset.isHistorical === 'true';
+            const currentStatus = button.textContent.trim();
+            const newStatus = currentStatus === 'Atendida' ? 'Pendiente' : 'Atendida';
+            await updateCall(callId, { estatus: newStatus }, isHistorical);
+        }
+
+        let callToDeleteId = null;
+        let callToDeleteIsHistorical = false;
+        function handleDeleteClick(e) {
+            requirePassword(() => {
+                callToDeleteId = e.currentTarget.dataset.id;
+                callToDeleteIsHistorical = e.currentTarget.dataset.isHistorical === 'true';
+                openModal(confirmModal);
             });
-            
-            callForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                if (!callForm.checkValidity()) return showAlert("Por favor, complete todos los campos obligatorios.", "warning");
-                stopTimer();
-                closeModal(callModal);
-            });
-            
-            closeEditModalBtn.addEventListener('click', () => closeModal(editModal));
-            editForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!editForm.checkValidity()) return showAlert("Por favor, complete todos los campos obligatorios.", "warning");
-                
-                const formData = new FormData(editForm);
-                const updateData = Object.fromEntries(formData.entries());
-                const id = document.getElementById('edit-id').value;
-                
-                await updateCall(id, updateData, currentEditIsHistorical);
-                closeModal(editModal);
-            });
-            
-            document.body.addEventListener('click', (e) => {
-                if (e.target.matches('.toggle-status-btn')) handleStatusToggle(e);
-                else if (e.target.matches('.edit-btn') || e.target.closest('.edit-btn')) handleEditClick(e);
-                else if (e.target.matches('.delete-btn') || e.target.closest('.delete-btn')) handleDeleteClick(e);
-            });
-            
-            let callToDeleteId, callToDeleteIsHistorical;
-            cancelDeleteBtn.addEventListener('click', () => closeModal(confirmModal));
-            confirmDeleteBtn.addEventListener('click', async () => {
+        }
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            closeModal(confirmModal);
+            callToDeleteId = null;
+        });
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if (callToDeleteId) {
                 await deleteCall(callToDeleteId, callToDeleteIsHistorical);
                 closeModal(confirmModal);
-            });
-            
-            historicalFileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    historicalFileName.textContent = file.name;
-                    importHistoricalBtn.disabled = false;
-                } else {
-                    historicalFileName.textContent = 'Seleccionar archivo Excel (.xlsx)';
-                    importHistoricalBtn.disabled = true;
-                }
-            });
-            
-            importHistoricalBtn.addEventListener('click', () => {
+            }
+        });
+
+        callLogTableBody.addEventListener('click', e => {
+            const target = e.target.closest('button');
+            if (!target) return;
+            if (target.classList.contains('edit-btn')) handleEditClick({ currentTarget: target });
+            if (target.classList.contains('delete-btn')) handleDeleteClick({ currentTarget: target });
+            if (target.classList.contains('toggle-status-btn')) handleStatusToggle({ currentTarget: target });
+        });
+        historicalTableBody.addEventListener('click', e => {
+            const target = e.target.closest('button');
+            if (!target) return;
+            if (target.classList.contains('edit-btn')) handleEditClick({ currentTarget: target });
+            if (target.classList.contains('delete-btn')) handleDeleteClick({ currentTarget: target });
+            if (target.classList.contains('toggle-status-btn')) handleStatusToggle({ currentTarget: target });
+        });
+
+
+//lineas agregadas para exportacion
+
+        // Encabezados de exportación (orden correcto)
+        const exportHeaders = [
+        "No.", "Fecha", "Inicio", "Fin", "Duración", "Área", "Institución",
+        "Asunto", "Consulta", "Nombre", "Cargo", "Correo", "Teléfono",
+        "Estatus", "Atendió", "Comentarios"
+        ];
+
+        function secondsToExcelDate(seconds) {
+        // Convertir segundos a objeto Date (para que Excel lo interprete como tiempo)
+        return new Date(0, 0, 0, 0, 0, seconds || 0);
+        }
+
+        function prepareExportDataRegistro(data) {
+        return data.map((call, index) => ({
+            "No.": index + 1,
+            "Fecha": call.fecha || "",
+            "Inicio": formatTimeWithAmPm(call.inicio),
+            "Fin": formatTimeWithAmPm(call.fin),
+            "Duración": formatDuration(
+                call.duracion instanceof Date 
+                    ? (call.duracion.getHours() * 3600 + call.duracion.getMinutes() * 60 + call.duracion.getSeconds()) 
+                    : (Number(call.duracion) || 0)
+            ),
+            "Área": call.area || "",
+            "Institución": call.institucion || "",
+            "Asunto": call.asunto || "",
+            "Consulta": call.consulta || "",
+            "Nombre": call.nombre || "",
+            "Cargo": call.cargo || "",
+            "Correo": call.correo || "",
+            "Teléfono": call.telefono || "",
+            "Estatus": call.estatus || "",
+            "Atendió": call.atendio || "",
+            "Comentarios": call.comentarios || ""
+        }));
+        } 
+
+        function prepareExportDataHistorico(data) {
+        return data.map((call, index) => ({
+            "No.": index + 1,
+            "Fecha": call.fecha || "",
+            "Inicio": formatTimeWithAmPm(call.inicio),
+            "Fin": formatTimeWithAmPm(call.fin),
+            "Duración": formatDuration(
+                call.duracion instanceof Date 
+                    ? (call.duracion.getHours() * 3600 + call.duracion.getMinutes() * 60 + call.duracion.getSeconds()) 
+                    : (Number(call.duracion) || 0)
+            ),
+            "Área": call.area || "",
+            "Institución": call.institucion || "",
+            "Asunto": call.asunto || "",
+            "Consulta": call.consulta || "",
+            "Nombre": call.nombre || "",
+            "Cargo": call.cargo || "",
+            "Correo": call.correo || "",
+            "Teléfono": call.telefono || "",
+            "Estatus": call.estatus || "",
+            "Atendió": call.atendio || "",
+            "Comentarios": call.comentarios || ""
+        }));
+        }
+
+     //fin de lineas agregadas
+
+
+
+        //Botón para descargar histótico e historial
+
+         
+        downloadExcelBtn.addEventListener('click', () => {
+            if (calls.length === 0) return showAlert("No hay datos para descargar.", "warning");
+            const ws = XLSX.utils.json_to_sheet(prepareExportDataRegistro(calls), { header: exportHeaders });
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Llamadas");
+            XLSX.writeFile(wb, "registro_llamadas.xlsx");
+        });
+        
+        document.getElementById('download-historical-excel-btn').addEventListener('click', () => {
+            if (historicalCalls.length === 0) return showAlert("No hay datos históricos para descargar.", "warning");
+            const ws = XLSX.utils.json_to_sheet(prepareExportDataHistorico(historicalCalls), { header: exportHeaders });
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Historico");
+            XLSX.writeFile(wb, "registro_historico.xlsx");
+        });
+
+        historicalFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                historicalFileName.textContent = file.name;
+                importHistoricalBtn.disabled = false;
+            } else {
+                historicalFileName.textContent = 'Seleccionar archivo Excel (.xlsx)';
+                importHistoricalBtn.disabled = true;
+            }
+        });
+        
+        importHistoricalBtn.addEventListener('click', async () => {
+            requirePassword(async () => {
                 const file = historicalFileInput.files[0];
-                if (!file) return;
+                if (!file) return showAlert("Por favor, selecciona un archivo Excel primero.", "warning");
                 
                 const reader = new FileReader();
-                reader.onload = (e) => {
+                reader.onload = async (event) => {
                     try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
+                        const workbook = XLSX.read(event.target.result, { type: 'binary', cellDates: true });
                         const sheetName = workbook.SheetNames[0];
                         const worksheet = workbook.Sheets[sheetName];
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                        const json = XLSX.utils.sheet_to_json(worksheet);
+
+                        const processedData = json.map(row => {
+                            const mapKeys = (obj, keyMap) => Object.keys(obj).reduce((acc, key) => {
+                                const newKey = keyMap[key.toLowerCase().trim()] || key.toLowerCase().trim();
+                                acc[newKey] = obj[key];
+                                return acc;
+                            }, {});
+
+                            const keyMapping = { 'no.': 'no', 'duración': 'duracion', 'área': 'area', 'institución': 'institucion', 'teléfono': 'telefono', 'atendió': 'atendio' };
+                            const mappedRow = mapKeys(row, keyMapping);
+
+                            // VERSIÓN 1.7: No asignar fechas/horas actuales si vienen vacías
+                            let fecha = mappedRow.fecha;
+                            let inicio = mappedRow.inicio;
+                            let fin = mappedRow.fin;
+                            
+                            if (fecha instanceof Date) {
+                                fecha = fecha.toLocaleDateString('es-ES');
+                            } else if (!fecha) {
+                                fecha = ''; // Dejar vacío en lugar de asignar fecha actual
+                            }
+                            
+                            if (inicio instanceof Date) {
+                                inicio = inicio.toLocaleTimeString('es-ES', { hour12: false });
+                            } else if (!inicio) {
+                                inicio = ''; // Dejar vacío
+                            }
+                            
+                            if (fin instanceof Date) {
+                                fin = fin.toLocaleTimeString('es-ES', { hour12: false });
+                            } else if (!fin) {
+                                fin = ''; // Dejar vacío
+                            }
+                            
+
+                            
+                            // VERSIÓN 1.7: Procesar correctamente la duración
+
+                            let duracion = mappedRow.duracion;
+
+                            if (typeof duracion === 'number') {
+                                // Caso: Excel en formato decimal de día
+                                if (duracion < 1) {
+                                    duracion = Math.round(duracion * 86400); // a segundos
+                                }
+                            } else if (typeof duracion === 'string') {
+                                // Caso: texto "HH:MM:SS"
+                                const timeParts = duracion.split(':');
+                                if (timeParts.length === 3) {
+                                    duracion = (parseInt(timeParts[0]) * 3600) +
+                                            (parseInt(timeParts[1]) * 60) +
+                                            parseInt(timeParts[2]);
+                                } else {
+                                    duracion = parseInt(duracion) || 0;
+                                }
+                            } else if (duracion instanceof Date) {
+                                // Caso: Excel lo manda como fecha
+                                duracion = (duracion.getHours() * 3600) +
+                                        (duracion.getMinutes() * 60) +
+                                        duracion.getSeconds();
+                            } else {
+                                duracion = 0;
+                            }
+
+
+
+
+                            return {
+                                fecha: fecha,
+                                inicio: inicio,
+                                fin: fin,
+                                duracion: duracion,
+                                area: mappedRow.area || '',
+                                institucion: mappedRow.institucion || '',
+                                asunto: mappedRow.asunto || '',
+                                consulta: mappedRow.consulta || '',
+                                nombre: mappedRow.nombre || '',
+                                cargo: mappedRow.cargo || '',
+                                correo: mappedRow.correo || '',
+                                telefono: String(mappedRow.telefono || ''),
+                                estatus: mappedRow.estatus || 'Pendiente',
+                                atendio: mappedRow.atendio || '',
+                                comentarios: mappedRow.comentarios || ''
+                            };
+                        });
+
+                        if (processedData.length === 0) return showAlert("El archivo Excel está vacío o no es válido.", "warning");
                         
-                        if (jsonData.length === 0) return showAlert("El archivo no contiene datos válidos.", "warning");
-                        
-                        const historicalData = jsonData.map(item => ({
-                            fecha: item.Fecha || '',
-                            inicio: item.Inicio || '',
-                            fin: item.Fin || '',
-                            duracion: typeof item.Duración === 'number' ? item.Duración : 0,
-                            area: item.Área || '',
-                            institucion: item.Institución || '',
-                            asunto: item.Asunto || '',
-                            consulta: item.Consulta || '',
-                            nombre: item.Nombre || '',
-                            cargo: item.Cargo || '',
-                            correo: item.Correo || '',
-                            telefono: item.Teléfono ? String(item.Teléfono) : '',
-                            estatus: item.Estatus || '',
-                            atendio: item.Atendió || '',
-                            comentarios: item.Comentarios || ''
-                        }));
-                        
+                        let replace = false;
                         if (historicalCalls.length > 0) {
                             openModal(replaceHistoricalModal);
-                            confirmReplaceBtn.onclick = async () => {
+                            await new Promise(resolve => {
+                                confirmReplaceBtn.onclick = () => {
+                                    replace = true;
+                                    closeModal(replaceHistoricalModal);
+                                    resolve();
+                                };
+                                cancelReplaceBtn.onclick = () => {
+                                    replace = false;
+                                    closeModal(replaceHistoricalModal);
+                                    resolve();
+                                };
+                            });
+                            if (replace) {
                                 await deleteAllHistorical();
-                                await importHistoricalData(historicalData);
-                                closeModal(replaceHistoricalModal);
-                            };
-                            cancelReplaceBtn.onclick = () => closeModal(replaceHistoricalModal);
-                        } else {
-                            importHistoricalData(historicalData);
+                            }
                         }
+                        await importHistoricalData(processedData);
+                        historicalFileInput.value = '';
+                        historicalFileName.textContent = 'Seleccionar archivo Excel (.xlsx)';
+                        importHistoricalBtn.disabled = true;
                     } catch (error) {
-                        console.error("Error al procesar el archivo:", error);
-                        showAlert("Error al procesar el archivo. Asegúrese de que es un Excel válido.", "error");
+                        console.error("Error al procesar el archivo Excel:", error);
+                        showAlert(`Error al procesar el archivo: ${error.message}`, "error");
                     }
                 };
-                reader.readAsArrayBuffer(file);
+                reader.readAsBinaryString(file);
             });
-            
-            downloadExcelBtn.addEventListener('click', () => {
-                const data = prepareExportData(calls);
-                const ws = XLSX.utils.json_to_sheet(data, { header: exportHeaders });
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Llamadas");
-                XLSX.writeFile(wb, "registro_llamadas.xlsx");
-            });
-            
-            document.getElementById('download-historical-excel-btn').addEventListener('click', () => {
-                const data = prepareExportData(historicalCalls);
-                const ws = XLSX.utils.json_to_sheet(data, { header: exportHeaders });
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Llamadas Históricas");
-                XLSX.writeFile(wb, "historico_llamadas.xlsx");
-            });
-            
-            generateReportBtn.addEventListener('click', () => openModal(reportModal));
-            closeReportModalBtn.addEventListener('click', () => closeModal(reportModal));
-            
-            generatePdfBtn.addEventListener('click', () => {
-                const includeStatus = document.getElementById('include-status').checked;
-                const includeAsunto = document.getElementById('include-asunto').checked;
-                const includeDay = document.getElementById('include-day').checked;
-                const includeAtendio = document.getElementById('include-atendio').checked;
-                const includeDynamic = document.getElementById('include-dynamic').checked;
-                
-                closeModal(reportModal);
-                generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio, includeDynamic);
-            });
-            
-            chartSizeSlider.addEventListener('input', () => {
-                const size = chartSizeSlider.value;
-                chartSizeValue.textContent = `${size}px`;
-                updateCharts();
-            });
-            
-            migrateCallsBtn.addEventListener('click', () => {
-                requirePassword(() => openModal(migrateModal));
-            });
-            
-            cancelMigrateBtn.addEventListener('click', () => closeModal(migrateModal));
-            confirmMigrateBtn.addEventListener('click', () => {
-                migrateCallsToHistorical();
-                closeModal(migrateModal);
-            });
-        }
+        });
 
-        // =============================================
-        // MÓDULO: Inicialización
-        // =============================================
-        
-        function initialize() {
-            initializeAppWithAuth();
-            setupEventListeners();
-            setupAddEditButtons();
-            setupPasswordVerification();
-            setupReportConfig();
+        // Configurar evento para el botón de generar reporte
+        generateReportBtn.addEventListener('click', () => {
+            openModal(reportModal);
+        });
+
+        closeReportModalBtn.addEventListener('click', () => {
+            closeModal(reportModal);
+        });
+
+        generatePdfBtn.addEventListener('click', () => {
+            const includeStatus = document.getElementById('include-status').checked;
+            const includeAsunto = document.getElementById('include-asunto').checked;
+            const includeDay = document.getElementById('include-day').checked;
+            const includeAtendio = document.getElementById('include-atendio').checked;
             
-            // Configurar Select2 para todos los selects
-            $('#call-form select, #edit-form select').each(function() {
-                $(this).select2({
-                    tags: true,
-                    placeholder: "Seleccione o escriba una opción",
-                    allowClear: true,
-                    width: '100%'
+            generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio);
+            closeModal(reportModal);
+        });
+
+        // Inicializar configuración de reportes
+        setupReportConfig();
+        setupAddEditButtons();
+        setupPasswordVerification();
+        setupInstitutionNameLinking();
+
+        // Asegurar que los modales se cierren correctamente
+        [closeModalBtn, closeEditModalBtn, cancelDeleteBtn, cancelReplaceBtn, cancelAddOptionBtn, cancelEditOptionBtn, cancelPasswordBtn].forEach(btn => {
+            btn.addEventListener('click', () => {
+                const modalId = btn.id.replace('cancel-', '').replace('close-', '').replace('-btn', '') + '-modal';
+                const modal = document.getElementById(modalId);
+                if (modal) closeModal(modal);
+            });
+        });
+
+
+        // Función para manejar eventos de tecla Enter en modales
+        function setupEnterKeySupport() {
+            // Modal de contraseña
+            document.getElementById('password-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('confirm-password-btn').click();
+                }
+            });
+
+            // Modal de edición
+            const editFormInputs = document.querySelectorAll('#edit-form input, #edit-form select');
+            editFormInputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.querySelector('#edit-form button[type="submit"]').click();
+                    }
                 });
             });
+
+            // Modal de llamada
+            const callFormInputs = document.querySelectorAll('#call-form input, #call-form select');
+            callFormInputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.querySelector('#call-form button[type="submit"]').click();
+                    }
+                });
+            });
+
+            // Modal de confirmación
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const activeModal = document.querySelector('.modal:not(.hidden)');
+                    if (activeModal) {
+                        if (activeModal.id === 'confirm-modal') {
+                            document.getElementById('confirm-delete-btn').click();
+                        } else if (activeModal.id === 'replace-historical-modal') {
+                            document.getElementById('confirm-replace-btn').click();
+                        }
+                    }
+                }
+            });
+
+            // Modales de opciones
+            document.getElementById('new-option-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('confirm-add-option-btn').click();
+                }
+            });
+
+            document.getElementById('edit-option-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('confirm-edit-option-btn').click();
+                }
+            });
         }
 
-        // Iniciar la aplicación
-        initialize();
+        // Llamar a la función después de que la página se cargue
+        document.addEventListener('DOMContentLoaded', function() {
+            // Esperar a que todos los elementos estén cargados
+            setTimeout(setupEnterKeySupport, 500);
+        });
+
+
+
     </script>
 </body>
-</html>
+</html> 
