@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro de Llamadas Alpha 2.0</title>
+    <title>Sistema de Registro de Llamadas - SICOIN</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,7 +37,7 @@
     
     <!-- Hoja de estilos personalizada -->
     <style>
-        html { font-size: 55%; } /* Simula zoom negativo al 75% */
+        html { font-size: 65%; } /* Simula zoom negativo al 75% */
         body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
         
         /* Nueva paleta de colores */
@@ -547,14 +547,14 @@
                 extend: {
                     colors: {
                         primary: {
-                            DEFAULT: '#9C2348',
-                            light: '#b52e5a',
-                            dark: '#7d1c3a'
-                        },
-                        secondary: {
                             DEFAULT: '#A6802D',
                             light: '#bf9a41',
                             dark: '#8a6b22'
+                        },
+                        secondary: {
+                            DEFAULT: '#9C2348',
+                            light: '#b52e5a',
+                            dark: '#7d1c3a'
                         },
                         accent: {
                             DEFAULT: '#1E5B4F',
@@ -569,22 +569,27 @@
 </head>
 <body class="antialiased text-slate-700">
 
+    <!----------------- MENSAJE DE INICIO ---------------->
     <div id="loader" class="loader">
         <div class="spinner"></div>
         <p class="mt-4 text-sm text-slate-600">Cargando datos, por favor espera...</p>
     </div>
 
+    <!----------------- INICIO DE LA APP ---------------->
     <div id="app" class="min-h-screen hidden">
+
+        <!----------------- LOGO Y TÍTULO DE LA APP ---------------->
         <header class="bg-primary shadow-lg sticky top-0 z-10">
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div class="flex items-center space-x-4">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/f/f8/Logo_del_Gobierno_de_M%C3%A9xico_%282018%29.png" alt="Gobierno de México" class="h-14 w-auto">
-                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas - Alpha 2.0</h1>
+                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Registro de Llamadas - SICOIN</h1>
                 </div>
                 <div id="user-info" class="text-white text-sm font-mono"></div>
             </div>
         </header>
 
+        <!----------------- BOTONES DE LAS PESTAÑAS ----------------> 
         <div class="bg-white shadow-sm sticky top-[56px] z-10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div id="tabs" class="border-b border-gray-200">
@@ -597,8 +602,12 @@
             </div>
         </div>
 
+        <!----------------- CONTENIDO DE LAS PESTAÑAS ---------------->
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+
+            <!----------------- CONTENIDO DE LA TAB DE REGISTRO Y CONTROL (HISTORIAL DE LLAMADAS) ---------------->
             <main id="tab-content-registro" class="tab-content">
+                <!----------------- SECCIÓN DE DASHBOARD PRINCIPAL ---------------->
                 <section id="dashboard" class="mb-8">
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-4">
                         <h2 class="text-2xl font-bold text-primary mb-2 sm:mb-0">Dashboard General</h2>
@@ -611,6 +620,8 @@
                                     <span class="tooltip-text">Mover todas las llamadas de Registro y Control al Histórico</span>
                                 </div>
                             </button>
+
+                            <!-------- SELECTOR DE FUENTE DE DATOS EN DASHBOARD PRINCIPAL ---------------->
                             <label for="dashboard-data-source" class="block text-sm font-medium text-gray-700">Fuente de datos:</label>
                             <select id="dashboard-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                                 <option value="registro">Registro y Control</option>
@@ -627,11 +638,13 @@
                     </div>
                 </section>
 
+                <!----------------- CRONOMETRO ITEMS ---------------->
                 <section class="bg-white p-6 rounded-xl shadow-md mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div class="text-center md:text-left"><h3 class="text-xl font-semibold text-slate-800">Control de Llamadas</h3><p class="text-slate-500">Inicia una nueva llamada para activar el cronómetro y el formulario.</p></div>
                     <div class="flex items-center gap-6"><div class="text-center"><p class="text-sm font-medium text-slate-500">TIEMPO DE LLAMADA ACTUAL</p><p id="timer" class="text-4xl font-bold text-primary tracking-wider">00:00:00</p></div><button id="start-call-btn" class="bg-success hover:bg-success-dark text-white font-bold py-4 px-8 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center space-x-3"><i class="fa-solid fa-phone-alt h-6 w-6"></i><span>Iniciar Nueva Llamada</span></button></div>
                 </section>
                 
+                <!----------------- HISTORIAL DE LLAMADAS - TABLA - LOG ---------------->
                 <section id="call-log">
                     <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-primary">Historial de Llamadas</h2><div class="flex items-center space-x-2"><div class="relative w-full"><input type="text" id="filter-input-main" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"><i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i><button id="clear-filter-btn-main" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden"><i class="fa-solid fa-times-circle"></i></button></div><button id="download-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2"><i class="fa-solid fa-file-excel"></i><span>Descargar Excel</span></button></div></div>
                     <div class="bg-white rounded-xl shadow-md table-container">
@@ -664,12 +677,14 @@
                 </section>
             </main>
 
+            <!----------------- CONTENIDO DE LA TAB DE HISTÓRICO ---------------->
             <div id="tab-content-historico" class="tab-content hidden">
                 <section class="bg-white p-6 rounded-xl shadow-md">
                     <h2 class="text-2xl font-bold text-primary mb-4">Cargar Histórico desde Excel</h2>
                     <div class="flex flex-col md:flex-row items-center gap-4"><label for="historical-file-input" class="w-full md:w-auto cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-lg shadow-sm transition-all duration-200 ease-in-out text-center flex-grow"><i class="fa-solid fa-file-upload mr-2"></i><span id="file-name">Seleccionar archivo Excel (.xlsx)</span><input type="file" id="historical-file-input" class="hidden" accept=".xlsx, .xls"></label><button id="import-historical-btn" class="w-full md:w-auto bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" disabled><i class="fa-solid fa-database mr-2"></i>Importar a la Base de Datos</button></div>
                 </section>
-                
+
+                <!----------------- HISTÓRICO DE LLAMADAS - TABLA - LOG ---------------->
                 <section id="historical-log" class="mt-8">
                     <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-primary">Registro Histórico</h2><div class="flex items-center space-x-2"><div class="relative w-full"><input type="text" id="filter-input-historical" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"><i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i><button id="clear-filter-btn-historical" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden"><i class="fa-solid fa-times-circle"></i></button></div><button id="download-historical-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2"><i class="fa-solid fa-file-excel"></i><span>Descargar Histórico</span></button></div></div>
                     <div class="bg-white rounded-xl shadow-md table-container">
@@ -702,16 +717,20 @@
                 </section>
             </div>
 
+            <!----------------- CONTENIDO DE LA TAB DE REPORTES ---------------->
             <div id="tab-content-reportes" class="tab-content hidden">
                 <section id="reportes" class="bg-white p-6 rounded-xl shadow-md mb-8">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-2xl font-bold text-primary">Reportes</h2>
-
                         <div class="flex items-center space-x-4">
+
+                            <!----------------- GENERAR REPORTE BOTÓN ---------------->
                             <button id="generate-report-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
                                 <i class="fa-solid fa-file-pdf"></i>
                                 <span>Generar Reporte</span>
                             </button>
+
+                            <!----------------- SELECCIÓN DE FUENTE DE DATOS ---------------->
                             <div class="flex items-center space-x-2">
                                 <label for="reportes-data-source" class="block text-sm font-medium text-gray-700">Fuente de datos:</label>
                                 <select id="reportes-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
@@ -724,9 +743,9 @@
                                 </button>
                             </div>
                         </div>
-
                     </div>
-                    
+
+                    <!----------------- GRÁFICOS PRINCIPALES ---------------->
                     <div class="grid grid-cols-1 md:grid-cols-2">
                         <div class="chart-wrapper">
                             <h3 class="text-xl font-semibold text-slate-800 mb-2">Llamadas por Estatus</h3>
@@ -746,7 +765,7 @@
                         </div>
                     </div>
                     
-                    <!-- Nueva gráfica dinámica -->
+                    <!----------------- GRÁFICA DINÁMICA Y SUS VARIABLES ---------------->
                     <div class="dynamic-chart-container">
                         <div class="dynamic-chart-header">
                             <h3 class="text-xl font-semibold text-slate-800">Llamadas por</h3>
@@ -763,6 +782,8 @@
                             <div class="chart-wrapper">
                                 <canvas id="dynamicChart"></canvas>
                             </div>
+
+                            <!----------------- TOTALES TABLA DE DISTRIBUCIÓN ---------------->
                             <div class="dynamic-table-container">
                                 <h4 class="text-lg font-semibold text-slate-800 mb-2 text-center">Distribución por Estatus</h4>
                                 <table class="dynamic-table">
@@ -781,6 +802,8 @@
                         </div>
                     </div>
                 </section>
+
+                <!----------------- TABLA DINÁMICA INTERACTIVA---------------->
                 <section class="bg-white p-6 rounded-xl shadow-md">
                     <h2 class="text-2xl font-bold text-primary mb-4">Tabla Dinámica Interactiva</h2>
                     <p class="text-slate-500 mb-4">Selecciona variables para cruzar datos y genera gráficos dinámicos (tablas, barras, líneas, heatmaps, etc.).</p>
@@ -790,7 +813,7 @@
         </div>
     </div>
     
-    <!-- Modales -->
+    <!----------------- MODAL NUEVA LLAMADA ---------------->
     <div id="call-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
@@ -897,6 +920,8 @@
             </div>
         </div>
     </div>
+
+    <!----------------- MODAL EDITAR LLAMADA ---------------->
     <div id="edit-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-edit-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
@@ -1004,15 +1029,19 @@
             </div>
         </div>
     </div>
-    
+
+
+    <!----------------- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN DE LLAMADA ---------------->
     <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center"><h3 class="text-xl font-bold text-slate-800 mb-4">Confirmar Eliminación</h3><p class="text-slate-600 mb-6">¿Estás seguro de que deseas eliminar este registro?</p><div class="flex justify-center space-x-4"><button id="cancel-delete-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button><button id="confirm-delete-btn" class="bg-danger hover:bg-danger-dark text-white font-bold py-2 px-4 rounded-lg">Eliminar</button></div></div>
     </div>
-
+    
+    <!----------------- MODAL DE CONFIRMACIÓN DE REEMPLAZAR HISTÓRICO ---------------->
     <div id="replace-historical-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center"><h3 class="text-xl font-bold text-primary mb-4">Reemplazar Histórico</h3><p class="text-slate-600 mb-6">¿Desea reemplazar el histórico actual?</p><div class="flex justify-center space-x-4"><button id="cancel-replace-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">No</button><button id="confirm-replace-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Sí</button></div></div>
     </div>
-
+    
+    <!----------------- MODAL DE CONFIRMACIÓN DE AGREGAR OPCIÓN A LISTA ---------------->
     <div id="add-option-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
             <h3 class="text-xl font-bold text-primary mb-4">Agregar Nueva Opción</h3>
@@ -1024,6 +1053,7 @@
         </div>
     </div>
 
+    <!----------------- MODAL DE CONFIRMACIÓN DE EDITAR OPCIÓN DE LISTA ---------------->
     <div id="edit-option-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
             <h3 class="text-xl font-bold text-primary mb-4">Editar Opción</h3>
@@ -1035,6 +1065,7 @@
         </div>
     </div>
 
+    <!----------------- MODAL DE CONFIRMACIÓN DE CONTRASEÑA  ---------------->
     <div id="password-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
             <h3 class="text-xl font-bold text-primary mb-4">Verificación de Seguridad</h3>
@@ -1047,12 +1078,14 @@
         </div>
     </div>
 
+    <!----------------- MODAL DE GENERACIÓN DE REPORTE EJECUTIVO  ---------------->
     <div id="report-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl mx-4">
             <button id="close-report-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
             <h3 class="text-2xl font-bold text-primary mb-6">Generar Reporte Ejecutivo</h3>
             <form id="report-form" class="space-y-6">
                 <div>
+                    <!----------------- SELECCIÓN DE GRÁFICOS A INCLUIR ---------------->
                     <h4 class="section-title text-lg">Seleccionar gráficas a incluir</h4>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex items-center">
@@ -1081,7 +1114,8 @@
                         </div>
                     </div>
                 </div>
-                
+
+                <!----------------- BOTÓN PARA GENERAR REPORTE EN PDF  ---------------->
                 <div class="flex items-center justify-end pt-4">
                     <button type="button" id="generate-pdf-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Generar Reporte PDF</button>
                 </div>
@@ -1089,6 +1123,7 @@
         </div>
     </div>
 
+    <!----------------- MODAL DE CONFIGURACIÓN DEL REPORTE EJECUTIVO  ---------------->
     <div id="config-report-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl mx-4">
             <button id="close-config-report-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-times-circle fa-lg"></i></button>
@@ -1104,7 +1139,8 @@
                     </div>
                 </div>
             </div>
-            
+
+            <!----------------- CONFIGURACIÓN DE PERIODO DE REPORTES ---------------->
             <form id="config-report-form" class="space-y-6">
                 <div class="config-report-grid">
                     <div class="config-option">
@@ -1128,12 +1164,13 @@
                     </div>
                 </div>
 
+                <!----------------- CONFIGURACIÓN DE TAMAÑO DE GRÁFICAS Y SLIDER---------------->
                 <div class="chart-size-control">
                     <label for="chart-size-slider" class="font-medium text-gray-700">Tamaño de gráficas:</label>
-                    <input type="range" id="chart-size-slider" min="200" max="400" value="200" class="w-40">
-                    <span id="chart-size-value" class="text-sm text-gray-600">200px</span>
+                    <input type="range" id="chart-size-slider" min="50" max="400" value="120" class="w-40">
+                    <span id="chart-size-value" class="text-sm text-gray-600">120px</span>
                 </div>
-                
+                <!----------------- GUARDAR CONFIGURACIÓN ---------------->
                 <div class="flex items-center justify-end pt-4">
                     <button type="button" id="save-config-report-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Guardar Configuración</button>
                 </div>
@@ -1141,6 +1178,7 @@
         </div>
     </div>
 
+    <!----------------- MODAL DE CONFIRMACIÓN DE MIGRACIÓN DE LLAMADAS (DE HISTORIAL A HISTÓRICO)  ---------------->
     <div id="migrate-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
             <h3 class="text-xl font-bold text-primary mb-4">Migrar Llamadas</h3>
@@ -1151,7 +1189,8 @@
             </div>
         </div>
     </div>
-
+    
+    <!----------------- PIE DE PÁGINA ---------------->
     <footer class="footer-container">
         <label>Insurgentes Sur 1735, Col. Guadalupe Inn Ciudad de México., C.P 01020 - Tel. 2000 3000</label><br>
         <label>Secretaría Anticorrupción y Buen Gobierno, México - Algunos derechos reservados © 2025 </label>
