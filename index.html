@@ -2335,7 +2335,8 @@
                     label: datasetLabel,
                     data: chartData,
                     backgroundColor: ['#9C2348', '#1E5B4F', '#A6802D', '#EF4444', '#3B82F6'],
-                    borderColor: '#9C2348', // Añadido para gráficos de línea
+                    borderColor: type === 'line' ? '#9C2348' : '#FFFFFF', // Borde blanco para barras/pastel, color para líneas
+                    borderWidth: 2, // Ancho del borde
                     tension: 0.1 // Añadido para suavizar líneas
                 };
                 
