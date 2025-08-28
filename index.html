@@ -2325,27 +2325,58 @@
                 }
             });
 
+
             const createOrUpdateChart = (canvas, chartInstance, type, data, labelsOrder, datasetLabel = 'Cantidad') => {
+                // Destruye la instancia del gráfico si existe para evitar duplicaciones
                 if (chartInstance) chartInstance.destroy();
+
+                // Obtiene las etiquetas de los datos
                 let labels = Object.keys(data);
-                if (labelsOrder) labels.sort((a, b) => labelsOrder.indexOf(a) - labelsOrder.indexOf(b));
+                
+                // Ordena las etiquetas si se proporciona un orden
+                if (labelsOrder) {
+                    labels.sort((a, b) => labelsOrder.indexOf(a) - labelsOrder.indexOf(b));
+                }
+
+                // Mapea los datos a un array de valores
                 const chartData = labels.map(label => data[label]);
 
+                // Define un array de colores para las barras/sectores del pastel
+                const backgroundColors = ['#9C2348', '#1E5B4F', '#A6802D', '#EF4444', '#3B82F6'];
+
+                // Define el conjunto de datos para el gráfico
                 const dataset = {
                     label: datasetLabel,
                     data: chartData,
-                    backgroundColor: ['#9C2348', '#1E5B4F', '#A6802D', '#EF4444', '#3B82F6'],
-                    borderColor: type === 'line' ? '#9C2348' : '#FFFFFF', // Borde blanco para barras/pastel, color para líneas
-                    borderWidth: 2, // Ancho del borde
-                    tension: 0.1 // Añadido para suavizar líneas
+                    backgroundColor: backgroundColors,
+                    // El borde es blanco para todos los tipos de gráfico, excepto para las líneas donde es del color del primer fondo
+                    borderColor: type === 'line' ? backgroundColors[0] : '#FFFFFF', 
+                    borderWidth: 2, 
+                    tension: 0.1 
                 };
                 
+                // Crea y devuelve la nueva instancia de Chart
                 return new Chart(canvas, { 
                     type, 
                     data: { labels, datasets: [dataset] }, 
-                    options: { responsive: true, maintainAspectRatio: false } 
+                    options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    // El color del borde de la etiqueta es el mismo que el color de fondo para ocultarlo
+                                    boxWidth: 20,
+                                    usePointStyle: true
+                                }
+                            }
+                        }
+                    } 
                 });
-            };            
+            };
+
+
+
             
             if (statusChart) statusChart.destroy();
             if (asuntoChart) asuntoChart.destroy();
