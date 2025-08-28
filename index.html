@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -2323,20 +2323,28 @@
                     } catch (e) { /* Ignorar */ }
                 }
             });
-            
-            const createOrUpdateChart = (canvas, chartInstance, type, data, labelsOrder) => {
+
+            const createOrUpdateChart = (canvas, chartInstance, type, data, labelsOrder, datasetLabel = 'Cantidad') => {
                 if (chartInstance) chartInstance.destroy();
                 let labels = Object.keys(data);
                 if (labelsOrder) labels.sort((a, b) => labelsOrder.indexOf(a) - labelsOrder.indexOf(b));
                 const chartData = labels.map(label => data[label]);
+
+                const dataset = {
+                    label: datasetLabel,
+                    data: chartData,
+                    backgroundColor: ['#9C2348', '#1E5B4F', '#A6802D', '#EF4444', '#3B82F6'],
+                    borderColor: '#9C2348', // Añadido para gráficos de línea
+                    tension: 0.1 // Añadido para suavizar líneas
+                };
                 
                 return new Chart(canvas, { 
                     type, 
-                    data: { labels, datasets: [{ data: chartData, backgroundColor: ['#9C2348', '#1E5B4F', '#A6802D', '#EF4444', '#3B82F6'] }] }, 
+                    data: { labels, datasets: [dataset] }, 
                     options: { responsive: true, maintainAspectRatio: false } 
                 });
-            };
-
+            };            
+            
             if (statusChart) statusChart.destroy();
             if (asuntoChart) asuntoChart.destroy();
             if (dayOfWeekChart) dayOfWeekChart.destroy();
@@ -2344,10 +2352,10 @@
             if (dynamicChart) dynamicChart.destroy();
 
             statusChart = createOrUpdateChart(statusChartCanvas, statusChart, 'pie', statusCounts);
-            asuntoChart = createOrUpdateChart(asuntoChartCanvas, asuntoChart, 'bar', asuntoCounts);
-            atendioChart = createOrUpdateChart(atendioChartCanvas, atendioChart, 'bar', atendioCounts);
-            dayOfWeekChart = createOrUpdateChart(dayOfWeekChartCanvas, dayOfWeekChart, 'line', dayOfWeekCounts, ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo']);
-
+            asuntoChart = createOrUpdateChart(asuntoChartCanvas, asuntoChart, 'bar', asuntoCounts, null, 'Llamadas por Asunto');
+            atendioChart = createOrUpdateChart(atendioChartCanvas, atendioChart, 'bar', atendioCounts, null, 'Llamadas Atendidas');
+            dayOfWeekChart = createOrUpdateChart(dayOfWeekChartCanvas, dayOfWeekChart, 'line', dayOfWeekCounts, ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'], 'Llamadas por Día');
+                 
             // Actualizar gráfica dinámica
             updateDynamicChart();
 
