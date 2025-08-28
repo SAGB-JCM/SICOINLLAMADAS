@@ -776,6 +776,7 @@
                                 <option value="consulta">Consulta</option>
                                 <option value="nombre">Nombre</option>
                                 <option value="cargo">Cargo</option>
+                                <option value="atendio">Atendió</option>
                             </select>
                         </div>
                         <div class="dynamic-chart-content">
@@ -2372,6 +2373,7 @@
         }
 
         //Update Chart
+
         function updateDynamicChart() {
             const source = reportesDataSource.value;
             let data = [];
@@ -2412,11 +2414,26 @@
             });
             
             // Actualizar tabla dinámica
+            const table = dynamicTableBody.closest('table');
+            let tfoot = table.querySelector('tfoot');
+            if (!tfoot) {
+                tfoot = document.createElement('tfoot');
+                table.appendChild(tfoot);
+            }
+            
             dynamicTableBody.innerHTML = '';
             dynamicTableHeader.textContent = selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1);
             
+            let totalAtendida = 0;
+            let totalPendiente = 0;
+            let granTotal = 0;
+
             Object.entries(variableStatusCounts).forEach(([value, counts]) => {
                 const total = counts.Atendida + counts.Pendiente;
+                totalAtendida += counts.Atendida;
+                totalPendiente += counts.Pendiente;
+                granTotal += total;
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${value}</td>
@@ -2426,15 +2443,22 @@
                 `;
                 dynamicTableBody.appendChild(row);
             });
+
+            // Añadir fila de totales al tfoot
+            tfoot.innerHTML = `
+                <tr class="bg-slate-200 font-bold">
+                    <td>Total</td>
+                    <td>${totalAtendida}</td>
+                    <td>${totalPendiente}</td>
+                    <td>${granTotal}</td>
+                </tr>
+            `;
             
             // Actualizar gráfico
             if (dynamicChart) dynamicChart.destroy();
             
             const labels = Object.keys(variableCounts);
             const chartData = Object.values(variableCounts);
-            
-            
-            
             
             dynamicChart = new Chart(dynamicChartCanvas, {
                 type: 'bar',
@@ -2465,6 +2489,8 @@
             });
         }
 
+        
+        
         //Botón de Configuración
         function setupReportConfig() {
             configReportBtn.addEventListener('click', () => openModal(configReportModal));
