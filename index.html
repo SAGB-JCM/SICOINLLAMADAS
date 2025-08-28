@@ -37,7 +37,7 @@
     
     <!-- Hoja de estilos personalizada -->
     <style>
-        html { font-size: 58%; } /* Simula zoom negativo% */
+        html { font-size: 65%; } /* Simula zoom negativo al 50% */
         body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
         
         /* Nueva paleta de colores */
@@ -1655,20 +1655,6 @@
             }
         }
 
-        //Actualizar llamada
-//        async function updateCall(id, updateData, isHistorical) {
-  //          try {
-    //            const collectionRef = isHistorical ? historicalCallsCollectionRef : callsCollectionRef;
-      //          const callDocRef = doc(db, collectionRef.path, id);
-        //        await updateDoc(callDocRef, { ...updateData, updatedAt: serverTimestamp() });
-          //      showAlert("Llamada actualizada con éxito!", "success");
-    //        } catch (error) {
-      //          console.error("Error al actualizar la llamada:", error);
-        //        showAlert(`Error al actualizar: ${error.message}`, "error");
-          //  }
-       // }
-
-
         // Actualizar llamada - VERSIÓN CORREGIDA
         async function updateCall(id, updateData, isHistorical) {
             if (!id) {
@@ -1697,7 +1683,7 @@
         }
 
 
-        // Eliminar llamada - VERSIÓN CORREGIDA
+        // Eliminar llamadaa
         async function deleteCall(id, isHistorical) {
             if (!id) {
                 console.error("ID no válido para eliminación");
@@ -1725,61 +1711,126 @@
         }
 
 
-        // Manejar clic en editar - VERSIÓN CORREGIDA
+        // Reemplazar la función handleEditClick con esta versión robusta
         function handleEditClick(button) {
             requirePassword(() => {
                 const callId = button.getAttribute('data-id');
                 const isHistorical = button.getAttribute('data-is-historical') === 'true';
-                
+
                 if (!callId) {
                     console.error("ID de llamada no encontrado para edición");
                     return;
                 }
-                
+
                 currentEditIsHistorical = isHistorical;
-                const allData = isHistorical ? historicalCalls : calls;
-                const callToEdit = allData.find(call => call.id === callId);
-                
+                const allData = isHistorical ? (Array.isArray(historicalCalls) ? historicalCalls : []) : (Array.isArray(calls) ? calls : []);
+                const callToEdit = allData.find(call => String(call.id) === String(callId));
+
                 if (!callToEdit) {
                     showAlert("No se pudo encontrar la llamada para editar", "error");
                     return;
                 }
 
                 document.getElementById('edit-id').value = callId;
-                
-                // Actualizar Select2 para todos los campos
-                $('#edit-caller-institution').val(callToEdit.institucion || '').trigger('change');
-                $('#edit-call-area').val(callToEdit.area || '').trigger('change');
-                $('#edit-call-subject').val(callToEdit.asunto || '').trigger('change');
-                $('#edit-call-query').val(callToEdit.consulta || '').trigger('change');
-                $('#edit-caller-name').val(callToEdit.nombre || '').trigger('change');
-                $('#edit-caller-cargo').val(callToEdit.cargo || '').trigger('change');
-                $('#edit-caller-email').val(callToEdit.correo || '').trigger('change');
-                $('#edit-caller-phone').val(callToEdit.telefono || '').trigger('change');
-                $('#edit-call-comments').val(callToEdit.comentarios || '').trigger('change');
-                $('#edit-call-atendio').val(callToEdit.atendio || '').trigger('change');
 
+                // Helper local: asegurar y seleccionar opción en Select2
+                function ensureSelectHasAndSelect($sel, value, text) {
+                    if (!$sel || !$sel.length) return;
+                    // Si las opciones usan id/text como objetos select2, permitir ambas formas:
+                    const hasValue = $sel.find(`option[value="${value}"]`).length > 0;
+                    if (!hasValue) {
+                        // Crear opción nueva y marcarla seleccionada
+                        const opt = new Option(text || value, value, true, true);
+                        $sel.append(opt);
+                        if ($sel.data('select2')) {
+                            $sel.trigger('change.select2');
+                        }
+                    } else {
+                        $sel.val(value).trigger('change.select2');
+                    }
+                }
+
+                // Helper: normalizar y construir lista de nombres para la institución (sin depender de otros handlers)
+                function buildNamesForInstitution(allData, institution) {
+                    if (!Array.isArray(allData)) return [];
+                    const names = [...new Set(
+                        allData.filter(c => c && c.institucion === institution)
+                            .map(c => c.nombre)
+                            .filter(Boolean)
+                    )].sort();
+                    return names;
+                }
+
+                // 1) Setear institución, área, asunto, etc. (esto puede disparar handlers, pero no confiamos en ellos para poblar nombres)
+                $('#edit-caller-institution').val(callToEdit.institucion || '').trigger('change.select2');
+                $('#edit-call-area').val(callToEdit.area || '').trigger('change.select2');
+                $('#edit-call-subject').val(callToEdit.asunto || '').trigger('change.select2');
+                $('#edit-call-query').val(callToEdit.consulta || '').trigger('change.select2');
+
+                // 2) Poblar directamente las opciones del select "nombre" basadas en la institución (no depender del handler global)
+                const namesForInst = buildNamesForInstitution([... (Array.isArray(calls)?calls:[]), ...(Array.isArray(historicalCalls)?historicalCalls:[])], callToEdit.institucion || '');
+
+                const $editName = $('#edit-caller-name');
+
+                // Normalizar formato para select2: {id, text}
+                const optionsData = namesForInst.map(n => ({ id: n, text: n }));
+
+                // Re-inicializar / actualizar Select2 para el select de nombres con los datos correctos
+                if ($editName.length) {
+                    if ($editName.data('select2')) {
+                        $editName.empty().select2({
+                            data: optionsData,
+                            tags: true,
+                            placeholder: "Seleccione o escriba una opción",
+                            allowClear: true,
+                            width: '100%'
+                        });
+                    } else {
+                        $editName.select2({
+                            data: optionsData,
+                            tags: true,
+                            placeholder: "Seleccione o escriba una opción",
+                            allowClear: true,
+                            width: '100%'
+                        });
+                    }
+                }
+
+                // 3) Seleccionar el nombre correcto robustamente:
+                //    Si las opciones usan id diferente al nombre (caso raro), buscar coincidencia por texto y usar su id.
+                const desiredName = callToEdit.nombre || '';
+                let selected = false;
+                if ($editName.length && $editName.data('select2')) {
+                    const sdata = $editName.select2('data') || [];
+                    // buscar coincidencia por texto
+                    const byText = sdata.find(d => (d.text || '') === desiredName);
+                    if (byText) {
+                        $editName.val(byText.id).trigger('change.select2');
+                        selected = true;
+                    }
+                }
+
+                // Si no se seleccionó arriba (o select2 no estaba en modo objeto), asegurar y seleccionar por valor=nombre
+                if (!selected) {
+                    ensureSelectHasAndSelect($editName, desiredName, desiredName);
+                }
+
+                // 4) Rellenar campos restantes
+                $('#edit-caller-cargo').val(callToEdit.cargo || '').trigger('change.select2');
+                $('#edit-caller-email').val(callToEdit.correo || '').trigger('change.select2');
+                $('#edit-caller-phone').val(callToEdit.telefono || '').trigger('change.select2');
+                $('#edit-call-comments').val(callToEdit.comentarios || '').trigger('change.select2');
+                $('#edit-call-atendio').val(callToEdit.atendio || '').trigger('change.select2');
+
+                // 5) Abrir modal después de todo (para evitar race conditions visuales)
                 openModal(editModal);
             });
         }
 
 
-
-
         closeEditModalBtn.addEventListener('click', () => closeModal(editModal));
 
-        //Editar estatus de llamada botón interactivo en tabla
-        //async function handleStatusToggle(e) {
-          //  const button = e.currentTarget;
-            //const callId = button.dataset.id;
-            //const isHistorical = button.dataset.isHistorical === 'true';
-            //const currentStatus = button.textContent.trim();
-            //const newStatus = currentStatus === 'Atendida' ? 'Pendiente' : 'Atendida';
-            //await updateCall(callId, { estatus: newStatus }, isHistorical);
-        //}
-
-
-        // Manejar cambio de estado - VERSIÓN CORREGIDA
+        // Manejar cambio de estado
         async function handleStatusToggle(button) {
             try {
                 const callId = button.getAttribute('data-id');
@@ -1800,7 +1851,7 @@
         }
 
 
-        // Manejar clic en eliminar - VERSIÓN CORREGIDA
+        // Manejar clic en eliminar
         function handleDeleteClick(button) {
             requirePassword(() => {
                 callToDeleteId = button.getAttribute('data-id');
@@ -2837,6 +2888,7 @@
         // MÓDULO: Migración de datos
         // =============================================
         
+
         async function migrateCallsToHistorical() {
             try {
                 if (calls.length === 0) {
@@ -2844,31 +2896,54 @@
                     return;
                 }
                 
-                const batch = writeBatch(db);
+                // Mostrar loader para bloquear interacciones durante migración
+                showLoader(true);
                 
-                // Agregar todas las llamadas al histórico
+                const batch = writeBatch(db);
+                const callsCount = calls.length; // Guardar el count antes de limpiar
+                
                 calls.forEach(call => {
                     const historicalDocRef = doc(historicalCallsCollectionRef);
+                    const { id, ...callData } = call; // Omitir el id antiguo
                     batch.set(historicalDocRef, { 
-                        ...call, 
+                        ...callData,  // Usar solo los datos sin el id
                         migratedAt: serverTimestamp(),
-                        originalId: call.id
+                        originalId: id  // Guardar el id original en un campo separate
                     });
                 });
                 
-                // Eliminar todas las llamadas del registro actual
                 calls.forEach(call => {
                     const callDocRef = doc(callsCollectionRef, call.id);
                     batch.delete(callDocRef);
                 });
                 
                 await batch.commit();
-                showAlert(`Se migraron ${calls.length} llamadas al histórico.`, "success");
+                
+                // Sincronización manual: Limpiar calls local y re-render inmediatamente
+                calls = [];
+                sortAndRenderTable(callLogTableBody, calls, false);
+                
+                // Actualizar dashboard y charts
+                updateDashboard();
+                updateCharts();
+                
+                showAlert(`Se migraron ${callsCount} llamadas al histórico.`, "success");
             } catch (error) {
                 console.error("Error al migrar llamadas:", error);
                 showAlert(`Error al migrar: ${error.message}`, "error");
+            } finally {
+                showLoader(false);
             }
         }
+
+        // Añadir función showLoader si no existe
+        function showLoader(show) {
+            const loader = document.getElementById('loader');
+            if (loader) {
+                loader.style.display = show ? 'flex' : 'none';
+            }
+        }
+
 
         // =============================================
         // MÓDULO: Configuración de eventos 
@@ -2951,6 +3026,7 @@
                 });
             }
 
+            // Funcion para actualizar estatus
             async function handleStatusToggle(e) {
                 const button = e.currentTarget;
                 const callId = button.dataset.id;
@@ -2967,6 +3043,8 @@
                 if (target.classList.contains('delete-btn')) handleDeleteClick({ currentTarget: target });
                 if (target.classList.contains('toggle-status-btn')) handleStatusToggle({ currentTarget: target });
             });
+
+            // Estatus tabla de histórico
             historicalTableBody.addEventListener('click', e => {
                 const target = e.target.closest('button');
                 if (!target) return;
@@ -2974,12 +3052,14 @@
                 if (target.classList.contains('delete-btn')) handleDeleteClick({ currentTarget: target });
                 if (target.classList.contains('toggle-status-btn')) handleStatusToggle({ currentTarget: target });
             });
-
+            
+            // Cancelar Eliminar llamada de historico
             cancelDeleteBtn.addEventListener('click', () => {
                 closeModal(confirmModal);
                 callToDeleteId = null;
             });
-
+            
+            // Eliminar llamada de historico
             confirmDeleteBtn.addEventListener('click', async () => {
                 if (callToDeleteId) {
                     await deleteCall(callToDeleteId, callToDeleteIsHistorical);
@@ -2989,7 +3069,7 @@
 
 
 
-            
+            // Importar histórico
             historicalFileInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (file) {
@@ -3129,6 +3209,7 @@
                 });
             });
 
+            // Registro de llamadas descargar
             downloadExcelBtn.addEventListener('click', () => {
                 if (calls.length === 0) return showAlert("No hay datos para descargar.", "warning");
                 const data = prepareExportData(calls);
@@ -3138,6 +3219,7 @@
                 XLSX.writeFile(wb, "registro_llamadas.xlsx");
             });
             
+            // Registro histórico descargar
             document.getElementById('download-historical-excel-btn').addEventListener('click', () => {
                 if (historicalCalls.length === 0) return showAlert("No hay datos históricos para descargar.", "warning");
                 const data = prepareExportData(historicalCalls);
@@ -3147,9 +3229,12 @@
                 XLSX.writeFile(wb, "Registro_historico.xlsx");
             });
             
+            // Generar Reporte Boton
             generateReportBtn.addEventListener('click', () => openModal(reportModal));
             closeReportModalBtn.addEventListener('click', () => closeModal(reportModal));
             
+
+            // Generar PDF
             generatePdfBtn.addEventListener('click', () => {
                 const includeStatus = document.getElementById('include-status').checked;
                 const includeAsunto = document.getElementById('include-asunto').checked;
@@ -3162,21 +3247,33 @@
                 generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio, includeDynamicChart, includeDynamicTable);
             });
             
+            // slider pixeles
             chartSizeSlider.addEventListener('input', () => {
                 const size = chartSizeSlider.value;
                 chartSizeValue.textContent = `${size}px`;
                 updateCharts();
             });
-            
+
+            // Migración de historial
             migrateCallsBtn.addEventListener('click', () => {
                 requirePassword(() => openModal(migrateModal));
             });
             
+            // Cancelar migración de historial
             cancelMigrateBtn.addEventListener('click', () => closeModal(migrateModal));
-            confirmMigrateBtn.addEventListener('click', () => {
-                migrateCallsToHistorical();
-                closeModal(migrateModal);
+            
+
+            // Confirmar migración de historial corregida Versión 2
+            confirmMigrateBtn.addEventListener('click', async () => {
+                try {
+                    await migrateCallsToHistorical();
+                    closeModal(migrateModal);
+                } catch (error) {
+                    console.error("Error en migración:", error);
+                    showAlert("Error durante la migración: " + error.message, "error");
+                }
             });
+
         }
 
         // Forzar actualización de opciones y render
