@@ -1908,11 +1908,42 @@
         // =============================================
         // MÓDULO: Gestión de opciones dinámicas y autocompletado
         // =============================================
-
-        // Actualizar opciones dinámicas desde la base de datos
+   
+        /**
+         * @const {string[]} catalogoInstitucionesHomologado
+         * Catálogo predefinido de instituciones que sirve como base para las opciones del selector.
+         * Esta lista asegura que todas las instituciones oficiales estén siempre disponibles.
+         * En futuras versiones, podría cargarse desde una colección de Firestore para gestión remota.
+         */
+        const catalogoInstitucionesHomologado = [
+            "Secretaría de Ejemplo",
+            "Consejería de Ejemplo"
+        ];
+        
+        /**
+         * Actualiza las opciones de todos los selectores dinámicos de la aplicación.
+         * Para el campo de 'institucion', fusiona el catálogo homologado con las instituciones
+         * existentes en la base de datos para garantizar una lista completa y retrocompatible.
+         */
         function updateDynamicSelectOptions() {
             const allData = [...calls, ...historicalCalls];
+        
+            // --- Lógica Específica para Instituciones ---
+            // 1. Extraer todas las instituciones existentes en los registros.
+            const historicalInstitutions = allData.map(c => c.institucion).filter(Boolean);
             
+            // 2. Fusionar el catálogo oficial con las instituciones históricas.
+            //    - Se utiliza `new Set()` para eliminar duplicados de forma automática y eficiente.
+            //      (p. ej., si una institución del historial ya existe en el catálogo).
+            //    - Se ordena alfabéticamente para una mejor experiencia de usuario.
+            const combinedInstitutions = [...new Set([...catalogoInstitucionesHomologado, ...historicalInstitutions])].sort();
+            
+            // 3. Actualizar el estado global y el selector de UI.
+            fieldOptions.instituciones = combinedInstitutions;
+            updateSelectOptions('instituciones', fieldOptions.instituciones);
+        
+            // --- Lógica General para los demás campos (sin cambios) ---
+            // Se extraen los valores únicos de los datos existentes y se ordenan.
             fieldOptions.areas = [...new Set(allData.map(c => c.area).filter(Boolean))].sort();
             fieldOptions.asuntos = [...new Set(allData.map(c => c.asunto).filter(Boolean))].sort();
             fieldOptions.consultas = [...new Set(allData.map(c => c.consulta).filter(Boolean))].sort();
@@ -1921,11 +1952,9 @@
             fieldOptions.correos = [...new Set(allData.map(c => c.correo).filter(Boolean))].sort();
             fieldOptions.telefonos = [...new Set(allData.map(c => c.telefono).filter(Boolean))].sort();
             fieldOptions.comentarios = [...new Set(allData.map(c => c.comentarios).filter(Boolean))].sort();
-            fieldOptions.instituciones = [...new Set(allData.map(c => c.institucion).filter(Boolean))].sort();
             fieldOptions.atendioUsers = [...new Set(allData.map(c => c.atendio).filter(Boolean))].sort();
-
-            // Actualizar todos los selects
-            updateSelectOptions('instituciones', fieldOptions.instituciones);
+            
+            // Se actualizan los selectores correspondientes en la UI.
             updateSelectOptions('areas', fieldOptions.areas);
             updateSelectOptions('asuntos', fieldOptions.asuntos);
             updateSelectOptions('consultas', fieldOptions.consultas);
@@ -1936,7 +1965,10 @@
             updateSelectOptions('telefonos', fieldOptions.telefonos);
             updateSelectOptions('comentarios', fieldOptions.comentarios);
         }
- 
+
+
+
+        
         //Actualizar opciones despues de editar una lista desplegable
         function updateSelectOptions(field, options, selectedId = null) {
             const fieldToSelectMap = {
