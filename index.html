@@ -3391,8 +3391,14 @@
             setupFiltering('filter-input-historical', historicalTableBody, () => historicalCalls, renderTable, true);
             setupAutofill();
             
+            // Dashboard ya jala Registro y Control como predeterminado en fuente de datos
             dashboardDataSource.addEventListener('change', updateDashboard);
+            
+            // Establecer "Histórico" como valor predeterminado en fuente de datos
             reportesDataSource.addEventListener('change', updateCharts);
+            reportesDataSource.value = 'historico'; 
+
+
             dynamicChartVariable.addEventListener('change', updateDynamicChart);
             
             startCallBtn.addEventListener('click', () => {
