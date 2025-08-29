@@ -2149,7 +2149,18 @@
             }
         }
 
+        
+        //Añadir o Editar (Botones)
 
+        // Variable global para mantener el contexto del <select> que está siendo modificado.
+        // Se gestiona su ciclo de vida: se establece al iniciar y se limpia al finalizar o cancelar.
+        let activeSelectElement = null;
+
+        /**
+         * Configura todos los manejadores de eventos para los botones de añadir (+) y editar (lápiz)
+         * de los campos de formulario. Implementa la lógica para autoseleccionar la opción
+         * recién creada o modificada.
+         */
         function setupAddEditButtons() {
             const buttonToFieldMap = {
                 'add-institution-btn': 'instituciones', 'edit-institution-btn': 'instituciones',
@@ -2174,12 +2185,15 @@
                 'add-atendio-edit-btn': 'atendioUsers', 'edit-atendio-edit-btn': 'atendioUsers'
             };
             
+            // 1. ASIGNACIÓN DE EVENTOS A LOS BOTONES (+) Y (lápiz)
             Object.entries(buttonToFieldMap).forEach(([buttonId, field]) => {
                 const button = document.getElementById(buttonId);
                 if (!button) return;
 
                 if (buttonId.startsWith('add-')) {
-                    button.addEventListener('click', () => {
+                    button.addEventListener('click', (e) => {
+                        // Se guarda la referencia al <select> hermano del botón presionado.
+                        activeSelectElement = e.currentTarget.parentElement.querySelector('select');
                         currentEditingField = field;
                         newOptionInput.value = '';
                         newOptionInput.placeholder = `Ingrese nueva opción para ${field}`;
@@ -2187,8 +2201,9 @@
                     });
                 } else if (buttonId.startsWith('edit-')) {
                     button.addEventListener('click', (e) => {
-                        const selectElement = e.currentTarget.parentElement.querySelector('select');
-                        const currentValue = $(selectElement).val();
+                        // Se guarda la referencia y el valor actual del <select> hermano.
+                        activeSelectElement = e.currentTarget.parentElement.querySelector('select');
+                        const currentValue = $(activeSelectElement).val();
                         
                         if (!currentValue) {
                             return showAlert("Por favor, seleccione una opción para editar.", "warning");
@@ -2203,31 +2218,65 @@
                 }
             });
             
+            // 2. LÓGICA DE CONFIRMACIÓN PARA AÑADIR NUEVA OPCIÓN
             confirmAddOptionBtn.addEventListener('click', () => {
                 const newOption = newOptionInput.value.trim();
                 if (newOption && currentEditingField) {
+                    // Actualiza la lista de opciones en memoria.
                     if (!fieldOptions[currentEditingField].includes(newOption)) {
                         fieldOptions[currentEditingField].push(newOption);
                         fieldOptions[currentEditingField].sort();
                         updateSelectOptions(currentEditingField, fieldOptions[currentEditingField]);
                     }
+                    
+                    // Re-selecciona el valor en el selector de origen usando la referencia guardada.
+                    if (activeSelectElement) {
+                        $(activeSelectElement).val(newOption).trigger('change.select2');
+                    }
+                    
                     showAlert(`Opción "${newOption}" añadida correctamente.`, "success");
                     closeModal(addOptionModal);
+                    activeSelectElement = null; // Limpia la referencia.
                 }
             });
             
+            // 3. LÓGICA DE CONFIRMACIÓN PARA EDITAR OPCIÓN EXISTENTE
             confirmEditOptionBtn.addEventListener('click', () => {
                 const newValue = editOptionInput.value.trim();
                 if (newValue && currentEditingField && currentEditingValue) {
-                    requirePassword(() => {
-                        findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue);
+                    requirePassword(async () => {
+                        // Actualiza todos los registros en la base de datos.
+                        await findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue);
+                        
+                        // UX MEJORA: Actualización "Optimista" del UI.
+                        // Para feedback inmediato, actualizamos y seleccionamos el valor directamente.
+                        // El listener onSnapshot de Firestore reconciliará los datos en segundo plano
+                        // sin que el usuario perciba ningún cambio.
+                        if (activeSelectElement) {
+                            // Si la nueva opción no existe en la lista actual, la creamos al vuelo.
+                            if ($(activeSelectElement).find(`option[value="${newValue}"]`).length === 0) {
+                                const newOptionEl = new Option(newValue, newValue, true, true);
+                                $(activeSelectElement).append(newOptionEl);
+                            }
+                            // Establece el valor del selector y notifica a Select2 del cambio.
+                            $(activeSelectElement).val(newValue).trigger('change.select2');
+                        }
+                        
                         closeModal(editOptionModal);
+                        activeSelectElement = null; // Limpia la referencia.
                     });
                 }
             });
             
-            cancelAddOptionBtn.addEventListener('click', () => closeModal(addOptionModal));
-            cancelEditOptionBtn.addEventListener('click', () => closeModal(editOptionModal));
+            // 4. LIMPIEZA DE ESTADO EN CASO DE CANCELACIÓN
+            cancelAddOptionBtn.addEventListener('click', () => {
+                closeModal(addOptionModal);
+                activeSelectElement = null; // Es crucial limpiar la referencia al cancelar.
+            });
+            cancelEditOptionBtn.addEventListener('click', () => {
+                closeModal(editOptionModal);
+                activeSelectElement = null; // Limpia la referencia para evitar efectos secundarios.
+            });
         }
 
 
