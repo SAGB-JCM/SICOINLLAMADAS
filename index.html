@@ -2984,7 +2984,7 @@
             });
 
             // Obtener el tamaño configurado de los gráficos
-            const chartSize = chartSizeSlider ? parseInt(chartSizeSlider.value) : 400;
+            const chartSize = 400;
             const fontBase = Math.min(24, Math.max(18, Math.round(chartSize / 15))); // Agresivo, labels ~título
             
             // Generar HTML con estilos CSS integrados y dimensiones respetadas
@@ -3088,31 +3088,36 @@
                     }
                     
                     .tabla-datos {
-                        margin: 20px 0;
-                        page-break-inside: avoid;
-                        page-break-before: auto;
-                        break-after: avoid;
+                        margin: 30px 0;
+                        page-break-inside: avoid !important;
+                        page-break-before: auto !important;
+                        break-inside: avoid !important;
+                        break-before: auto !important;
                         background: white;
                         border: 1px solid #e2e8f0;
                         border-radius: 12px;
-                        padding: 15px;
+                        padding: 25px;
                         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+                        /* SOLUCIÓN DEFINITIVA: Ancho fijo para evitar dependencia del tamaño de ventana */
+                        width: 800px !important;
+                        min-width: 800px !important;
+                        max-width: 800px !important;
+                        box-sizing: border-box;
                     }
-                    
                     .tabla-datos h3 {
                         color: #1e293b;
                         font-size: 24px;
                         font-weight: 600;
-                        margin: 0 0 15px 0;
+                        margin: 0 0 25px 0;
                         text-align: center;
                         border-bottom: 3px solid #9C2348;
-                        padding-bottom: 10px;
+                        padding-bottom: 15px;
                     }
                     
                     .tabla-datos table {
                         width: 100%;
                         border-collapse: collapse;
-                        margin: 15px 0;
+                        margin: 20px 0;
                         background: white;
                         border-radius: 8px;
                         overflow: hidden;
@@ -3123,18 +3128,18 @@
                         background: linear-gradient(135deg, #9C2348 0%, #7c1d3a 100%);
                         color: white;
                         font-weight: 600;
-                        padding: 15px 12px;
+                        padding: 18px 15px;
                         text-align: center;
-                        font-size: 14px;
+                        font-size: 16px;
                         text-transform: uppercase;
                         letter-spacing: 0.5px;
                     }
                     
                     .tabla-datos td {
-                        padding: 12px;
+                        padding: 15px;
                         text-align: center;
                         border-bottom: 1px solid #e2e8f0;
-                        font-size: 14px;
+                        font-size: 16px;
                     }
                     
                     .tabla-datos tr:nth-child(even) {
@@ -3153,27 +3158,48 @@
                     
                     .reporte-footer {
                         text-align: center;
-                        margin-top: 40px;
-                        padding: 25px;
+                        margin-top: 50px;
+                        padding: 30px;
                         background: #f8fafc;
                         border-radius: 12px;
                         border: 1px solid #e2e8f0;
                     }
-                    
                     .reporte-footer p {
                         color: #64748b;
-                        font-size: 14px;
+                        font-size: 16px;
                         margin: 0;
                         font-weight: 500;
                     }
-                    
+
+
                     @media print {
+                        /* SOLUCIÓN DEFINITIVA: Reglas de impresión para evitar problemas de renderizado */
+                        body {
+                            width: 800px !important;
+                            min-width: 800px !important;
+                            max-width: 800px !important;
+                            margin: 0 auto !important;
+                        }
+                        
                         .reporte-ejecutivo {
-                            padding: 20px 30px 20px 30px;
+                            width: 800px !important;
+                            min-width: 800px !important;
+                            max-width: 800px !important;
+                            margin: 0 auto !important;
+                            padding: 20px 30px !important;
                         }
                         
                         .grafica, .tabla-datos {
-                            page-break-inside: avoid;
+                            width: 800px !important;
+                            min-width: 800px !important;
+                            max-width: 800px !important;
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
+                        }
+                        
+                        .grafica canvas, .tabla-datos table {
+                            width: 100% !important;
+                            max-width: 100% !important;
                         }
                     }
                 </style>
@@ -3305,13 +3331,16 @@
                         granTotal += total;
                         
                         reportHTML += `
+
                             <tr>
-                                <td style="font-weight: 500;">${value}</td>
-                                <td class="atendida">${counts.Atendida}</td>
-                                <td class="pendiente">${counts.Pendiente}</td>
-                                <td style="font-weight: 600;">${total}</td>
-                                <td class="${effClass}">${effectiveness}%</td>
+                                <td style="font-weight: 500; font-size: 16px;">${value}</td>
+                                <td class="atendida" style="font-size: 16px;">${counts.Atendida}</td>
+                                <td class="pendiente" style="font-size: 16px;">${counts.Pendiente}</td>
+                                <td style="font-weight: 600; font-size: 16px;">${total}</td>
+                                <td class="${effClass}" style="font-size: 16px;">${effectiveness}%</td>
                             </tr>
+
+
                         `;
                     });
                     
@@ -3336,8 +3365,8 @@
             
             reportHTML += `
                     <div class="reporte-footer">
-                        <p>Sistema Integral de Control de Información - SICOIN v2.0</p>
-                        <p>Gobierno de México - Generado automáticamente el ${new Date().toLocaleString('es-ES')}</p>
+                        <p>Registro de LLamadas - SIOCIN</p>
+                        <p>Gobierno de México - Generado el ${new Date().toLocaleString('es-ES')}</p>
                     </div>
                 </div>
             `;
@@ -3501,14 +3530,14 @@
                                     data: orderedData,
                                     borderColor: globalColorPalette.accent[0],
                                     backgroundColor: globalColorPalette.accent[0] + '20',
-                                    borderWidth: 3,
-                                    tension: 0.4,
+                                    borderWidth: 4,
+                                    tension: 0.5,
                                     fill: true,
-                                    pointRadius: 6,
-                                    pointHoverRadius: 8,
+                                    pointRadius: 7,
+                                    pointHoverRadius: 9,
                                     pointBackgroundColor: globalColorPalette.accent[0],
                                     pointBorderColor: '#ffffff',
-                                    pointBorderWidth: 2
+                                    pointBorderWidth: 3
                                 }]
                             },
                             options: {
@@ -3534,7 +3563,7 @@
                     chartsToRender.push({
                         canvasId: 'report-atendio-chart',
                         config: {
-                            type: 'polarArea',
+                            type: 'bar',
                             data: {
                                 labels: Object.keys(atendioCounts),
                                 datasets: [{
@@ -3579,6 +3608,7 @@
                                 }]
                             },
                             options: {
+                                indexAxis: Object.keys(variableCounts).length > 10 ? 'y' : 'x',
                                 scales: {
                                     y: {
                                         beginAtZero: true,
@@ -3589,10 +3619,6 @@
                                     x: {
                                         grid: {
                                             display: false
-                                        },
-                                        ticks: {
-                                            maxRotation: 45,
-                                            font: { size: 10 }
                                         }
                                     }
                                 }
@@ -3600,7 +3626,7 @@
                         }
                     });
                 }
-                
+                        
                 // Renderizar todos los gráficos secuencialmente
                 for (const chartData of chartsToRender) {
                     await renderOptimizedChart(chartData.canvasId, chartData.config);
@@ -3618,7 +3644,7 @@
                     
                     // Configuración optimizada de html2pdf
                     const pdfOptions = {
-                        margin: [0, 0, 0, 0], // Reset para simetría, manejar con CSS
+                        margin: [10, 10, 10, 10], // Reset para simetría, manejar con CSS
                         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }, // Fix cortes
                         filename: `reporte_ejecutivo_llamadas_${new Date().toISOString().slice(0, 10)}.pdf`,
                         image: { 
