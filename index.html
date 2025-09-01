@@ -3158,48 +3158,27 @@
                     
                     .reporte-footer {
                         text-align: center;
-                        margin-top: 50px;
-                        padding: 30px;
+                        margin-top: 40px;
+                        padding: 25px;
                         background: #f8fafc;
                         border-radius: 12px;
                         border: 1px solid #e2e8f0;
                     }
+                    
                     .reporte-footer p {
                         color: #64748b;
-                        font-size: 16px;
+                        font-size: 14px;
                         margin: 0;
                         font-weight: 500;
                     }
-
-
+                    
                     @media print {
-                        /* SOLUCIÓN DEFINITIVA: Reglas de impresión para evitar problemas de renderizado */
-                        body {
-                            width: 800px !important;
-                            min-width: 800px !important;
-                            max-width: 800px !important;
-                            margin: 0 auto !important;
-                        }
-                        
                         .reporte-ejecutivo {
-                            width: 800px !important;
-                            min-width: 800px !important;
-                            max-width: 800px !important;
-                            margin: 0 auto !important;
-                            padding: 20px 30px !important;
+                            padding: 20px 30px 20px 30px;
                         }
                         
                         .grafica, .tabla-datos {
-                            width: 800px !important;
-                            min-width: 800px !important;
-                            max-width: 800px !important;
-                            page-break-inside: avoid !important;
-                            break-inside: avoid !important;
-                        }
-                        
-                        .grafica canvas, .tabla-datos table {
-                            width: 100% !important;
-                            max-width: 100% !important;
+                            page-break-inside: avoid;
                         }
                     }
                 </style>
@@ -3530,14 +3509,14 @@
                                     data: orderedData,
                                     borderColor: globalColorPalette.accent[0],
                                     backgroundColor: globalColorPalette.accent[0] + '20',
-                                    borderWidth: 4,
-                                    tension: 0.5,
+                                    borderWidth: 3,
+                                    tension: 0.4,
                                     fill: true,
-                                    pointRadius: 7,
-                                    pointHoverRadius: 9,
+                                    pointRadius: 6,
+                                    pointHoverRadius: 8,
                                     pointBackgroundColor: globalColorPalette.accent[0],
                                     pointBorderColor: '#ffffff',
-                                    pointBorderWidth: 3
+                                    pointBorderWidth: 2
                                 }]
                             },
                             options: {
@@ -3563,7 +3542,7 @@
                     chartsToRender.push({
                         canvasId: 'report-atendio-chart',
                         config: {
-                            type: 'bar',
+                            type: 'polarArea',
                             data: {
                                 labels: Object.keys(atendioCounts),
                                 datasets: [{
