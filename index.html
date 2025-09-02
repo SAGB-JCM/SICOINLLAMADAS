@@ -206,9 +206,8 @@
 
         .flex-with-buttons .select2-container {
             flex-grow: 1;
-            margin-right: 0.25rem;
-            margin-bottom: 1px; /* Alineación vertical */
-            min-width: 0; /* <-- AÑADIR ESTA LÍNEA */
+            margin-bottom: 1px;
+            min-width: 0;
         }
 
         .flex-with-buttons button {
@@ -223,16 +222,6 @@
             justify-content: center;
             border: none;
             cursor: pointer;
-        }
-
-        .flex-with-buttons button.add-btn {
-            background-color: #3b82f6; /* Azul */
-            color: white;
-            margin-right: 0.25rem;
-        }
-
-        .flex-with-buttons button.add-btn:hover {
-            background-color: #2563eb; /* Azul más oscuro al pasar el mouse */
         }
 
         .flex-with-buttons button.edit-btn {
@@ -863,7 +852,6 @@
                                 <label for="caller-institution">Institución</label>
                                 <div class="flex-with-buttons">
                                     <select id="caller-institution" name="institucion" required></select>
-                                    <button type="button" id="add-institution-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-institution-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -871,7 +859,6 @@
                                 <label for="call-area">Área o Departamento</label>
                                 <div class="flex-with-buttons">
                                     <select id="call-area" name="area" required></select>
-                                    <button type="button" id="add-area-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-area-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -879,7 +866,6 @@
                                 <label for="call-subject">Asunto</label>
                                 <div class="flex-with-buttons">
                                     <select id="call-subject" name="asunto" required></select>
-                                    <button type="button" id="add-subject-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-subject-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -887,7 +873,6 @@
                                 <label for="call-query">Consulta</label>
                                 <div class="flex-with-buttons">
                                     <select id="call-query" name="consulta" required></select>
-                                    <button type="button" id="add-query-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-query-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -900,7 +885,6 @@
                                 <label for="caller-name">Nombre del Solicitante</label>
                                 <div class="flex-with-buttons">
                                     <select id="caller-name" name="nombre" required></select>
-                                    <button type="button" id="add-name-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-name-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -908,7 +892,6 @@
                                 <label for="caller-cargo">Cargo del Solicitante</label>
                                 <div class="flex-with-buttons">
                                     <select id="caller-cargo" name="cargo" required></select>
-                                    <button type="button" id="add-cargo-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-cargo-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -916,7 +899,6 @@
                                 <label for="caller-email">Correo Electrónico</label>
                                 <div class="flex-with-buttons">
                                     <select id="caller-email" name="correo" required></select>
-                                    <button type="button" id="add-email-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-email-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -924,7 +906,6 @@
                                 <label for="caller-phone">Teléfono (opcional)</label>
                                 <div class="flex-with-buttons">
                                     <select id="caller-phone" name="telefono"></select>
-                                    <button type="button" id="add-phone-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-phone-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -937,7 +918,6 @@
                                 <label for="call-atendio">Atendió</label>
                                 <div class="flex-with-buttons">
                                     <select id="call-atendio" name="atendio" required></select>
-                                    <button type="button" id="add-atendio-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-atendio-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -945,7 +925,6 @@
                                 <label for="call-comments">Comentarios</label>
                                 <div class="flex-with-buttons">
                                      <select id="call-comments" name="comentarios"></select>
-                                     <button type="button" id="add-comments-btn" class="add-btn">+</button>
                                      <button type="button" id="edit-comments-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -972,7 +951,6 @@
                                 <label for="edit-caller-institution" class="block text-sm font-medium text-gray-700">Institución</label>
                                 <div class="flex-with-buttons">
                                     <select id="edit-caller-institution" name="institucion" class="mt-1 block w-full" required></select>
-                                    <button type="button" id="add-institution-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-institution-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -980,7 +958,6 @@
                                 <label for="edit-call-area" class="block text-sm font-medium text-gray-700">Área</label>
                                 <div class="flex-with-buttons">
                                     <select id="edit-call-area" name="area" class="mt-1 block w-full" required></select>
-                                    <button type="button" id="add-area-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-area-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -988,7 +965,6 @@
                                 <label for="edit-call-subject" class="block text-sm font-medium text-gray-700">Asunto</label>
                                 <div class="flex-with-buttons">
                                     <select id="edit-call-subject" name="asunto" class="mt-1 block w-full" required></select>
-                                    <button type="button" id="add-subject-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-subject-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -996,7 +972,6 @@
                                 <label for="edit-call-query" class="block text-sm font-medium text-gray-700">Consulta</label>
                                 <div class="flex-with-buttons">
                                     <select id="edit-call-query" name="consulta" class="mt-1 block w-full" required></select>
-                                    <button type="button" id="add-query-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-query-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -1009,7 +984,6 @@
                                 <label for="edit-caller-name" class="block text-sm font-medium text-gray-700">Nombre</label>
                                 <div class="flex-with-buttons">
                                     <select id="edit-caller-name" name="nombre" class="mt-1 block w-full" required></select>
-                                    <button type="button" id="add-name-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-name-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -1017,7 +991,6 @@
                                 <label for="edit-caller-cargo" class="block text-sm font-medium text-gray-700">Cargo</label>
                                 <div class="flex-with-buttons">
                                     <select id="edit-caller-cargo" name="cargo" class="mt-1 block w-full" required></select>
-                                    <button type="button" id="add-cargo-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-cargo-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -1025,7 +998,6 @@
                                 <label for="edit-caller-email" class="block text-sm font-medium text-gray-700">Correo</label>
                                 <div class="flex-with-buttons">
                                     <select id="edit-caller-email" name="correo" class="mt-1 block w-full" required></select>
-                                    <button type="button" id="add-email-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-email-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -1033,7 +1005,6 @@
                                 <label for="edit-caller-phone" class="block text-sm font-medium text-gray-700">Teléfono (opcional)</label>
                                 <div class="flex-with-buttons">
                                     <select id="edit-caller-phone" name="telefono" class="mt-1 block w-full"></select>
-                                    <button type="button" id="add-phone-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-phone-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -1046,7 +1017,6 @@
                                 <label for="edit-call-atendio" class="block text-sm font-medium text-gray-700">Atendió</label>
                                 <div class="flex-with-buttons">
                                     <select id="edit-call-atendio" name="atendio" class="mt-1 block w-full" required></select>
-                                    <button type="button" id="add-atendio-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-atendio-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -1054,7 +1024,6 @@
                                 <label for="edit-call-comments" class="block text-sm font-medium text-gray-700">Comentarios</label>
                                 <div class="flex-with-buttons">
                                     <select id="edit-call-comments" name="comentarios" class="mt-1 block w-full"></select>
-                                    <button type="button" id="add-comments-edit-btn" class="add-btn">+</button>
                                     <button type="button" id="edit-comments-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                             </div>
@@ -1339,10 +1308,13 @@
         const replaceHistoricalModal = document.getElementById('replace-historical-modal');
         const cancelReplaceBtn = document.getElementById('cancel-replace-btn');
         const confirmReplaceBtn = document.getElementById('confirm-replace-btn');
+        
         const addOptionModal = document.getElementById('add-option-modal');
         const newOptionInput = document.getElementById('new-option-input');
         const cancelAddOptionBtn = document.getElementById('cancel-add-option-btn');
         const confirmAddOptionBtn = document.getElementById('confirm-add-option-btn');
+
+        
         const editOptionModal = document.getElementById('edit-option-modal');
         const editOptionInput = document.getElementById('edit-option-input');
         const cancelEditOptionBtn = document.getElementById('cancel-edit-option-btn');
