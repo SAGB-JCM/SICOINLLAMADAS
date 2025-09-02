@@ -1046,18 +1046,6 @@
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center"><h3 class="text-xl font-bold text-primary mb-4">Reemplazar Histórico</h3><p class="text-slate-600 mb-6">¿Desea reemplazar el histórico actual?</p><div class="flex justify-center space-x-4"><button id="cancel-replace-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">No</button><button id="confirm-replace-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Sí</button></div></div>
     </div>
     
-    <!----------------- MODAL DE CONFIRMACIÓN DE AGREGAR OPCIÓN A LISTA ---------------->
-    <div id="add-option-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
-            <h3 class="text-xl font-bold text-primary mb-4">Agregar Nueva Opción</h3>
-            <input type="text" id="new-option-input" placeholder="Ingrese la nueva opción" class="w-full p-2 border border-gray-300 rounded-md mb-4">
-            <div class="flex justify-center space-x-4">
-                <button id="cancel-add-option-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
-                <button id="confirm-add-option-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Agregar</button>
-            </div>
-        </div>
-    </div>
-
     <!----------------- MODAL DE CONFIRMACIÓN DE EDITAR OPCIÓN DE LISTA ---------------->
     <div id="edit-option-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
@@ -1308,12 +1296,6 @@
         const replaceHistoricalModal = document.getElementById('replace-historical-modal');
         const cancelReplaceBtn = document.getElementById('cancel-replace-btn');
         const confirmReplaceBtn = document.getElementById('confirm-replace-btn');
-        
-        const addOptionModal = document.getElementById('add-option-modal');
-        const newOptionInput = document.getElementById('new-option-input');
-        const cancelAddOptionBtn = document.getElementById('cancel-add-option-btn');
-        const confirmAddOptionBtn = document.getElementById('confirm-add-option-btn');
-
         
         const editOptionModal = document.getElementById('edit-option-modal');
         const editOptionInput = document.getElementById('edit-option-input');
@@ -2489,26 +2471,26 @@
          */
         function setupAddEditButtons() {
             const buttonToFieldMap = {
-                'add-institution-btn': 'instituciones', 'edit-institution-btn': 'instituciones',
-                'add-area-btn': 'areas', 'edit-area-btn': 'areas',
-                'add-subject-btn': 'asuntos', 'edit-subject-btn': 'asuntos',
-                'add-query-btn': 'consultas', 'edit-query-btn': 'consultas',
-                'add-name-btn': 'nombres', 'edit-name-btn': 'nombres',
-                'add-cargo-btn': 'cargos', 'edit-cargo-btn': 'cargos',
-                'add-email-btn': 'correos', 'edit-email-btn': 'correos',
-                'add-phone-btn': 'telefonos', 'edit-phone-btn': 'telefonos',
-                'add-comments-btn': 'comentarios', 'edit-comments-btn': 'comentarios',
-                'add-atendio-btn': 'atendioUsers', 'edit-atendio-btn': 'atendioUsers',
-                'add-institution-edit-btn': 'instituciones', 'edit-institution-edit-btn': 'instituciones',
-                'add-area-edit-btn': 'areas', 'edit-area-edit-btn': 'areas',
-                'add-subject-edit-btn': 'asuntos', 'edit-subject-edit-btn': 'asuntos',
-                'add-query-edit-btn': 'consultas', 'edit-query-edit-btn': 'consultas',
-                'add-name-edit-btn': 'nombres', 'edit-name-edit-btn': 'nombres',
-                'add-cargo-edit-btn': 'cargos', 'edit-cargo-edit-btn': 'cargos',
-                'add-email-edit-btn': 'correos', 'edit-email-edit-btn': 'correos',
-                'add-phone-edit-btn': 'telefonos', 'edit-phone-edit-btn': 'telefonos',
-                'add-comments-edit-btn': 'comentarios', 'edit-comments-edit-btn': 'comentarios',
-                'add-atendio-edit-btn': 'atendioUsers', 'edit-atendio-edit-btn': 'atendioUsers'
+                'edit-institution-btn': 'instituciones',
+                'edit-area-btn': 'areas',
+                'edit-subject-btn': 'asuntos',
+                'edit-query-btn': 'consultas',
+                'edit-name-btn': 'nombres',
+                'edit-cargo-btn': 'cargos',
+                'edit-email-btn': 'correos',
+                'edit-phone-btn': 'telefonos',
+                'edit-comments-btn': 'comentarios',
+                'edit-atendio-btn': 'atendioUsers',
+                'edit-institution-edit-btn': 'instituciones',
+                'edit-area-edit-btn': 'areas',
+                'edit-subject-edit-btn': 'asuntos',
+                'edit-query-edit-btn': 'consultas',
+                'edit-name-edit-btn': 'nombres',
+                'edit-cargo-edit-btn': 'cargos',
+                'edit-email-edit-btn': 'correos',
+                'edit-phone-edit-btn': 'telefonos',
+                'edit-comments-edit-btn': 'comentarios',
+                'edit-atendio-edit-btn': 'atendioUsers'
             };
             
             // 1. ASIGNACIÓN DE EVENTOS A LOS BOTONES (+) Y (lápiz)
@@ -2516,58 +2498,25 @@
                 const button = document.getElementById(buttonId);
                 if (!button) return;
 
-                if (buttonId.startsWith('add-')) {
-                    button.addEventListener('click', (e) => {
-                        // Se guarda la referencia al <select> hermano del botón presionado.
-                        activeSelectElement = e.currentTarget.parentElement.querySelector('select');
-                        currentEditingField = field;
-                        newOptionInput.value = '';
-                        newOptionInput.placeholder = `Ingrese nueva opción para ${field}`;
-                        openModal(addOptionModal);
-                    });
-                } else if (buttonId.startsWith('edit-')) {
-                    button.addEventListener('click', (e) => {
-                        // Se guarda la referencia y el valor actual del <select> hermano.
-                        activeSelectElement = e.currentTarget.parentElement.querySelector('select');
-                        const currentValue = $(activeSelectElement).val();
+                button.addEventListener('click', (e) => {
+                    // Se guarda la referencia y el valor actual del <select> hermano.
+                    activeSelectElement = e.currentTarget.parentElement.querySelector('select');
+                    const currentValue = $(activeSelectElement).val();
                         
-                        if (!currentValue) {
-                            return showAlert("Por favor, seleccione una opción para editar.", "warning");
-                        }
-                        
-                        currentEditingField = field;
-                        currentEditingValue = currentValue;
-                        editOptionInput.value = currentValue;
-                        editOptionInput.placeholder = `Edite la opción para ${field}`;
-                        openModal(editOptionModal);
-                    });
-                }
+                    if (!currentValue) {
+                        return showAlert("Por favor, seleccione una opción para editar.", "warning");
+                    }
+                       
+                    currentEditingField = field;
+                    currentEditingValue = currentValue;
+                    editOptionInput.value = currentValue;
+                    editOptionInput.placeholder = `Edite la opción para ${field}`;
+                    openModal(editOptionModal);
+                });
             });
             
-            // 2. LÓGICA DE CONFIRMACIÓN PARA AÑADIR NUEVA OPCIÓN
-            confirmAddOptionBtn.addEventListener('click', () => {
-                const newOption = newOptionInput.value.trim();
-                if (newOption && currentEditingField) {
-                    // Actualiza la lista de opciones en memoria.
-                    if (!fieldOptions[currentEditingField].includes(newOption)) {
-                        fieldOptions[currentEditingField].push(newOption);
-                        fieldOptions[currentEditingField].sort();
-                        updateSelectOptions(currentEditingField, fieldOptions[currentEditingField]);
-                    }
-                    
-                    // Re-selecciona el valor en el selector de origen usando la referencia guardada.
-                    if (activeSelectElement) {
-                        $(activeSelectElement).val(newOption).trigger('change.select2');
-                    }
-                    
-                    showAlert(`Opción "${newOption}" añadida correctamente.`, "success");
-                    closeModal(addOptionModal);
-                    activeSelectElement = null; // Limpia la referencia.
-                }
-            });
 
-
-            // 3. LÓGICA DE CONFIRMACIÓN PARA EDITAR OPCIÓN EXISTENTE
+            // 2. LÓGICA DE CONFIRMACIÓN PARA EDITAR OPCIÓN EXISTENTE
 
             confirmEditOptionBtn.addEventListener('click', () => {
                 const newValue = editOptionInput.value.trim();
@@ -2620,10 +2569,6 @@
 
             
             // 4. LIMPIEZA DE ESTADO EN CASO DE CANCELACIÓN
-            cancelAddOptionBtn.addEventListener('click', () => {
-                closeModal(addOptionModal);
-                activeSelectElement = null; // Es crucial limpiar la referencia al cancelar.
-            });
             cancelEditOptionBtn.addEventListener('click', () => {
                 closeModal(editOptionModal);
                 activeSelectElement = null; // Limpia la referencia para evitar efectos secundarios.
