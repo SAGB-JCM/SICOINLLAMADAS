@@ -2315,6 +2315,9 @@
                 fieldToSelectMap[field].forEach(selectId => {
                     const select = $(`#${selectId}`);
                     if (select.length) {
+                        // Guardar el valor actual antes de actualizar
+                        const currentValue = select.val();
+                        
                         select.empty().select2({
                             data: normalizedOptions,
                             tags: true,
@@ -2323,14 +2326,28 @@
                             width: '100%'
                         });
 
-                        // Seleccionar por id si existe
-                        if (selectedId && normalizedOptions.some(o => o.id === selectedId)) {
+                        // Restaurar el valor seleccionado si todavía existe
+                        if (currentValue && normalizedOptions.some(o => o.id === currentValue)) {
+                            isProgrammaticChange = true;
+                            select.val(currentValue).trigger('change.select2');
+                            setTimeout(() => {
+                                isProgrammaticChange = false;
+                            }, 100);
+                        }
+                        // Seleccionar por id si se especifica
+                        else if (selectedId && normalizedOptions.some(o => o.id === selectedId)) {
+                            isProgrammaticChange = true;
                             select.val(selectedId).trigger('change.select2');
+                            setTimeout(() => {
+                                isProgrammaticChange = false;
+                            }, 100);
                         }
                     }
                 });
             }
+
         }
+
 
         // Función para el autocompletado inteligente
         function setupAutofill() {
@@ -2367,6 +2384,9 @@
 
             // Evento para institución (formulario principal)
             $('#caller-institution').on('change', function() {
+
+                if (isProgrammaticChange) return;
+
                 const institution = $(this).val();
                 const nameSelect = $('#caller-name');
                 
@@ -2391,6 +2411,9 @@
 
             // Evento para institución (formulario de edición)
             $('#edit-caller-institution').on('change', function() {
+
+                if (isProgrammaticChange) return;
+
                 const institution = $(this).val();
                 const nameSelect = $('#edit-caller-name');
                 
@@ -2415,6 +2438,9 @@
 
             // Evento para nombre (formulario principal)
             $('#caller-name').on('change', function() {
+
+                if (isProgrammaticChange) return;
+
                 const name = $(this).val();
                 const institution = $('#caller-institution').val();
                 loadContactDetails(name, institution, false);
@@ -2422,11 +2448,15 @@
 
             // Evento para nombre (formulario de edición)
             $('#edit-caller-name').on('change', function() {
+
+                if (isProgrammaticChange) return;
+
                 const name = $(this).val();
                 const institution = $('#edit-caller-institution').val();
                 loadContactDetails(name, institution, true);
             });
         }
+
 
 
 
@@ -2477,6 +2507,8 @@
         // Variable global para mantener el contexto del <select> que está siendo modificado.
         // Se gestiona su ciclo de vida: se establece al iniciar y se limpia al finalizar o cancelar.
         let activeSelectElement = null;
+        // Añadir al inicio de las variables globales
+        let isProgrammaticChange = false;
 
         /**
          * Configura todos los manejadores de eventos para los botones de añadir (+) y editar (lápiz)
@@ -2564,49 +2596,55 @@
 
 
             // 3. LÓGICA DE CONFIRMACIÓN PARA EDITAR OPCIÓN EXISTENTE
+
             confirmEditOptionBtn.addEventListener('click', () => {
                 const newValue = editOptionInput.value.trim();
 
-                // Validaciones mínimas
                 if (!newValue || !currentEditingField || !currentEditingValue) {
                     return;
                 }
 
-                // Evitamos que el modal de edición quede abierto debajo del modal de contraseña
-                try { closeModal(editOptionModal); } catch (err) { /* silent */ }
-
-                // Pedimos la contraseña y, solo si es correcta, hacemos la actualización
+                closeModal(editOptionModal);
+                
                 requirePassword(async () => {
                     try {
-                        // Actualiza todos los registros en la base de datos.
                         await findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue);
-
-                        // UX MEJORA: Actualización "Optimista" del UI.
-                        // Para feedback inmediato, actualizamos y seleccionamos el valor directamente.
-                        // El listener onSnapshot de Firestore reconciliará los datos en segundo plano
-                        // sin que el usuario perciba ningún cambio.
+                        
+                        // Actualizar la opción en la interfaz sin disparar eventos de cambio
+                        isProgrammaticChange = true;
+                        
                         if (activeSelectElement) {
-                            // Si la nueva opción no existe en la lista actual, la creamos al vuelo.
-                            if ($(activeSelectElement).find(`option[value="${newValue}"]`).length === 0) {
-                                const newOptionEl = new Option(newValue, newValue, true, true);
-                                $(activeSelectElement).append(newOptionEl);
-                            }
-                            // Establece el valor del selector y notifica a Select2 del cambio.
                             $(activeSelectElement).val(newValue).trigger('change.select2');
                         }
-
-                        // Cerrar modal de edición (por si quedó abierto por algún flujo previo)
-                        try { closeModal(editOptionModal); } catch (err) { /* silent */ }
-
+                        
+                        // También actualizar la opción en todas las listas desplegables del mismo campo
+                        $(`select[name="${currentEditingField}"]`).each(function() {
+                            if (this !== activeSelectElement) {
+                                const $select = $(this);
+                                // Buscar y actualizar la opción en este select
+                                $select.find('option').each(function() {
+                                    if (this.value === currentEditingValue) {
+                                        this.value = newValue;
+                                        this.textContent = newValue;
+                                    }
+                                });
+                            }
+                        });
+                        
+                        // Reactivar los eventos después de un breve delay
+                        setTimeout(() => {
+                            isProgrammaticChange = false;
+                        }, 100);
+                        
                     } catch (dbErr) {
                         console.error('Error al actualizar la base de datos:', dbErr);
-                        // Aquí puedes mostrar feedback al usuario (toast/alert) si quieres
+                        showAlert("Error al actualizar la opción en la base de datos", "error");
                     } finally {
-                        // Limpia la referencia.
                         activeSelectElement = null;
                     }
                 });
             });
+
 
             
             // 4. LIMPIEZA DE ESTADO EN CASO DE CANCELACIÓN
@@ -3917,30 +3955,57 @@
                 });
             }
 
-            function handleEditClick(e) {
+
+            let isProgrammaticChange = false;
+
+            // Reemplazar la función handleEditClick con esta versión corregida
+            function handleEditClick(event) {
                 requirePassword(() => {
-                    const callId = e.currentTarget.dataset.id;
-                    const isHistorical = e.currentTarget.dataset.isHistorical === 'true';
+                    const button = event.currentTarget;
+                    const callId = button.getAttribute('data-id');
+                    const isHistorical = button.getAttribute('data-is-historical') === 'true';
+
+                    if (!callId) {
+                        console.error("ID de llamada no encontrado para edición");
+                        return;
+                    }
+
                     currentEditIsHistorical = isHistorical;
                     const allData = isHistorical ? historicalCalls : calls;
                     const callToEdit = allData.find(call => call.id === callId);
-                    if (!callToEdit) return;
+
+                    if (!callToEdit) {
+                        showAlert("No se pudo encontrar la llamada para editar", "error");
+                        return;
+                    }
 
                     document.getElementById('edit-id').value = callId;
-                    $('#edit-caller-institution').val(callToEdit.institucion || '').trigger('change');
-                    $('#edit-call-area').val(callToEdit.area || '').trigger('change');
-                    $('#edit-call-subject').val(callToEdit.asunto || '').trigger('change');
-                    $('#edit-call-query').val(callToEdit.consulta || '').trigger('change');
-                    $('#edit-caller-name').val(callToEdit.nombre || '').trigger('change');
-                    $('#edit-caller-cargo').val(callToEdit.cargo || '').trigger('change');
-                    $('#edit-caller-email').val(callToEdit.correo || '').trigger('change');
-                    $('#edit-caller-phone').val(callToEdit.telefono || '').trigger('change');
-                    $('#edit-call-comments').val(callToEdit.comentarios || '').trigger('change');
-                    $('#edit-call-atendio').val(callToEdit.atendio || '').trigger('change');
+
+                    // Desactivar autofill durante la carga inicial
+                    isProgrammaticChange = true;
+                    
+                    $('#edit-caller-institution').val(callToEdit.institucion || '').trigger('change.select2');
+                    $('#edit-call-area').val(callToEdit.area || '').trigger('change.select2');
+                    $('#edit-call-subject').val(callToEdit.asunto || '').trigger('change.select2');
+                    $('#edit-call-query').val(callToEdit.consulta || '').trigger('change.select2');
+                    $('#edit-caller-name').val(callToEdit.nombre || '').trigger('change.select2');
+                    $('#edit-caller-cargo').val(callToEdit.cargo || '').trigger('change.select2');
+                    $('#edit-caller-email').val(callToEdit.correo || '').trigger('change.select2');
+                    $('#edit-caller-phone').val(callToEdit.telefono || '').trigger('change.select2');
+                    $('#edit-call-comments').val(callToEdit.comentarios || '').trigger('change.select2');
+                    $('#edit-call-atendio').val(callToEdit.atendio || '').trigger('change.select2');
+
+                    // Reactivar autofill después de la carga
+                    setTimeout(() => {
+                        isProgrammaticChange = false;
+                    }, 100);
 
                     openModal(editModal);
                 });
             }
+
+
+
 
             // Funcion para actualizar estatus
             async function handleStatusToggle(e) {
@@ -3968,7 +4033,8 @@
                 if (target.classList.contains('delete-btn')) handleDeleteClick({ currentTarget: target });
                 if (target.classList.contains('toggle-status-btn')) handleStatusToggle({ currentTarget: target });
             });
-            
+
+
             // Cancelar Eliminar llamada de historico
             cancelDeleteBtn.addEventListener('click', () => {
                 closeModal(confirmModal);
@@ -3982,7 +4048,6 @@
                     closeModal(confirmModal);
                 }
             });
-
 
 
             // Importar histórico
