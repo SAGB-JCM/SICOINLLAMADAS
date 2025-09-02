@@ -37,7 +37,7 @@
     
     <!-- Hoja de estilos personalizada -->
     <style>
-        html { font-size: 60%; } /* Simula zoom negativo al 50% */
+        html { font-size: 65%; } /* Simula zoom negativo al 50% */
         body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
         
         /* Nueva paleta de colores */
@@ -2561,15 +2561,26 @@
                     activeSelectElement = null; // Limpia la referencia.
                 }
             });
-            
+
+
             // 3. LÓGICA DE CONFIRMACIÓN PARA EDITAR OPCIÓN EXISTENTE
             confirmEditOptionBtn.addEventListener('click', () => {
                 const newValue = editOptionInput.value.trim();
-                if (newValue && currentEditingField && currentEditingValue) {
-                    requirePassword(async () => {
+
+                // Validaciones mínimas
+                if (!newValue || !currentEditingField || !currentEditingValue) {
+                    return;
+                }
+
+                // Evitamos que el modal de edición quede abierto debajo del modal de contraseña
+                try { closeModal(editOptionModal); } catch (err) { /* silent */ }
+
+                // Pedimos la contraseña y, solo si es correcta, hacemos la actualización
+                requirePassword(async () => {
+                    try {
                         // Actualiza todos los registros en la base de datos.
                         await findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue);
-                        
+
                         // UX MEJORA: Actualización "Optimista" del UI.
                         // Para feedback inmediato, actualizamos y seleccionamos el valor directamente.
                         // El listener onSnapshot de Firestore reconciliará los datos en segundo plano
@@ -2583,12 +2594,20 @@
                             // Establece el valor del selector y notifica a Select2 del cambio.
                             $(activeSelectElement).val(newValue).trigger('change.select2');
                         }
-                        
-                        closeModal(editOptionModal);
-                        activeSelectElement = null; // Limpia la referencia.
-                    });
-                }
+
+                        // Cerrar modal de edición (por si quedó abierto por algún flujo previo)
+                        try { closeModal(editOptionModal); } catch (err) { /* silent */ }
+
+                    } catch (dbErr) {
+                        console.error('Error al actualizar la base de datos:', dbErr);
+                        // Aquí puedes mostrar feedback al usuario (toast/alert) si quieres
+                    } finally {
+                        // Limpia la referencia.
+                        activeSelectElement = null;
+                    }
+                });
             });
+
             
             // 4. LIMPIEZA DE ESTADO EN CASO DE CANCELACIÓN
             cancelAddOptionBtn.addEventListener('click', () => {
