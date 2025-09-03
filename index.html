@@ -2413,8 +2413,7 @@
 
 
 
-
-        // Función para el autocompletado inteligente
+        // Bloque corregido: findAndReplaceInDatabase
         async function findAndReplaceInDatabase(field, oldValue, newValue) {
             const fieldToDbFieldMap = {
                 'instituciones': 'institucion', 
@@ -2433,27 +2432,118 @@
             if (!dbField) return;
             
             try {
-
-                // Actualizar registros en la colección principal
+                // Preservar estado de modales abiertos
+                const activeModalStates = preserveOpenModalsState();
+                
+                // Actualización de registros (existente)
                 const callsQuery = query(callsCollectionRef, where(dbField, '==', oldValue));
                 const callsSnapshot = await getDocs(callsQuery);
                 
                 const batch = writeBatch(db);
                 callsSnapshot.forEach(doc => batch.update(doc.ref, { [dbField]: newValue }));
                 
-                // Actualizar registros en la colección histórica
                 const historicalQuery = query(historicalCallsCollectionRef, where(dbField, '==', oldValue));
                 const historicalSnapshot = await getDocs(historicalQuery);
                 
                 historicalSnapshot.forEach(doc => batch.update(doc.ref, { [dbField]: newValue }));
                 
                 await batch.commit();
+                
+                // Actualización no destructiva de opciones
+                await updateSelectOptionsPreservingState(field, newValue, activeModalStates);
+                
                 showAlert(`Se actualizaron ${callsSnapshot.size + historicalSnapshot.size} registros.`, "success");
             } catch (error) {
                 console.error("Error al actualizar registros:", error);
                 showAlert("Error al actualizar registros existentes", "error");
             }
         }
+
+        // Nuevo helper function: preserveOpenModalsState
+        function preserveOpenModalsState() {
+            const states = {
+                editModal: null,
+                callModal: null
+            };
+            
+            // Preservar estado del modal de edición si está abierto
+            if (!document.getElementById('edit-modal').classList.contains('hidden')) {
+                states.editModal = getFormState('edit-form');
+            }
+            
+            // Preservar estado del modal de nueva llamada si está abierto
+            if (!document.getElementById('call-modal').classList.contains('hidden')) {
+                states.callModal = getFormState('call-form');
+            }
+            
+            return states;
+        }
+
+        // Nuevo helper function: getFormState
+        function getFormState(formId) {
+            const form = document.getElementById(formId);
+            const state = {};
+            
+            $(form).find('select').each(function() {
+                const select = $(this);
+                state[select.attr('name')] = {
+                    value: select.val(),
+                    tags: select.select2('data').filter(item => item._isTag) // Preservar tags temporales
+                };
+            });
+            
+            return state;
+        }
+
+        // Nuevo helper function: updateSelectOptionsPreservingState
+        async function updateSelectOptionsPreservingState(field, newValue, activeModalStates) {
+            // Actualizar opciones globales
+            fieldOptions[field] = [...new Set([...fieldOptions[field], newValue])].sort();
+            
+            // Actualizar selects sin destruir estado
+            $('select[name="' + field + '"]').each(function() {
+                const select = $(this);
+                const currentValue = select.val();
+                
+                // Agregar nueva opción si no existe
+                if (!select.find('option[value="' + newValue + '"]').length) {
+                    select.append(new Option(newValue, newValue));
+                }
+                
+                // Mantener selección actual
+                select.val(currentValue).trigger('change');
+            });
+            
+            // Restaurar estado de modales
+            if (activeModalStates.editModal) {
+                restoreFormState('edit-form', activeModalStates.editModal);
+            }
+            if (activeModalStates.callModal) {
+                restoreFormState('call-form', activeModalStates.callModal);
+            }
+        }
+
+        // Nuevo helper function: restoreFormState
+        function restoreFormState(formId, state) {
+            const form = document.getElementById(formId);
+            
+            Object.entries(state).forEach(([fieldName, fieldState]) => {
+                const select = $(form).find('[name="' + fieldName + '"]');
+                
+                // Restaurar tags temporales primero
+                fieldState.tags.forEach(tag => {
+                    if (!select.find('option[value="' + tag.id + '"]').length) {
+                        select.append(new Option(tag.text, tag.id, false, false));
+                    }
+                });
+                
+                // Restaurar valor seleccionado
+                select.val(fieldState.value).trigger('change');
+            });
+        }
+
+
+
 
         
         //Añadir o Editar (Botones)
