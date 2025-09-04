@@ -112,10 +112,31 @@
         .status-atendida { background-color: #10B981; color: #fff; border-color: #059669; }
         .status-pendiente { background-color: #EF4444; color: #fff; border-color: #DC2626; }
         
-        .sortable-header { cursor: pointer; }
-        .sortable-header .sort-icon { display: none; }
-        .sortable-header.asc .sort-icon.asc,
-        .sortable-header.desc .sort-icon.desc { display: inline-block; }
+        .filterable-header { 
+            cursor: pointer; 
+            position: relative;
+        }
+        .filterable-header .filter-icon {
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+        .filterable-header:hover .filter-icon,
+        .filterable-header.active .filter-icon {
+            opacity: 1;
+            color: #9C2348;
+        }
+
+        .filter-dropdown {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 6px;
+            z-index: 20;
+            max-height: 250px;
+            overflow-y: auto;
+            min-width: 200px;
+        }
         
         input:invalid, select:invalid { border-color: #ef4444; }
         
@@ -606,7 +627,7 @@
         <header class="bg-primary shadow-lg sticky top-0 z-10">
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div class="flex items-center space-x-4">
-                    <img src="https://github.com/ProveedorSAGB/SICOINLLAMADAS/blob/main/ChatGPT%20Image%2028%20ago%202025,%2007_02_23%20p.m..png?raw=true" alt="Logo Teléfono" class="h-14 w-auto">
+                    <img src="https://github.com/SAGB-JCM/SICOINLlamadasFormulario/blob/main/SICOINLlamadasFormulario%20-%20LOGO.png?raw=true" alt="Logo Teléfono" class="h-14 w-auto">
                     <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Formulario en Línea de Registro de Llamadas</h1>
                 </div>
                 <div id="user-info" class="text-white text-sm font-mono"></div>
@@ -675,22 +696,22 @@
                         <table class="w-full text-sm text-left text-slate-500">
                             <thead class="text-xs text-slate-700 uppercase bg-slate-100">
                                 <tr id="main-table-header">
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="no">No. <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="fecha">Fecha <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="inicio">Inicio <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="fin">Fin <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="duracion">Duración <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="area">Área <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="institucion">Institución <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="asunto">Asunto <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="consulta">Consulta <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="nombre">Nombre <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="cargo">Cargo <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="correo">Correo <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="telefono">Teléfono <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="estatus">Estatus <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="atendio">Atendió <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="comentarios">Comentarios <span class="sort-icon asc"><i class="fa-solid fa-caret-up"></i></span><span class="sort-icon desc"><i class="fa-solid fa-caret-down"></i></span></th>
+                                    <th scope="col" class="py-3 px-6">No.</th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="fecha">Fecha <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="inicio">Inicio <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="fin">Fin <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="duracion">Duración <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="area">Área <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="institucion">Institución <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="asunto">Asunto <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="consulta">Consulta <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombre">Nombre <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="cargo">Cargo <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="correo">Correo <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="telefono">Teléfono <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="estatus">Estatus <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="atendio">Atendió <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="comentarios">Comentarios <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6">Acciones</th>
                                 </tr>
                             </thead>
@@ -715,22 +736,22 @@
                         <table class="w-full text-sm text-left text-slate-500">
                             <thead class="text-xs text-slate-700 uppercase bg-slate-100">
                                 <tr id="historical-table-header">
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="no">No.</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="fecha">Fecha</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="inicio">Inicio</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="fin">Fin</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="duracion">Duración</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="area">Área</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="institucion">Institución</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="asunto">Asunto</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="consulta">Consulta</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="nombre">Nombre</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="cargo">Cargo</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="correo">Correo</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="telefono">Teléfono</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="estatus">Estatus</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="atendio">Atendió</th>
-                                    <th scope="col" class="py-3 px-6 sortable-header" data-sort-by="comentarios">Comentarios</th>
+                                    <th scope="col" class="py-3 px-6">No.</th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="fecha">Fecha <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="inicio">Inicio <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="fin">Fin <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="duracion">Duración <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="area">Área <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="institucion">Institución <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="asunto">Asunto <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="consulta">Consulta <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombre">Nombre <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="cargo">Cargo <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="correo">Correo <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="telefono">Teléfono <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="estatus">Estatus <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="atendio">Atendió <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="comentarios">Comentarios <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6">Acciones</th>
                                 </tr>
                             </thead>
@@ -1203,13 +1224,13 @@
         
         // Datos del Proyecto
         const firebaseConfig = {
-            apiKey: "AIzaSyBdiTQPTIklfTx4W4_cWn4wule50FKXknY",
-            authDomain: "llamadasicoin.firebaseapp.com",
-            projectId: "llamadasicoin",
-            storageBucket: "llamadasicoin.appspot.com",
-            messagingSenderId: "689552307207",
-            appId: "1:689552307207:web:a18fdf88cdf2583fa466a2",
-            measurementId: "G-Z97PD6VZR4"
+            apiKey: "AIzaSyBcuK6zAUnX09wEZ-hSfBP8A66kltUvBls",
+            authDomain: "sicoinllamadasformulario.firebaseapp.com",
+            projectId: "sicoinllamadasformulario",
+            storageBucket: "sicoinllamadasformulario.firebasestorage.app",
+            messagingSenderId: "831487187531",
+            appId: "1:831487187531:web:3b9d4fc6e55ffb0bb38bce",
+            measurementId: "G-F47JLWW4NY"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -1353,6 +1374,12 @@
             endDate: null
         };
 
+        let activeFilters = {
+            main: {},
+            historical: {}
+        };
+        let currentFilterDropdown = null;
+
         // =============================================
         // MÓDULO: Utilidades
         // =============================================
@@ -1488,41 +1515,111 @@
             });
         }
 
-       
-        //Ordenar Tablas
-        function setupSorting(headerId, tableBody, dataProvider, renderFunc) {
-            document.getElementById(headerId).addEventListener('click', (e) => {
-                const header = e.target.closest('.sortable-header');
-                if (!header) return;
-                
-                const sortBy = header.dataset.sortBy;
-                let sortOrder = header.dataset.sortOrder === 'asc' ? 'desc' : 'asc';
+        function applyAllFilters(data, filterKey) {
+            const searchInput = document.getElementById(`filter-input-${filterKey}`);
+            const searchText = searchInput ? searchInput.value.toLowerCase() : '';
+            const columnFilters = activeFilters[filterKey];
 
-                document.querySelectorAll(`#${headerId} .sortable-header`).forEach(h => {
-                    h.dataset.sortOrder = ''; h.classList.remove('asc', 'desc');
-                });
-                header.dataset.sortOrder = sortOrder; header.classList.add(sortOrder);
-                
-                const data = dataProvider();
-                const sortedData = [...data].sort((a, b) => {
-                    const valA = a[sortBy] || ''; const valB = b[sortBy] || '';
-                    const comparison = typeof valA === 'string' ? valA.localeCompare(valB, 'es', { numeric: true }) : valA - valB;
-                    return sortOrder === 'asc' ? comparison : -comparison;
-                });
-                renderFunc(tableBody, sortedData, headerId.includes('historical'));
+            return data.filter(item => {
+                // 1. Check search box filter
+                const matchesSearch = searchText === '' || Object.values(item).some(value => 
+                    String(value).toLowerCase().includes(searchText)
+                );
+                if (!matchesSearch) return false;
+
+                // 2. Check column filters
+                for (const col in columnFilters) {
+                    if (columnFilters[col].length > 0) {
+                        let itemValue = item[col] || 'N/A';
+                        if (col === 'duracion') itemValue = formatDuration(item[col]);
+                        if (col === 'inicio' || col === 'fin') itemValue = formatTimeWithAmPm(item[col]);
+
+                        if (!columnFilters[col].includes(itemValue)) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
             });
         }
+
+        function setupColumnFilters(headerId, dataProvider, renderFunc, filterKey) {
+            const headerRow = document.getElementById(headerId);
+            headerRow.addEventListener('click', e => {
+                const header = e.target.closest('.filterable-header');
+                if (!header) return;
+
+                if (currentFilterDropdown) {
+                    currentFilterDropdown.remove();
+                    currentFilterDropdown = null;
+                }
+
+                const filterBy = header.dataset.filterBy;
+                const allData = dataProvider();
+                const uniqueValues = [...new Set(allData.map(item => {
+                    if (filterBy === 'duracion') return formatDuration(item[filterBy]);
+                    if (filterBy === 'inicio' || filterBy === 'fin') return formatTimeWithAmPm(item[filterBy]);
+                    return item[filterBy] || 'N/A';
+                }))].sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
+
+                const dropdown = document.createElement('div');
+                dropdown.className = 'filter-dropdown p-2 space-y-1';
+                
+                const activeColumnFilters = activeFilters[filterKey][filterBy] || [];
+
+                dropdown.innerHTML = `
+                    <div class="p-1"><button class="clear-filter-btn text-blue-500 hover:underline text-xs" data-filter-by="${filterBy}">Limpiar filtro</button></div>
+                    <div class="border-t my-1"></div>
+                    ${uniqueValues.map(value => `
+                        <label class="flex items-center space-x-2 p-1 hover:bg-gray-100 rounded cursor-pointer">
+                            <input type="checkbox" class="filter-checkbox" value="${value}" ${activeColumnFilters.includes(value) ? 'checked' : ''}>
+                            <span class="text-sm text-gray-700">${value}</span>
+                        </label>
+                    `).join('')}
+                `;
+
+                document.body.appendChild(dropdown);
+                const rect = header.getBoundingClientRect();
+                dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+                dropdown.style.left = `${rect.left + window.scrollX}px`;
+                currentFilterDropdown = dropdown;
+
+                dropdown.addEventListener('change', e => {
+                    if (e.target.classList.contains('filter-checkbox')) {
+                        const checkedValues = Array.from(dropdown.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
+                        activeFilters[filterKey][filterBy] = checkedValues;
+                        header.classList.toggle('active', checkedValues.length > 0);
+                        const filteredData = applyAllFilters(dataProvider(), filterKey);
+                        renderFunc(document.getElementById(filterKey === 'main' ? 'calls-table-body' : 'historical-table-body'), filteredData, filterKey === 'historical');
+                    }
+                });
+
+                dropdown.querySelector('.clear-filter-btn').addEventListener('click', () => {
+                    activeFilters[filterKey][filterBy] = [];
+                    header.classList.remove('active');
+                    const filteredData = applyAllFilters(dataProvider(), filterKey);
+                    renderFunc(document.getElementById(filterKey === 'main' ? 'calls-table-body' : 'historical-table-body'), filteredData, filterKey === 'historical');
+                    if (currentFilterDropdown) currentFilterDropdown.remove();
+                });
+            });
+
+            document.addEventListener('click', (e) => {
+                if (currentFilterDropdown && !currentFilterDropdown.contains(e.target) && !e.target.closest('.filterable-header')) {
+                    currentFilterDropdown.remove();
+                    currentFilterDropdown = null;
+                }
+            }, true);
+        }
         
-        //Filtrar tablas (Filtro)
-        function setupFiltering(inputId, tableBody, dataProvider, renderFunc, isHistorical = false) {
+        function setupFiltering(inputId, dataProvider, renderFunc, isHistorical = false) {
             const filterInput = document.getElementById(inputId);
-            const clearFilterBtn = document.getElementById(`clear-filter-btn-${inputId.split('-')[2]}`);
+            const filterKey = isHistorical ? 'historical' : 'main';
+            const clearFilterBtn = document.getElementById(`clear-filter-btn-${filterKey}`);
             filterInput.addEventListener('input', () => {
                 const filterText = filterInput.value.toLowerCase();
                 clearFilterBtn.classList.toggle('hidden', !filterText);
-                const data = dataProvider();
-                const filteredData = data.filter(call => Object.values(call).some(value => String(value).toLowerCase().includes(filterText)));
-                renderFunc(tableBody, filteredData, isHistorical);
+                const filteredData = applyAllFilters(dataProvider(), filterKey);
+                renderFunc(document.getElementById(isHistorical ? 'historical-table-body' : 'calls-table-body'), filteredData, isHistorical);
             });
             clearFilterBtn.addEventListener('click', () => {
                 filterInput.value = ''; filterInput.dispatchEvent(new Event('input'));
@@ -1532,14 +1629,9 @@
 
         //ordenar y renderizar tabla
         function sortAndRenderTable(tableBody, data, isHistorical) {
-            const sortedData = [...data].sort((a, b) => {
-                const dateA = new Date(a.fecha?.split('/').reverse().join('-'));
-                const dateB = new Date(b.fecha?.split('/').reverse().join('-'));
-                if (isNaN(dateA)) return 1; // Mueve fechas inválidas/faltantes al final
-                if (isNaN(dateB)) return -1;
-                return dateB - dateA; // Descendente
-            });
-            renderTable(tableBody, sortedData, isHistorical);
+            const filterKey = isHistorical ? 'historical' : 'main';
+            const filteredData = applyAllFilters(data, filterKey);
+            renderTable(tableBody, filteredData, isHistorical);
         }
 
 
@@ -2411,9 +2503,61 @@
             });
         }
 
+        // =============================================
+        // INICIO: Bloque de código para preservar estado del formulario
+        // Colocar este bloque ANTES de la función findAndReplaceInDatabase
+        // =============================================
+        
+        // Nuevo helper function: getFormState
+        function getFormState(formId) {
+            const form = document.getElementById(formId);
+            if (!form) return null;
+            const state = {};
+            
+            $(form).find('select').each(function() {
+                const select = $(this);
+                const selectName = select.attr('name');
+                if (selectName) {
+                    const select2Data = select.select2('data') || [];
+                    state[selectName] = {
+                        value: select.val(),
+                        // Guardamos las etiquetas temporales que el usuario haya creado
+                        tags: select2Data.filter(item => item.element === undefined || $(item.element).data('select2-tag') === true)
+                    };
+                }
+            });
+            
+            return state;
+        }
+
+        // Nuevo helper function: restoreFormState
+        function restoreFormState(formId, state) {
+            const form = document.getElementById(formId);
+            if (!form || !state) return;
+            
+            Object.entries(state).forEach(([fieldName, fieldState]) => {
+                const select = $(form).find(`[name="${fieldName}"]`);
+                if (select.length > 0) {
+                    // Restaurar etiquetas temporales primero para que estén disponibles para la selección
+                    if (fieldState.tags) {
+                        fieldState.tags.forEach(tag => {
+                            if (!select.find(`option[value="${tag.id}"]`).length) {
+                                select.append(new Option(tag.text, tag.id));
+                            }
+                        });
+                    }
+                    // Restaurar valor seleccionado
+                    select.val(fieldState.value).trigger('change.select2');
+                }
+            });
+        }
+        // =============================================
+        // FIN: Bloque de código para preservar estado del formulario
+        // =============================================
 
 
-        // Bloque corregido: findAndReplaceInDatabase
+
+
         async function findAndReplaceInDatabase(field, oldValue, newValue) {
             const fieldToDbFieldMap = {
                 'instituciones': 'institucion', 
@@ -2432,67 +2576,27 @@
             if (!dbField) return;
             
             try {
-                // Preservar estado de modales abiertos
-                const activeModalStates = preserveOpenModalsState();
-                
                 // Actualización de registros (existente)
                 const callsQuery = query(callsCollectionRef, where(dbField, '==', oldValue));
                 const callsSnapshot = await getDocs(callsQuery);
                 
                 const batch = writeBatch(db);
                 callsSnapshot.forEach(doc => batch.update(doc.ref, { [dbField]: newValue }));
-                
                 const historicalQuery = query(historicalCallsCollectionRef, where(dbField, '==', oldValue));
                 const historicalSnapshot = await getDocs(historicalQuery);
-                
                 historicalSnapshot.forEach(doc => batch.update(doc.ref, { [dbField]: newValue }));
-                
                 await batch.commit();
                 
-                // Actualización no destructiva de opciones
-                await updateSelectOptionsPreservingState(field, newValue, activeModalStates);
+                // Actualizar las opciones globales en fieldOptions
+                fieldOptions[field] = [...new Set([...fieldOptions[field].filter(opt => opt !== oldValue), newValue])].sort();
+                // Redibujar los selects con la lista actualizada
+                updateSelectOptions(field, fieldOptions[field]);
                 
                 showAlert(`Se actualizaron ${callsSnapshot.size + historicalSnapshot.size} registros.`, "success");
             } catch (error) {
                 console.error("Error al actualizar registros:", error);
                 showAlert("Error al actualizar registros existentes", "error");
             }
-        }
-
-        // Nuevo helper function: preserveOpenModalsState
-        function preserveOpenModalsState() {
-            const states = {
-                editModal: null,
-                callModal: null
-            };
-            
-            // Preservar estado del modal de edición si está abierto
-            if (!document.getElementById('edit-modal').classList.contains('hidden')) {
-                states.editModal = getFormState('edit-form');
-            }
-            
-            // Preservar estado del modal de nueva llamada si está abierto
-            if (!document.getElementById('call-modal').classList.contains('hidden')) {
-                states.callModal = getFormState('call-form');
-            }
-            
-            return states;
-        }
-
-        // Nuevo helper function: getFormState
-        function getFormState(formId) {
-            const form = document.getElementById(formId);
-            const state = {};
-            
-            $(form).find('select').each(function() {
-                const select = $(this);
-                state[select.attr('name')] = {
-                    value: select.val(),
-                    tags: select.select2('data').filter(item => item._isTag) // Preservar tags temporales
-                };
-            });
-            
-            return state;
         }
 
         // Nuevo helper function: updateSelectOptionsPreservingState
@@ -2523,28 +2627,6 @@
             }
         }
 
-        // Nuevo helper function: restoreFormState
-        function restoreFormState(formId, state) {
-            const form = document.getElementById(formId);
-            
-            Object.entries(state).forEach(([fieldName, fieldState]) => {
-                const select = $(form).find('[name="' + fieldName + '"]');
-                
-                // Restaurar tags temporales primero
-                fieldState.tags.forEach(tag => {
-                    if (!select.find('option[value="' + tag.id + '"]').length) {
-                        select.append(new Option(tag.text, tag.id, false, false));
-                    }
-                });
-                
-                // Restaurar valor seleccionado
-                select.val(fieldState.value).trigger('change');
-            });
-        }
-
-
-
-
         
         //Añadir o Editar (Botones)
 
@@ -2559,110 +2641,93 @@
          * de los campos de formulario. Implementa la lógica para autoseleccionar la opción
          * recién creada o modificada.
          */
+
+
         function setupAddEditButtons() {
-            const buttonToFieldMap = {
-                'edit-institution-btn': 'instituciones',
-                'edit-area-btn': 'areas',
-                'edit-subject-btn': 'asuntos',
-                'edit-query-btn': 'consultas',
-                'edit-name-btn': 'nombres',
-                'edit-cargo-btn': 'cargos',
-                'edit-email-btn': 'correos',
-                'edit-phone-btn': 'telefonos',
-                'edit-comments-btn': 'comentarios',
-                'edit-atendio-btn': 'atendioUsers',
-                'edit-institution-edit-btn': 'instituciones',
-                'edit-area-edit-btn': 'areas',
-                'edit-subject-edit-btn': 'asuntos',
-                'edit-query-edit-btn': 'consultas',
-                'edit-name-edit-btn': 'nombres',
-                'edit-cargo-edit-btn': 'cargos',
-                'edit-email-edit-btn': 'correos',
-                'edit-phone-edit-btn': 'telefonos',
-                'edit-comments-edit-btn': 'comentarios',
-                'edit-atendio-edit-btn': 'atendioUsers'
-            };
+             const buttonToFieldMap = {
+                 'edit-institution-btn': 'instituciones',
+                 'edit-area-btn': 'areas',
+                 'edit-subject-btn': 'asuntos',
+                 'edit-query-btn': 'consultas',
+                 'edit-name-btn': 'nombres',
+                 'edit-cargo-btn': 'cargos',
+                 'edit-email-btn': 'correos',
+                 'edit-phone-btn': 'telefonos',
+                 'edit-comments-btn': 'comentarios',
+                 'edit-atendio-btn': 'atendioUsers',
+                 'edit-institution-edit-btn': 'instituciones',
+                 'edit-area-edit-btn': 'areas',
+                 'edit-subject-edit-btn': 'asuntos',
+                 'edit-query-edit-btn': 'consultas',
+                 'edit-name-edit-btn': 'nombres',
+                 'edit-cargo-edit-btn': 'cargos',
+                 'edit-email-edit-btn': 'correos',
+                 'edit-phone-edit-btn': 'telefonos',
+                 'edit-comments-edit-btn': 'comentarios',
+                 'edit-atendio-edit-btn': 'atendioUsers'
+             };
             
-            // 1. ASIGNACIÓN DE EVENTOS A LOS BOTONES (+) Y (lápiz)
-            Object.entries(buttonToFieldMap).forEach(([buttonId, field]) => {
-                const button = document.getElementById(buttonId);
-                if (!button) return;
-
-                button.addEventListener('click', (e) => {
-                    // Se guarda la referencia y el valor actual del <select> hermano.
-                    activeSelectElement = e.currentTarget.parentElement.querySelector('select');
-                    const currentValue = $(activeSelectElement).val();
+             // 1. ASIGNACIÓN DE EVENTOS A LOS BOTONES (lápiz)
+             Object.entries(buttonToFieldMap).forEach(([buttonId, field]) => {
+                 const button = document.getElementById(buttonId);
+                 if (!button) return;
+ 
+                 button.addEventListener('click', (e) => {
+                     activeSelectElement = e.currentTarget.parentElement.querySelector('select');
+                     const currentValue = $(activeSelectElement).val();
+                         
+                     if (!currentValue) {
+                         return showAlert("Por favor, seleccione una opción para editar.", "warning");
+                     }
                         
-                    if (!currentValue) {
-                        return showAlert("Por favor, seleccione una opción para editar.", "warning");
-                    }
-                       
-                    currentEditingField = field;
-                    currentEditingValue = currentValue;
-                    editOptionInput.value = currentValue;
-                    editOptionInput.placeholder = `Edite la opción para ${field}`;
-                    openModal(editOptionModal);
-                });
-            });
+                     currentEditingField = field;
+                     currentEditingValue = currentValue;
+                     editOptionInput.value = currentValue;
+                     editOptionInput.placeholder = `Edite la opción para ${field}`;
+                     openModal(editOptionModal);
+                 });
+             });
             
-
-            // 2. LÓGICA DE CONFIRMACIÓN PARA EDITAR OPCIÓN EXISTENTE
-
-            confirmEditOptionBtn.addEventListener('click', () => {
-                const newValue = editOptionInput.value.trim();
-
-                if (!newValue || !currentEditingField || !currentEditingValue) {
-                    return;
-                }
-
-                closeModal(editOptionModal);
-                
-                requirePassword(async () => {
-                    try {
-                        await findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue);
-                        
-                        // Actualizar la opción en la interfaz sin disparar eventos de cambio
-                        isProgrammaticChange = true;
-                        
-                        if (activeSelectElement) {
-                            $(activeSelectElement).val(newValue).trigger('change.select2');
-                        }
-                        
-                        // También actualizar la opción en todas las listas desplegables del mismo campo
-                        $(`select[name="${currentEditingField}"]`).each(function() {
-                            if (this !== activeSelectElement) {
-                                const $select = $(this);
-                                // Buscar y actualizar la opción en este select
-                                $select.find('option').each(function() {
-                                    if (this.value === currentEditingValue) {
-                                        this.value = newValue;
-                                        this.textContent = newValue;
-                                    }
-                                });
-                            }
-                        });
-                        
-                        // Reactivar los eventos después de un breve delay
-                        setTimeout(() => {
-                            isProgrammaticChange = false;
-                        }, 100);
-                        
-                    } catch (dbErr) {
-                        console.error('Error al actualizar la base de datos:', dbErr);
-                        showAlert("Error al actualizar la opción en la base de datos", "error");
-                    } finally {
-                        activeSelectElement = null;
-                    }
-                });
-            });
-
-
-            
-            // 4. LIMPIEZA DE ESTADO EN CASO DE CANCELACIÓN
-            cancelEditOptionBtn.addEventListener('click', () => {
-                closeModal(editOptionModal);
-                activeSelectElement = null; // Limpia la referencia para evitar efectos secundarios.
-            });
+             // 2. LÓGICA DE CONFIRMACIÓN PARA EDITAR OPCIÓN EXISTENTE
+             confirmEditOptionBtn.addEventListener('click', () => {
+                 const newValue = editOptionInput.value.trim();
+ 
+                 if (!newValue || !currentEditingField || !currentEditingValue) {
+                     return;
+                 }
+ 
+                 closeModal(editOptionModal);
+                 
+                 const activeFormId = !callModal.classList.contains('hidden') ? 'call-form' : 
+                                      !editModal.classList.contains('hidden') ? 'edit-form' : null;
+                 
+                 const formStateBeforeEdit = activeFormId ? getFormState(activeFormId) : null;
+ 
+                 requirePassword(async () => {
+                     try {
+                         await findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue);
+                         
+                         if (formStateBeforeEdit) {
+                             restoreFormState(activeFormId, formStateBeforeEdit);
+                         }
+ 
+                         if (activeSelectElement) {
+                             $(activeSelectElement).val(newValue).trigger('change.select2');
+                         }
+                     } catch (dbErr) {
+                         console.error('Error al actualizar la base de datos:', dbErr);
+                         showAlert("Error al actualizar la opción en la base de datos", "error");
+                     } finally {
+                         activeSelectElement = null;
+                     }
+                 });
+             });
+             
+             // 3. LIMPIEZA DE ESTADO EN CASO DE CANCELACIÓN
+             cancelEditOptionBtn.addEventListener('click', () => {
+                 closeModal(editOptionModal);
+                 activeSelectElement = null;
+             });
         }
 
 
@@ -3906,10 +3971,10 @@
         
         function setupEventListeners() {
             setupTabs();
-            setupSorting('main-table-header', callLogTableBody, () => calls, renderTable);
-            setupSorting('historical-table-header', historicalTableBody, () => historicalCalls, renderTable);
-            setupFiltering('filter-input-main', callLogTableBody, () => calls, renderTable, false);
-            setupFiltering('filter-input-historical', historicalTableBody, () => historicalCalls, renderTable, true);
+            setupColumnFilters('main-table-header', () => calls, renderTable, 'main');
+            setupColumnFilters('historical-table-header', () => historicalCalls, renderTable, 'historical');
+            setupFiltering('filter-input-main', () => calls, renderTable, false);
+            setupFiltering('filter-input-historical', () => historicalCalls, renderTable, true);
             setupAutofill();
             
             // Dashboard ya jala Registro y Control como predeterminado en fuente de datos
