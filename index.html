@@ -583,6 +583,34 @@
             font-size: 0.65rem;
         }
 
+
+        /* Estilos para el modal de detalles de la llamada */
+        .details-modal-content {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            background-color: #f9fafb;
+        }
+        .details-header {
+            border-bottom: 2px solid #9C2348;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .details-header .date {
+            font-size: 1rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .details-section {
+            margin-bottom: 1.5rem;
+        }
+        .details-section h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #9C2348;
+            margin-bottom: 0.75rem;
+        }
+
     </style>
     
     <!-- Configuración de Tailwind con nueva paleta de colores -->
@@ -1203,7 +1231,27 @@
             </div>
         </div>
     </div>
-    
+
+
+    <!----------------- MODAL VER DETALLES DE LLAMADA ---------------->
+    <div id="view-details-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
+        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl mx-4">
+            <button id="close-details-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fa-solid fa-times-circle fa-lg"></i>
+            </button>
+            <div class="flex items-center space-x-4 mb-6">
+                <img src="https://github.com/SAGB-JCM/SICOINLlamadasFormulario/blob/main/SICOINLlamadasFormulario%20-%20LOGO.png?raw=true" alt="Logo Teléfono" class="h-16 w-auto">
+                <h3 class="text-2xl font-bold text-primary">Detalle de la Llamada</h3>
+            </div>
+            <div class="call-form-container">
+                <div id="details-modal-content" class="details-modal-content">
+                    <!-- El contenido se generará dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <!----------------- PIE DE PÁGINA ---------------->
     <footer class="footer-container">
         <label>Insurgentes Sur 1735, Col. Guadalupe Inn Ciudad de México., C.P 01020 - Tel. 2000 3000</label><br>
@@ -1347,6 +1395,8 @@
         const migrateModal = document.getElementById('migrate-modal');
         const cancelMigrateBtn = document.getElementById('cancel-migrate-btn');
         const confirmMigrateBtn = document.getElementById('confirm-migrate-btn');
+        const viewDetailsModal = document.getElementById('view-details-modal');
+        const closeDetailsModalBtn = document.getElementById('close-details-modal-btn');
         const includeDynamicChartCheckbox = document.getElementById('include-dynamic-chart');
         const includeDynamicTableCheckbox = document.getElementById('include-dynamic-table');
         
@@ -4314,7 +4364,7 @@
             
             // Cancelar migración de historial
             cancelMigrateBtn.addEventListener('click', () => closeModal(migrateModal));
-            
+
 
             // Confirmar migración de historial corregida Versión 2
             confirmMigrateBtn.addEventListener('click', async () => {
@@ -4326,6 +4376,87 @@
                     showAlert("Error durante la migración: " + error.message, "error");
                 }
             });
+
+
+            // =============================================
+            // MÓDULO: Visualización de Detalles (Doble Clic)
+            // =============================================
+            const viewDetailsModal = document.getElementById('view-details-modal');
+            const closeDetailsModalBtn = document.getElementById('close-details-modal-btn');
+
+            function showDetailsModal(callItem) {
+                if (!callItem) return;
+
+                const detailsModalContent = document.getElementById('details-modal-content');
+
+                detailsModalContent.innerHTML = `
+                    <div class="details-header">
+                        <p class="date">Fecha: ${callItem.fecha || 'No especificada'}</p>
+                        <h3 class="text-xl font-bold text-slate-800 mt-1">Institución: ${callItem.institucion || 'No especificada'}</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6 mb-6">
+                        <div class="details-section">
+                            <h4><i class="fa-solid fa-clock mr-2"></i>Horarios</h4>
+                            <p class="text-gray-700"><strong>Inicio:</strong> ${formatTimeWithAmPm(callItem.inicio)}</p>
+                            <p class="text-gray-700"><strong>Fin:</strong> ${formatTimeWithAmPm(callItem.fin)}</p>
+                            <p class="text-gray-700"><strong>Duración:</strong> ${formatDuration(callItem.duracion)}</p>
+                        </div>
+                        <div class="details-section">
+                            <h4><i class="fa-solid fa-sitemap mr-2"></i>Clasificación</h4>
+                            <p class="text-gray-700"><strong>Área:</strong> ${callItem.area || 'N/A'}</p>
+                            <p class="text-gray-700"><strong>Asunto:</strong> ${callItem.asunto || 'N/A'}</p>
+                            <p class="text-gray-700"><strong>Consulta:</strong> ${callItem.consulta || 'N/A'}</p>
+                        </div>
+                         <div class="details-section">
+                            <h4><i class="fa-solid fa-user-tie mr-2"></i>Atención</h4>
+                            <p class="text-gray-700"><strong>Atendió:</strong> ${callItem.atendio || 'N/A'}</p>
+                            <p class="text-gray-700"><strong>Estatus:</strong> <span class="font-semibold ${callItem.estatus === 'Atendida' ? 'text-green-600' : 'text-red-600'}">${callItem.estatus || 'N/A'}</span></p>
+                        </div>
+                    </div>
+
+                    <div class="details-section">
+                        <h4><i class="fa-solid fa-user mr-2"></i>Datos del Solicitante</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                            <p class="text-gray-700"><strong>Nombre:</strong> ${callItem.nombre || 'N/A'}</p>
+                            <p class="text-gray-700"><strong>Cargo:</strong> ${callItem.cargo || 'N/A'}</p>
+                            <p class="text-gray-700"><strong>Correo:</strong> ${callItem.correo || 'N/A'}</p>
+                            <p class="text-gray-700"><strong>Teléfono:</strong> ${callItem.telefono || 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    <div class="details-section">
+                        <h4><i class="fa-solid fa-comments mr-2"></i>Comentarios Adicionales</h4>
+                        <p class="text-gray-700 italic">${callItem.comentarios || 'Sin comentarios.'}</p>
+                    </div>
+                `;
+
+                openModal(viewDetailsModal);
+            }
+
+            function handleRowDoubleClick(e, isHistorical) {
+                const row = e.target.closest('tr');
+                // IMPORTANTE: No abrir si se hace clic en un botón (editar, borrar, estatus)
+                if (!row || e.target.closest('button')) {
+                    return; 
+                }
+                const callId = row.querySelector('.edit-btn')?.dataset.id;
+                if (!callId) return;
+
+                const data = isHistorical ? historicalCalls : calls;
+                const callItem = data.find(item => item.id === callId);
+                showDetailsModal(callItem);
+            }
+
+            // Asignar los listeners de doble clic a las tablas
+            callLogTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, false));
+            historicalTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, true));
+            
+            // Asignar el listener para el botón de cerrar
+            closeDetailsModalBtn.addEventListener('click', () => closeModal(viewDetailsModal));
+
+
+
 
         }
 
