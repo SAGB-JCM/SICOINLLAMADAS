@@ -11,6 +11,9 @@
     <!-- Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- Plugin de Chart.js para etiquetas de datos (necesario para el PDF) -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1131,20 +1134,8 @@
                     <h4 class="section-title text-lg">Seleccionar gráficas a incluir</h4>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex items-center">
-                            <input type="checkbox" id="include-status" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
-                            <label for="include-status" class="ml-2 block text-sm text-gray-700">Llamadas por Estatus</label>
-                        </div>
-                        <div class="flex items-center">
                             <input type="checkbox" id="include-asunto" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
                             <label for="include-asunto" class="ml-2 block text-sm text-gray-700">Llamadas por Asunto</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="include-day" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
-                            <label for="include-day" class="ml-2 block text-sm text-gray-700">Llamadas por Día de la Semana</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="include-atendio" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
-                            <label for="include-atendio" class="ml-2 block text-sm text-gray-700">Llamadas por Servidor Público</label>
                         </div>
                         <div class="flex items-center">
                             <input type="checkbox" id="include-dynamic-chart" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
@@ -1154,6 +1145,19 @@
                             <input type="checkbox" id="include-dynamic-table" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
                             <label for="include-dynamic-table" class="ml-2 block text-sm text-gray-700">Llamadas por Variable Seleccionada (Tabla de Datos)</label>
                         </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="include-day" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                            <label for="include-day" class="ml-2 block text-sm text-gray-700">Llamadas por Día de la Semana</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="include-atendio" class="rounded border-gray-300 text-primary focus:ring-primary">
+                            <label for="include-atendio" class="ml-2 block text-sm text-gray-700">Llamadas por Servidor Público</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="include-status" class="rounded border-gray-300 text-primary focus:ring-primary">
+                            <label for="include-status" class="ml-2 block text-sm text-gray-700">Llamadas por Estatus</label>
+                        </div>
+
                     </div>
                 </div>
 
@@ -2865,6 +2869,36 @@
         // =============================================
         // MÓDULO: Gráficos y reportes
         // =============================================
+
+
+        /**
+         * Obtiene los datos filtrados según la configuración actual de la UI.
+         * @returns {Array} Un array con los objetos de llamada filtrados.
+         */
+        function getFilteredData() {
+            const source = reportesDataSource.value;
+            let data = [];
+            if (source === 'registro') data = calls;
+            else if (source === 'historico') data = historicalCalls;
+            else data = [...calls, ...historicalCalls];
+
+            if (reportFilter.type === 'period' && reportFilter.startDate && reportFilter.endDate) {
+                const startDate = new Date(reportFilter.startDate);
+                let endDate = new Date(reportFilter.endDate);
+                endDate.setHours(23, 59, 59, 999); // Incluir todo el día de fin
+                return data.filter(call => {
+                    if (!call.fecha) return false;
+                    try {
+                        // Formato esperado: DD/MM/YYYY
+                        const [day, month, year] = call.fecha.split('/');
+                        const callDate = new Date(`${year}-${month}-${day}`);
+                        return callDate >= startDate && callDate <= endDate;
+                    } catch (e) { return false; }
+                });
+            }
+            return data;
+        }
+
         
         //Actualizar 
         function updateCharts() {
@@ -3134,12 +3168,235 @@
             });
         }
 
-
         // =============================================
-        // FUNCIÓN MEJORADA: Generación de Reporte Ejecutivo PDF 
+        // MÓDULO: Genera un reporte ejecutivo en formato PDF.
         // =============================================
 
-        // Paleta global para sincronización (colócala fuera de funciones, e.g., al inicio del script)
+        /**
+         * Genera un reporte ejecutivo en formato PDF.
+         * @param {object} options - Opciones de inclusión para cada sección del reporte.
+         */
+
+        async function generateExecutiveReport(options) {
+            const { includeStatus, includeAsunto, includeDay, includeAtendio, includeDynamicChart, includeDynamicTable } = options;
+            const data = getFilteredData();
+
+            // --- Preparación de Datos y Métricas ---
+            const totalCalls = data.length;
+            const atendidas = data.filter(c => c.estatus === 'Atendida').length;
+            const pendientes = totalCalls - atendidas;
+            const totalDuration = data.reduce((sum, c) => sum + (Number(c.duracion) || 0), 0);
+            const avgDuration = totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0;
+            const currentDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            // --- Construcción del HTML para el PDF ---
+            const reportContainer = document.createElement('div');
+            reportContainer.innerHTML = `
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1f2937; }
+                    .reporte-ejecutivo { width: 190mm; margin: 0 auto; padding: 10mm; box-sizing: border-box; }
+                    .reporte-header { text-align: center; margin-bottom: 10mm; padding: 5mm; background: #9C2348; color: white; border-radius: 3mm; }
+                    .reporte-header h1 { font-size: 18pt; margin: 0 0 2mm 0; } .reporte-header p { font-size: 10pt; margin: 0; opacity: 0.9; }
+                    .reporte-metricas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5mm; margin: 10mm 0; }
+                    .metrica { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 3mm; padding: 4mm; text-align: center; }
+                    .metrica h3 { font-size: 9pt; font-weight: 600; text-transform: uppercase; margin: 0 0 2mm 0; color: #475569; }
+                    .metrica p { font-size: 16pt; font-weight: bold; margin: 0; color: #9C2348; }
+                    .grafica, .tabla-datos { page-break-inside: avoid; margin-top: 8mm; border: 1px solid #e2e8f0; border-radius: 3mm; padding: 4mm; }
+                    .grafica h3, .tabla-datos h3 { font-size: 14pt; text-align: center; margin: 0 0 4mm 0; padding-bottom: 2mm; border-bottom: 1px solid #9C2348; }
+                    .grafica canvas { max-width: 100%; }
+                    .tabla-datos table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+                    .tabla-datos th { background: #f1f5f9; padding: 2.5mm; text-align: center; }
+                    .tabla-datos td { padding: 2.5mm; text-align: center; border-top: 1px solid #e2e8f0; }
+                    .tabla-datos .atendida { color: #10B981; font-weight: 600; } .tabla-datos .pendiente { color: #EF4444; font-weight: 600; }
+                    .tabla-datos tfoot tr { background-color: #e2e8f0; font-weight: bold; }
+                    .reporte-footer { text-align: center; margin-top: 10mm; padding-top: 5mm; border-top: 1px solid #e2e8f0; font-size: 8pt; color: #64748b; }
+                </style>
+                <div class="reporte-ejecutivo">
+                    <div class="reporte-header">
+                        <h1>Reporte de Llamadas</h1>
+                        <p>Generado el: ${currentDate}</p>
+                        <p>${reportFilter.type === 'period' ? `Período: ${reportFilter.startDate} al ${reportFilter.endDate}` : 'Todos los registros'}</p>
+                    </div>
+                    <div class="reporte-metricas">
+                        <div class="metrica"><h3>Atendidas</h3><p>${atendidas}</p></div>
+                        <div class="metrica"><h3>Pendientes</h3><p>${pendientes}</p></div>
+                        <div class="metrica"><h3>Duración Prom.</h3><p>${formatDuration(avgDuration)}</p></div>
+                        <div class="metrica"><h3>Total</h3><p>${totalCalls}</p></div>
+                    </div>
+                </div>`;
+
+            const reportBody = reportContainer.querySelector('.reporte-ejecutivo');
+
+            // --- Generación y Adjunto de Gráficos ---
+            const chartConfigs = [
+                { condition: includeStatus, title: "Distribución por Estatus", data: getFilteredData(), key: 'estatus', type: 'pie' },
+                { condition: includeAsunto, title: "Llamadas por Asunto", data: getFilteredData(), key: 'asunto', type: 'bar' },
+                { condition: includeDay, title: "Tendencia Semanal", data: getFilteredData(), key: 'fecha', type: 'line' },
+                { condition: includeAtendio, title: "Distribución por Servidor Público", data: getFilteredData(), key: 'atendio', type: 'bar' },
+                { condition: includeDynamicChart, title: `Análisis por ${dynamicChartVariable.value}`, data: getFilteredData(), key: dynamicChartVariable.value, type: 'bar' }
+            ];
+
+            for (const config of chartConfigs) {
+                if (config.condition) {
+                    const chartImage = await generateChartImage(config);
+                    const section = document.createElement('div');
+                    section.className = 'grafica';
+                    section.innerHTML = `<h3>${config.title}</h3><img src="${chartImage}" style="width:100%; height:auto;">`;
+                    reportBody.appendChild(section);
+                }
+            }
+
+            // --- Generación y Adjunto de Tabla Dinámica ---
+            if (includeDynamicTable) {
+                const selectedVariable = dynamicChartVariable.value;
+                const variableStatusCounts = {};
+                data.forEach(call => {
+                    const value = call[selectedVariable] || 'N/A';
+                    if (!variableStatusCounts[value]) variableStatusCounts[value] = { 'Atendida': 0, 'Pendiente': 0 };
+                    variableStatusCounts[value][call.estatus === 'Atendida' ? 'Atendida' : 'Pendiente']++;
+                });
+
+                let totalAtendidas = 0;
+                let totalPendientes = 0;
+                let granTotal = 0;
+
+                let tableHTML = `<div class="tabla-datos"><h3>Distribución Detallada - ${selectedVariable}</h3><table><thead><tr><th>${selectedVariable}</th><th>Atendidas</th><th>Pendientes</th><th>Total</th></tr></thead><tbody>`;
+                Object.entries(variableStatusCounts).forEach(([value, counts]) => {
+                    const totalRow = counts.Atendida + counts.Pendiente;
+                    totalAtendidas += counts.Atendida;
+                    totalPendientes += counts.Pendiente;
+                    granTotal += totalRow;
+                    tableHTML += `<tr><td>${value}</td><td class="atendida">${counts.Atendida}</td><td class="pendiente">${counts.Pendiente}</td><td>${totalRow}</td></tr>`;
+                });
+                tableHTML += `</tbody><tfoot><tr><td>Totales</td><td>${totalAtendidas}</td><td>${totalPendientes}</td><td>${granTotal}</td></tr></tfoot></table></div>`;
+                reportBody.innerHTML += tableHTML;
+            }
+
+            reportBody.innerHTML += `<div class="reporte-footer"><p>Registro de Llamadas - SICOIN © ${new Date().getFullYear()}</p></div>`;
+
+            // --- Generación del PDF ---
+            try {
+                showLoader(true);
+                const pdfOptions = {
+                    margin: 0,
+                    filename: `reporte_ejecutivo_llamadas_${new Date().toISOString().slice(0, 10)}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                await html2pdf().set(pdfOptions).from(reportContainer).save();
+                showAlert("Reporte generado y descargado exitosamente.", "success");
+            } catch (error) {
+                console.error("Error al generar PDF:", error);
+                showAlert(`Error al generar el PDF: ${error.message}`, "error");
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        /**
+         * Genera una imagen de un gráfico de forma aislada y la devuelve como un Data URL.
+         * @param {object} config - Configuración del gráfico a generar.
+         * @returns {Promise<string>} Una promesa que se resuelve con el Data URL de la imagen del gráfico.
+         */
+        async function generateChartImage({ data, key, type, title }) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1400; // Resolución aumentada
+            canvas.height = 550; // Resolución aumentada (proporción 16:9)
+
+            const counts = {};
+            const daysOrder = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+
+            data.forEach(item => {
+                let value = item[key] || 'N/A';
+                if (key === 'fecha') {
+                    try {
+                        const [d, m, y] = value.split('/');
+                        value = new Date(`${y}-${m}-${d}`).toLocaleDateString('es-ES', { weekday: 'long' });
+                    } catch { value = 'N/A'; }
+                }
+                counts[value] = (counts[value] || 0) + 1;
+            });
+
+            let labels = Object.keys(counts);
+            let chartData = Object.values(counts);
+
+            if (key === 'fecha') {
+                labels = daysOrder.map(d => d.charAt(0).toUpperCase() + d.slice(1));
+                chartData = daysOrder.map(day => counts[day] || 0);
+            }
+
+            const chart = new Chart(canvas, {
+                type,
+                data: {
+                    labels,
+                    datasets: [{
+                        label: title,
+                        data: chartData,
+                        backgroundColor: ['#9C2348', '#1E5B4F', '#A6802D', '#64748B', '#3B82F6', '#F59E0B', '#10B981'],
+                        borderColor: type === 'line' ? '#9C2348' : '#fff',
+                        tension: 0.1
+                    }]
+                },
+                plugins: [ChartDataLabels],
+                options: {
+                    responsive: false,
+                    animation: { duration: 0 },
+                    layout: {
+                        padding: { top: 40, bottom: 10, left: 10, right: 10 } // Más espacio para etiquetas
+                    },
+                    scales: {
+                        x: { ticks: { font: { size: 25 } } }, // Tamaño de fuente en eje X aumentado
+                        y: { ticks: { font: { size: 25 } } }  // Tamaño de fuente en eje Y aumentado
+                    },
+                    plugins: {
+                        legend: { 
+                            display: type === 'pie',
+                            labels: {
+                                font: {
+                                    size: 25 // Tamaño de fuente en la leyenda aumentado
+                                }
+                            }
+                        },
+                        datalabels: {
+                            // Configuración general de etiquetas
+                            color: (context) => {
+                                // Para gráficas de pastel, el color del texto es blanco si el fondo es oscuro
+                                if (context.chart.config.type === 'pie') {
+                                    return '#fff';
+                                }
+                                // Para otras gráficas, un color oscuro es más legible
+                                return '#333';
+                            },
+                            font: {
+                                weight: 'bold',
+                                size: 30, // Tamaño de fuente de etiquetas aumentado
+                            },
+                            // Posición de la etiqueta según el tipo de gráfica
+                            anchor: (context) => (context.chart.config.type === 'bar' || context.chart.config.type === 'line') ? 'end' : 'center',
+                            align: (context) => (context.chart.config.type === 'bar' || context.chart.config.type === 'line') ? 'end' : 'center',
+                            // Formato del valor mostrado
+                            formatter: (value, context) => {
+                                if (context.chart.config.type === 'pie') {
+                                    const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+                                    return `${value}\n(${percentage})`; // Muestra cantidad y porcentaje
+                                }
+                                return value; // Muestra solo la cantidad para otras gráficas
+                            },
+                        }
+                    }
+                }
+            });
+
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(chart.toBase64Image());
+                    chart.destroy();
+                }, 500); // Espera para asegurar el renderizado completo
+            });
+        }
+
         const globalColorPalette = {
             primary: ['#9C2348', '#7c1d3a', '#d946ef', '#8b5cf6'],
             secondary: ['#1E5B4F', '#059669', '#0d9488', '#14b8a6'],
@@ -3147,770 +3404,6 @@
             status: ['#EF4444', '#dc2626', '#f87171', '#fca5a5'],
             neutral: ['#6366f1', '#8b5cf6', '#a855f7', '#c084fc']
         };
-
-        function generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio, includeDynamicChart, includeDynamicTable) {
-            const source = reportesDataSource.value;
-            let data = [];
-            if (source === 'registro') data = calls;
-            else if (source === 'historico') data = historicalCalls;
-            else data = [...calls, ...historicalCalls];
-            
-            // Aplicar filtros de fecha si están configurados
-            if (reportFilter.type === 'period' && reportFilter.startDate && reportFilter.endDate) {
-                const startDate = new Date(reportFilter.startDate);
-                let endDate = new Date(reportFilter.endDate);
-                endDate.setHours(23, 59, 59, 999);
-                data = data.filter(call => {
-                    if (!call.fecha) return false;
-                    try {
-                        const callDate = new Date(call.fecha.split('/').reverse().join('-'));
-                        return callDate >= startDate && callDate <= endDate;
-                    } catch (e) { return false; }
-                });
-            }
-            
-            // Calcular métricas y conteos
-            const statusCounts = {}, asuntoCounts = {}, dayOfWeekCounts = {}, atendioCounts = {};
-            data.forEach(call => {
-                statusCounts[call.estatus || 'N/A'] = (statusCounts[call.estatus || 'N/A'] || 0) + 1;
-                asuntoCounts[call.asunto || 'N/A'] = (asuntoCounts[call.asunto || 'N/A'] || 0) + 1;
-                atendioCounts[call.atendio || 'N/A'] = (atendioCounts[call.atendio || 'N/A'] || 0) + 1;
-                if (call.fecha && typeof call.fecha === 'string') {
-                    try {
-                        const date = new Date(call.fecha.split('/').reverse().join('-'));
-                        const day = date.toLocaleDateString('es-ES', { weekday: 'long' });
-                        dayOfWeekCounts[day] = (dayOfWeekCounts[day] || 0) + 1;
-                    } catch (e) { /* Ignorar */ }
-                }
-            });
-            
-            const totalCalls = data.length;
-            const atendidas = data.filter(c => c.estatus === 'Atendida').length;
-            const pendientes = totalCalls - atendidas;
-            const totalDuration = data.reduce((sum, c) => sum + (Number(c.duracion) || 0), 0);
-            const avgDuration = totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0;
-            
-            const currentDate = new Date().toLocaleDateString('es-ES', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-
-            // Obtener el tamaño configurado de los gráficos
-            const chartSize = 400;
-            const fontBase = Math.min(24, Math.max(18, Math.round(chartSize / 15))); // Agresivo, labels ~título
-            
-            // Generar HTML con estilos CSS integrados y dimensiones respetadas
-            let reportHTML = `
-                <style>
-                    .reporte-ejecutivo {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        background: white;
-                        color: #1f2937;
-                        padding: 20px 30px 20px 30px; /* Simétrico */
-                        max-width: 800px; /* Ajustado para centering */
-                        margin: 0 auto;
-                        line-height: 1.6;
-                        border-radius: 8px;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                    }
-                    
-                    .reporte-header {
-                        text-align: center;
-                        margin-bottom: 40px;
-                        padding: 25px;
-                        background: linear-gradient(135deg, #9C2348 0%, #7c1d3a 100%);
-                        color: white;
-                        border-radius: 12px;
-                        box-shadow: 0 8px 25px rgba(156, 35, 72, 0.3);
-                    }
-                    
-                    .reporte-header h1 {
-                        font-size: 32px;
-                        font-weight: bold;
-                        margin: 0 0 15px 0;
-                        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                    }
-                    
-                    .reporte-header p {
-                        font-size: 16px;
-                        margin: 8px 0;
-                        opacity: 0.95;
-                    }
-                    
-                    .reporte-metricas {
-                        display: grid;
-                        grid-template-columns: repeat(4, 1fr);
-                        gap: 20px;
-                        margin: 40px 0;
-                    }
-                    
-                    .metrica {
-                        background: #f8fafc;
-                        border: 2px solid #e2e8f0;
-                        border-radius: 12px;
-                        padding: 25px;
-                        text-align: center;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-                        transition: all 0.3s ease;
-                    }
-                    
-                    .metrica h3 {
-                        color: #475569;
-                        font-size: 14px;
-                        font-weight: 600;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                        margin: 0 0 12px 0;
-                    }
-                    
-                    .metrica p {
-                        color: #9C2348;
-                        font-size: 28px;
-                        font-weight: bold;
-                        margin: 0;
-                    }
-                    
-                    .grafica {
-                        margin: 20px 0; /* Reducido para menos espacios y evitar cortes */
-                        page-break-inside: avoid;
-                        page-break-before: auto;
-                        break-after: avoid;
-                        background: white;
-                        border: 1px solid #e2e8f0;
-                        border-radius: 12px;
-                        padding: 15px; /* Reducido */
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-                    }
-                    
-                    .grafica h3 {
-                        color: #1e293b;
-                        font-size: 24px; /* Aumentado para match con labels */
-                        font-weight: 600;
-                        margin: 0 0 15px 0;
-                        text-align: center;
-                        border-bottom: 3px solid #9C2348;
-                        padding-bottom: 10px;
-                    }
-                    
-                    .grafica canvas {
-                        display: block !important;
-                        margin: 0 auto !important;
-                        max-width: 100% !important;
-                        border-radius: 8px;
-                    }
-                    
-                    .tabla-datos {
-                        margin: 30px 0;
-                        page-break-inside: avoid !important;
-                        page-break-before: auto !important;
-                        break-inside: avoid !important;
-                        break-before: auto !important;
-                        background: white;
-                        border: 1px solid #e2e8f0;
-                        border-radius: 12px;
-                        padding: 25px;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-                        /* SOLUCIÓN DEFINITIVA: Ancho fijo para evitar dependencia del tamaño de ventana */
-                        width: 800px !important;
-                        min-width: 800px !important;
-                        max-width: 800px !important;
-                        box-sizing: border-box;
-                    }
-                    .tabla-datos h3 {
-                        color: #1e293b;
-                        font-size: 24px;
-                        font-weight: 600;
-                        margin: 0 0 25px 0;
-                        text-align: center;
-                        border-bottom: 3px solid #9C2348;
-                        padding-bottom: 15px;
-                    }
-                    
-                    .tabla-datos table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin: 20px 0;
-                        background: white;
-                        border-radius: 8px;
-                        overflow: hidden;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                    }
-                    
-                    .tabla-datos th {
-                        background: linear-gradient(135deg, #9C2348 0%, #7c1d3a 100%);
-                        color: white;
-                        font-weight: 600;
-                        padding: 18px 15px;
-                        text-align: center;
-                        font-size: 16px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                    }
-                    
-                    .tabla-datos td {
-                        padding: 15px;
-                        text-align: center;
-                        border-bottom: 1px solid #e2e8f0;
-                        font-size: 16px;
-                    }
-                    
-                    .tabla-datos tr:nth-child(even) {
-                        background-color: #f8fafc;
-                    }
-                    
-                    .tabla-datos tr:hover {
-                        background-color: #f1f5f9;
-                    }
-                    
-                    .tabla-datos .atendida { color: #059669; font-weight: 600; }
-                    .tabla-datos .pendiente { color: #dc2626; font-weight: 600; }
-                    .tabla-datos .effectiveness-high { color: #059669; font-weight: 600; }
-                    .tabla-datos .effectiveness-medium { color: #d97706; font-weight: 600; }
-                    .tabla-datos .effectiveness-low { color: #dc2626; font-weight: 600; }
-                    
-                    .reporte-footer {
-                        text-align: center;
-                        margin-top: 50px;
-                        padding: 30px;
-                        background: #f8fafc;
-                        border-radius: 12px;
-                        border: 1px solid #e2e8f0;
-                    }
-                    .reporte-footer p {
-                        color: #64748b;
-                        font-size: 16px;
-                        margin: 0;
-                        font-weight: 500;
-                    }
-
-
-                    @media print {
-                        /* SOLUCIÓN DEFINITIVA: Reglas de impresión para evitar problemas de renderizado */
-                        body {
-                            width: 800px !important;
-                            min-width: 800px !important;
-                            max-width: 800px !important;
-                            margin: 0 auto !important;
-                        }
-                        
-                        .reporte-ejecutivo {
-                            width: 800px !important;
-                            min-width: 800px !important;
-                            max-width: 800px !important;
-                            margin: 0 auto !important;
-                            padding: 20px 30px !important;
-                        }
-                        
-                        .grafica, .tabla-datos {
-                            width: 800px !important;
-                            min-width: 800px !important;
-                            max-width: 800px !important;
-                            page-break-inside: avoid !important;
-                            break-inside: avoid !important;
-                        }
-                        
-                        .grafica canvas, .tabla-datos table {
-                            width: 100% !important;
-                            max-width: 100% !important;
-                        }
-                    }
-                </style>
-                
-                <div class="reporte-ejecutivo">
-                    <div class="reporte-header">
-                        <h1>Reporte Ejecutivo de Llamadas</h1>
-                        <p>Generado el: ${currentDate}</p>
-                        <p>Total de registros: ${totalCalls}</p>
-                        ${reportFilter.type === 'period' ? 
-                            `<p>Período: ${reportFilter.startDate} - ${reportFilter.endDate}</p>` : 
-                            '<p>Período: Todos los registros</p>'
-                        }
-                    </div>
-                    
-                    <div class="reporte-metricas">
-                        <div class="metrica">
-                            <h3>Llamadas Atendidas</h3>
-                            <p>${atendidas}</p>
-                        </div>
-                        <div class="metrica">
-                            <h3>Llamadas Pendientes</h3>
-                            <p>${pendientes}</p>
-                        </div>
-                        <div class="metrica">
-                            <h3>Duración Promedio</h3>
-                            <p>${formatDuration(avgDuration)}</p>
-                        </div>
-                        <div class="metrica">
-                            <h3>Total de Llamadas</h3>
-                            <p>${totalCalls}</p>
-                        </div>
-                    </div>
-            `;
-            
-            // Agregar secciones de gráficos con dimensiones respetadas
-            if (includeStatus) {
-                reportHTML += `
-                    <div class="grafica">
-                        <h3>Distribución de Llamadas por Estatus</h3>
-                        <canvas id="report-status-chart" width="${chartSize}" height="${chartSize}" style="width: ${chartSize}px !important; height: ${chartSize}px !important;"></canvas>
-                    </div>
-                `;
-            }
-            
-            if (includeAsunto) {
-                reportHTML += `
-                    <div class="grafica">
-                        <h3>Análisis de Llamadas por Asunto</h3>
-                        <canvas id="report-asunto-chart" width="${chartSize}" height="${chartSize}" style="width: ${chartSize}px !important; height: ${chartSize}px !important;"></canvas>
-                    </div>
-                `;
-            }
-            
-            if (includeDay) {
-                reportHTML += `
-                    <div class="grafica">
-                        <h3>Tendencia Semanal de Llamadas</h3>
-                        <canvas id="report-day-chart" width="${chartSize}" height="${chartSize}" style="width: ${chartSize}px !important; height: ${chartSize}px !important;"></canvas>
-                    </div>
-                `;
-            }
-            
-            if (includeAtendio) {
-                reportHTML += `
-                    <div class="grafica">
-                        <h3>Distribución por Servidor Público</h3>
-                        <canvas id="report-atendio-chart" width="${chartSize}" height="${chartSize}" style="width: ${chartSize}px !important; height: ${chartSize}px !important;"></canvas>
-                    </div>
-                `;
-            }
-            
-            if (includeDynamicChart || includeDynamicTable) {
-                const selectedVariable = dynamicChartVariable.value;
-                const variableCounts = {};
-                const variableStatusCounts = {};
-                
-                data.forEach(call => {
-                    const value = call[selectedVariable] || 'N/A';
-                    variableCounts[value] = (variableCounts[value] || 0) + 1;
-                    
-                    if (!variableStatusCounts[value]) {
-                        variableStatusCounts[value] = { 'Atendida': 0, 'Pendiente': 0 };
-                    }
-                    
-                    if (call.estatus === 'Atendida') {
-                        variableStatusCounts[value].Atendida += 1;
-                    } else {
-                        variableStatusCounts[value].Pendiente += 1;
-                    }
-                });
-                
-                if (includeDynamicChart) {
-                    reportHTML += `
-                        <div class="grafica">
-                            <h3>Análisis Dinámico - ${selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1)}</h3>
-                            <canvas id="report-dynamic-chart" width="${chartSize}" height="${chartSize}" style="width: ${chartSize}px !important; height: ${chartSize}px !important;"></canvas>
-                        </div>
-                    `;
-                }
-                
-                if (includeDynamicTable) {
-                    let totalAtendida = 0;
-                    let totalPendiente = 0;
-                    let granTotal = 0;
-                    
-                    reportHTML += `
-                        <div class="tabla-datos">
-                            <h3>Distribución Detallada por Estatus - ${selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1)}</h3>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>${selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1)}</th>
-                                        <th>Atendidas</th>
-                                        <th>Pendientes</th>
-                                        <th>Total</th>
-                                        <th>% Efectividad</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                    `;
-                    
-                    Object.entries(variableStatusCounts).forEach(([value, counts]) => {
-                        const total = counts.Atendida + counts.Pendiente;
-                        const effectiveness = total > 0 ? ((counts.Atendida / total) * 100).toFixed(1) : '0.0';
-                        const effClass = effectiveness >= 75 ? 'effectiveness-high' : effectiveness >= 50 ? 'effectiveness-medium' : 'effectiveness-low';
-                        totalAtendida += counts.Atendida;
-                        totalPendiente += counts.Pendiente;
-                        granTotal += total;
-                        
-                        reportHTML += `
-
-                            <tr>
-                                <td style="font-weight: 500; font-size: 16px;">${value}</td>
-                                <td class="atendida" style="font-size: 16px;">${counts.Atendida}</td>
-                                <td class="pendiente" style="font-size: 16px;">${counts.Pendiente}</td>
-                                <td style="font-weight: 600; font-size: 16px;">${total}</td>
-                                <td class="${effClass}" style="font-size: 16px;">${effectiveness}%</td>
-                            </tr>
-
-
-                        `;
-                    });
-                    
-                    const overallEffectiveness = granTotal > 0 ? ((totalAtendida / granTotal) * 100).toFixed(1) : '0.0';
-                    
-                    reportHTML += `
-                                </tbody>
-                                <tfoot>
-                                    <tr style="background: linear-gradient(135deg, #9C2348 0%, #7c1d3a 100%); color: white; font-weight: bold;">
-                                        <td>TOTAL GENERAL</td>
-                                        <td>${totalAtendida}</td>
-                                        <td>${totalPendiente}</td>
-                                        <td>${granTotal}</td>
-                                        <td>${overallEffectiveness}%</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    `;
-                }
-            }
-            
-            reportHTML += `
-                    <div class="reporte-footer">
-                        <p>Registro de LLamadas - SIOCIN</p>
-                        <p>Gobierno de México - Generado el ${new Date().toLocaleString('es-ES')}</p>
-                    </div>
-                </div>
-            `;
-            
-            // Renderizar el preview con los estilos aplicados
-            reportPreview.innerHTML = reportHTML;
-            reportPreview.classList.remove('hidden');
-            
-            // Función mejorada para renderizar gráficos con configuraciones optimizadas
-            const renderOptimizedChart = (canvasId, chartConfig) => {
-                return new Promise((resolve) => {
-                    const canvas = document.getElementById(canvasId);
-                    if (!canvas) return resolve();
-                    
-                    // Configurar dimensiones exactas del canvas para alta resolución
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = chartSize * 3;
-                    canvas.height = chartSize * 3;
-                    canvas.style.width = `${chartSize}px`;
-                    canvas.style.height = `${chartSize}px`;
-                    
-                    // Configuración optimizada para PDF, con fonts mayores
-                    const optimizedConfig = {
-                        ...chartConfig,
-                        options: {
-                            ...chartConfig.options,
-                            responsive: false,
-                            maintainAspectRatio: false,
-                            devicePixelRatio: 3,
-                            animation: {
-                                duration: 0
-                            },
-                            plugins: {
-                                ...chartConfig.options.plugins,
-                                legend: {
-                                    ...chartConfig.options.plugins?.legend,
-                                    labels: {
-                                        boxWidth: 15,
-                                        padding: 15,
-                                        font: {
-                                            size: fontBase, // Labels casi como título
-                                            weight: 'bold'
-                                        },
-                                        usePointStyle: true
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    ...chartConfig.options.scales?.y,
-                                    ticks: {
-                                        ...chartConfig.options.scales?.y?.ticks,
-                                        font: { size: fontBase - 2 }
-                                    }
-                                },
-                                x: {
-                                    ...chartConfig.options.scales?.x,
-                                    ticks: {
-                                        ...chartConfig.options.scales?.x?.ticks,
-                                        font: { size: fontBase - 2 },
-                                        maxRotation: 45
-                                    }
-                                }
-                            }
-                        }
-                    };
-                    
-                    // Crear el gráfico y esperar a que se renderice
-                    const chart = new Chart(ctx, optimizedConfig);
-                    
-                    // Esperar múltiples ciclos de renderizado para asegurar completitud
-                    setTimeout(() => {
-                        chart.update('none');
-                        setTimeout(resolve, 300);
-                    }, 300);
-                });
-            };
-            
-            // Renderizar todos los gráficos de forma secuencial y optimizada
-            const renderAllChartsOptimized = async () => {
-                const chartsToRender = [];
-                
-                if (includeStatus) {
-                    chartsToRender.push({
-                        canvasId: 'report-status-chart',
-                        config: {
-                            type: 'pie',
-                            data: {
-                                labels: Object.keys(statusCounts),
-                                datasets: [{
-                                    data: Object.values(statusCounts),
-                                    backgroundColor: globalColorPalette.primary,
-                                    borderColor: '#ffffff',
-                                    borderWidth: 3
-                                }]
-                            },
-                            options: {
-                                plugins: {
-                                    legend: {
-                                        position: 'bottom'
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-                
-                if (includeAsunto) {
-                    chartsToRender.push({
-                        canvasId: 'report-asunto-chart',
-                        config: {
-                            type: 'bar',
-                            data: {
-                                labels: Object.keys(asuntoCounts),
-                                datasets: [{
-                                    label: 'Llamadas por Asunto',
-                                    data: Object.values(asuntoCounts),
-                                    backgroundColor: globalColorPalette.secondary[0],
-                                    borderColor: globalColorPalette.secondary[1],
-                                    borderWidth: 2
-                                }]
-                            },
-                            options: {
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        grid: {
-                                            color: '#e2e8f0'
-                                        },
-                                        ticks: {
-                                            font: { size: 11 }
-                                        }
-                                    },
-                                    x: {
-                                        grid: {
-                                            display: false
-                                        },
-                                        ticks: {
-                                            font: { size: 11 },
-                                            maxRotation: 45
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-                
-                if (includeDay) {
-                    const daysOrder = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
-                    const orderedData = daysOrder.map(day => dayOfWeekCounts[day] || 0);
-                    
-                    chartsToRender.push({
-                        canvasId: 'report-day-chart',
-                        config: {
-                            type: 'line',
-                            data: {
-                                labels: daysOrder.map(day => day.charAt(0).toUpperCase() + day.slice(1)),
-                                datasets: [{
-                                    label: 'Llamadas por Día',
-                                    data: orderedData,
-                                    borderColor: globalColorPalette.accent[0],
-                                    backgroundColor: globalColorPalette.accent[0] + '20',
-                                    borderWidth: 4,
-                                    tension: 0.5,
-                                    fill: true,
-                                    pointRadius: 7,
-                                    pointHoverRadius: 9,
-                                    pointBackgroundColor: globalColorPalette.accent[0],
-                                    pointBorderColor: '#ffffff',
-                                    pointBorderWidth: 3
-                                }]
-                            },
-                            options: {
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        grid: {
-                                            color: '#e2e8f0'
-                                        }
-                                    },
-                                    x: {
-                                        grid: {
-                                            display: false
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-                
-                if (includeAtendio) {
-                    chartsToRender.push({
-                        canvasId: 'report-atendio-chart',
-                        config: {
-                            type: 'bar',
-                            data: {
-                                labels: Object.keys(atendioCounts),
-                                datasets: [{
-                                    data: Object.values(atendioCounts),
-                                    backgroundColor: globalColorPalette.neutral,
-                                    borderColor: '#ffffff',
-                                    borderWidth: 2
-                                }]
-                            },
-                            options: {
-                                plugins: {
-                                    legend: {
-                                        position: 'bottom'
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-                
-                if (includeDynamicChart) {
-                    const selectedVariable = dynamicChartVariable.value;
-                    const variableCounts = {};
-                    
-                    data.forEach(call => {
-                        const value = call[selectedVariable] || 'N/A';
-                        variableCounts[value] = (variableCounts[value] || 0) + 1;
-                    });
-                    
-                    chartsToRender.push({
-                        canvasId: 'report-dynamic-chart',
-                        config: {
-                            type: 'bar',
-                            data: {
-                                labels: Object.keys(variableCounts),
-                                datasets: [{
-                                    label: 'Cantidad',
-                                    data: Object.values(variableCounts),
-                                    backgroundColor: globalColorPalette.primary[0],
-                                    borderColor: globalColorPalette.primary[1],
-                                    borderWidth: 2
-                                }]
-                            },
-                            options: {
-                                indexAxis: Object.keys(variableCounts).length > 10 ? 'y' : 'x',
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        grid: {
-                                            color: '#e2e8f0'
-                                        }
-                                    },
-                                    x: {
-                                        grid: {
-                                            display: false
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-                        
-                // Renderizar todos los gráficos secuencialmente
-                for (const chartData of chartsToRender) {
-                    await renderOptimizedChart(chartData.canvasId, chartData.config);
-                }
-            };
-            
-            // Proceso de generación PDF mejorado con múltiples validaciones
-            const generateOptimizedPDF = async () => {
-                try {
-                    // Esperar a que todos los gráficos se rendericen completamente
-                    await renderAllChartsOptimized();
-                    
-                    // Espera adicional para asegurar renderizado completo
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // Configuración optimizada de html2pdf
-                    const pdfOptions = {
-                        margin: [10, 10, 10, 10], // Reset para simetría, manejar con CSS
-                        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }, // Fix cortes
-                        filename: `reporte_ejecutivo_llamadas_${new Date().toISOString().slice(0, 10)}.pdf`,
-                        image: { 
-                            type: 'jpeg', 
-                            quality: 1.0
-                        },
-                        html2canvas: { 
-                            scale: 3,
-                            useCORS: true,
-                            allowTaint: true,
-                            logging: false,
-                            letterRendering: true,
-                            height: reportPreview.scrollHeight,
-                            width: 800, // Forzar width para centering
-                            windowWidth: 800,
-                            scrollX: 0,
-                            scrollY: 0,
-                            backgroundColor: '#ffffff'
-                        },
-                        jsPDF: { 
-                            unit: 'mm', 
-                            format: 'a4', 
-                            orientation: 'portrait',
-                            compress: true
-                        }
-                    };
-                    
-                    // Generar y descargar el PDF
-                    await html2pdf().set(pdfOptions).from(reportPreview).save();
-                    
-                    showAlert("✅ Reporte ejecutivo generado y descargado exitosamente", "success");
-                    
-                } catch (error) {
-                    console.error("Error detallado al generar PDF:", error);
-                    showAlert(`❌ Error al generar el PDF: ${error.message}`, "error");
-                } finally {
-                    // Ocultar preview después de la generación
-                    setTimeout(() => {
-                        reportPreview.classList.add('hidden');
-                    }, 1000);
-                }
-            };
-            
-            // Iniciar el proceso de generación
-            generateOptimizedPDF();
-        }
-
-
-
-
-
-
 
 
         // =============================================
@@ -4337,17 +3830,19 @@
             closeReportModalBtn.addEventListener('click', () => closeModal(reportModal));
             
 
-            // Generar PDF
-            generatePdfBtn.addEventListener('click', () => {
-                const includeStatus = document.getElementById('include-status').checked;
-                const includeAsunto = document.getElementById('include-asunto').checked;
-                const includeDay = document.getElementById('include-day').checked;
-                const includeAtendio = document.getElementById('include-atendio').checked;
-                const includeDynamicChart = document.getElementById('include-dynamic-chart').checked;
-                const includeDynamicTable = document.getElementById('include-dynamic-table').checked;
+            // Generar PDF (CORREGIDO)
+            generatePdfBtn.addEventListener('click', async () => {
+                const options = {
+                    includeStatus: document.getElementById('include-status').checked,
+                    includeAsunto: document.getElementById('include-asunto').checked,
+                    includeDay: document.getElementById('include-day').checked,
+                    includeAtendio: document.getElementById('include-atendio').checked,
+                    includeDynamicChart: document.getElementById('include-dynamic-chart').checked,
+                    includeDynamicTable: document.getElementById('include-dynamic-table').checked
+                };
                 
                 closeModal(reportModal);
-                generateExecutiveReport(includeStatus, includeAsunto, includeDay, includeAtendio, includeDynamicChart, includeDynamicTable);
+                await generateExecutiveReport(options);
             });
             
             // slider pixeles
