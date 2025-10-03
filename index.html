@@ -1126,7 +1126,7 @@
                 <form id="edit-form" class="space-y-6" novalidate>
                     <input type="hidden" id="edit-id">
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
-                        <div class="form-field">
+                        <div class="form-field ">
                             <label for="edit-news-date">Fecha de la Noticia</label>
                             <input type="date" id="edit-news-date" name="fecha" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
                         </div>
@@ -1634,6 +1634,83 @@
         // =============================================
         // MÓDULO: Utilidades
         // =============================================
+
+        // ----- Debug: wrapper de performance (Pegar al inicio del script, quitar cuando termines) -----
+        (function(){
+        if (!window.performance) return;
+
+        // Nombres de funciones a instrumentar (ajusta si tus nombres son distintos)
+        const toWrap = [
+            'renderTable', 'sortAndRenderTable',
+            'updateDynamicSelectOptions', 'calculateWeeklyAlertCounts',
+            'checkAndShowTrainAlerts', 'applyAllFilters',
+            'updateNewsMediosDashboard', 'updateMediosDashboard'
+        ];
+
+        function wrap(fnName) {
+            try {
+            const orig = window[fnName];
+            if (typeof orig !== 'function') return;
+            window[fnName] = function(...args) {
+                const start = `${fnName}::start`;
+                const end = `${fnName}::end`;
+                try { performance.mark(start); } catch(e){}
+                const result = orig.apply(this, args);
+                // Si devuelve Promise, medir cuando resuelva
+                if (result && typeof result.then === 'function') {
+                return result.then(res => {
+                    try { performance.mark(end); performance.measure(fnName, start, end); } catch(e){}
+                    return res;
+                }).catch(err => {
+                    try { performance.mark(end); performance.measure(fnName, start, end); } catch(e){}
+                    throw err;
+                });
+                } else {
+                try { performance.mark(end); performance.measure(fnName, start, end); } catch(e){}
+                return result;
+                }
+            };
+            } catch (e) {
+            console.warn('wrap error', fnName, e);
+            }
+        }
+
+        toWrap.forEach(wrap);
+
+        // Observador: cuando la tabla de noticias reciba filas, imprimimos los measures
+        const tableBody = document.getElementById('news-table-body');
+        function printMeasuresAndClear() {
+            // Tomar medidas relevantes y mostrar ordenado por duración
+            const measures = performance.getEntriesByType('measure').map(m => ({ name: m.name, duration: Math.round(m.duration) }));
+            measures.sort((a,b) => b.duration - a.duration);
+            console.groupCollapsed('🧪 Performance measures (debug):');
+            console.table(measures);
+            console.groupEnd();
+            // limpieza opcional de marks/measures para futuras mediciones
+            try { performance.clearMarks(); performance.clearMeasures(); } catch(e){}
+        }
+
+        if (tableBody) {
+            const obs = new MutationObserver((mutations, observer) => {
+            if (tableBody.children.length > 0) {
+                // esperar un ratito para que las marcas se registren
+                setTimeout(() => {
+                printMeasuresAndClear();
+                }, 300);
+                observer.disconnect();
+            }
+            });
+            obs.observe(tableBody, { childList: true });
+        } else {
+            // fallback: si no existe el body aún (por orden de carga), imprimimos pasado 1s
+            setTimeout(() => {
+            printMeasuresAndClear();
+            }, 1000);
+        }
+
+        // También exponemos una función manual por si quieres llamar desde consola después:
+        window.__printNewsPerf = printMeasuresAndClear;
+        })();
         
         function showApp() {
             loader.classList.add('hidden');
@@ -2352,6 +2429,38 @@
         // MÓDULO: Interfaz de usuario
         // =============================================
         
+        function handleTableClick(event) {
+            const target = event.target; // El elemento exacto donde se hizo clic (ej. el <i>)
+        
+            // Usamos .closest() para encontrar el botón o enlace interactivo más cercano
+            const editButton = target.closest('.edit-btn');
+            if (editButton) {
+                handleEditClick(editButton); // Tu función existente
+                return; // Salimos para no procesar otros clics
+            }
+        
+            const deleteButton = target.closest('.delete-btn');
+            if (deleteButton) {
+                handleDeleteClick(deleteButton); // Tu función existente
+                return;
+            }
+        
+            const docButton = target.closest('.generate-doc-btn');
+            if (docButton) {
+                handleGenerateDocClick(docButton); // Tu función existente
+                return;
+            }
+        
+            const linkCell = target.closest('.link-cell');
+            if (linkCell) {
+                const url = linkCell.getAttribute('data-url');
+                if (url && isValidUrl(url)) {
+                    openWebviewModal(url); // Tu función existente
+                }
+                return;
+            }
+        }
+        
         function renderTable(tableBody, data, isHistorical = false) {
             const noDataMessage = isHistorical ? document.getElementById('no-historical-message') : document.getElementById('no-news-message');
 
@@ -2442,15 +2551,6 @@
             // 3. Actualizar el mensaje de "no hay datos" después de la inserción.
             noDataMessage.classList.toggle('hidden', data.length > 0);
 
-            // Los listeners se pueden añadir después de que el contenido está en el DOM
-            document.querySelectorAll('.link-cell').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    const url = e.currentTarget.getAttribute('data-url');
-                    if (url && isValidUrl(url)) {
-                        openWebviewModal(url);
-                    }
-                });
-            });
         }
 
         /**
@@ -3842,55 +3942,25 @@
         }
 
         async function initializeAppWithAuth() {
-            let newsDataLoaded = false;
-            let historicalNewsDataLoaded = false;
-
-            const checkDataLoaded = () => {
-                if (newsDataLoaded && historicalNewsDataLoaded) {
-                    showApp();
-                }
-            };
-
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
                     userId = user.uid;
                     userInfo.textContent = `Usuario Anónimo: ${userId.substring(0, 8)}...`;
-
-                    // Listener para la colección de noticias
-                    newsCollectionRef.onSnapshot((snapshot) => {
-                        news = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        sortAndRenderTable(newsTableBody, news, false);
-                        updateNewsMediosDashboard();
-                        updateDynamicSelectOptions();
-                        const alertCounts = calculateWeeklyAlertCounts();
-                        checkAndShowTrainAlerts(alertCounts);
-                        newsDataLoaded = true;
-                        checkDataLoaded(); // Check if both datasets are loaded
-                    }, (error) => console.error("Error en listener de noticias:", error));
-
-                    // Listener para la colección de histórico
-                    historicalNewsCollectionRef.onSnapshot((snapshot) => {
-                        historicalNews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        sortAndRenderTable(historicalTableBody, historicalNews, true);
-                        updateMediosDashboard();
-                        updateDynamicSelectOptions();
-                        historicalNewsDataLoaded = true;
-                        checkDataLoaded(); // Check if both datasets are loaded
-                    }, (error) => console.error("Error en listener de histórico:", error));
-
-                 
+                    setupRealtimeListeners();
+                    showApp();
                 } else {
                     try {
                         await auth.signInAnonymously();
                     } catch (error) {
                         console.error("Error en autenticación anónima:", error);
                         showAlert("Error de conexión. Algunas funciones pueden no estar disponibles.", "warning");
+                        // Mostrar la app de todos modos en modo offline
                         showApp();
                     }
                 }
             });
         }
-
+        
         function setupRealtimeListeners() {
             // Listener para la colección de noticias
             newsCollectionRef.onSnapshot((snapshot) => {
@@ -5125,34 +5195,9 @@
                 });
             }
 
-            newsTableBody.addEventListener('click', e => {
-                const target = e.target.closest('button');
-                if (!target) return;
-                if (target.classList.contains('edit-btn')) handleEditClick(target);
-                if (target.classList.contains('delete-btn')) handleDeleteClick(target);
-                if (target.classList.contains('generate-doc-btn')) handleGenerateDocClick(target);
-            });
-
-            // Lógica para seleccionar/deseleccionar noticias
-            newsTableBody.addEventListener('click', e => {
-                // Si se hizo clic en un botón, manejar la acción del botón y detener.
-                const buttonTarget = e.target.closest('button');
-                if (buttonTarget) {
-                    if (buttonTarget.classList.contains('edit-btn')) handleEditClick(buttonTarget);
-                    if (buttonTarget.classList.contains('delete-btn')) handleDeleteClick(buttonTarget);
-                    if (buttonTarget.classList.contains('generate-doc-btn')) handleGenerateDocClick(buttonTarget);
-                    return;
-                }
-
-                if (isMigrationModeActive) {
-                    const row = e.target.closest('tr');
-                    const checkbox = row.querySelector('.news-migration-checkbox');
-                    if (checkbox && e.target !== checkbox) { // No procesar si el clic fue directamente en el checkbox
-                        checkbox.checked = !checkbox.checked;
-                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                }
-            });
+            // Añadimos UN SOLO listener a cada cuerpo de tabla, ambos usan el mismo manejador
+            newsTableBody.addEventListener('click', handleTableClick);
+            historicalTableBody.addEventListener('click', handleTableClick);
 
             newsTableBody.addEventListener('change', e => {
                 if (e.target.classList.contains('news-migration-checkbox')) {
@@ -5394,14 +5439,6 @@
 
         newsTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, false));
 
-            historicalTableBody.addEventListener('click', e => {
-                const target = e.target.closest('button');
-                if (!target) return;
-                if (target.classList.contains('edit-btn')) handleEditClick(target);
-                if (target.classList.contains('delete-btn')) handleDeleteClick(target);
-                if (target.classList.contains('generate-doc-btn')) handleGenerateDocClick(target);
-            });
-
             historicalTableBody.addEventListener('change', e => {
                 // Lógica para seleccionar/deseleccionar noticias del histórico
                 if (e.target.classList.contains('historical-news-migration-checkbox')) {
@@ -5457,29 +5494,6 @@
             });
 
             // --- FIN: Lógica para Migración Inversa (Eventos) ---
-
-            historicalTableBody.addEventListener('click', e => {
-                if (isReverseMigrationModeActive) { // Lógica para seleccionar fila en modo de migración INVERSA
-                    const row = e.target.closest('tr');
-                    if (!row || e.target.closest('button')) return;
-
-                    const checkbox = row.querySelector('.historical-news-migration-checkbox');
-                    if (checkbox && e.target !== checkbox) {
-                        checkbox.checked = !checkbox.checked;
-                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                }
-
-                const target = e.target.closest('button');
-                if (!target) return;
-
-                if (target.classList.contains('edit-btn')) handleEditClick(target);
-                if (target.classList.contains('delete-btn')) handleDeleteClick(target);
-                if (target.classList.contains('generate-doc-btn')) handleGenerateDocClick(target);
-
-
-
-            });
 
         historicalTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, true));
 
@@ -5915,11 +5929,5 @@
         // La inicialización ahora ocurre dentro del listener DOMContentLoaded
 
     </script>
-</body>
-</html>
-
-
-<!--
-[PROMPT_SUGGESTION]How can I add a progress bar to the loading screen?[/PROMPT_SUGGESTION]
-[PROMPT_SUGGESTION]Optimize Firestore queries for faster data loading.[/PROMPT_SUGGESTION]
--->
+</body>  
+</html> 
