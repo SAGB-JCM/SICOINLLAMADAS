@@ -5199,20 +5199,6 @@
             newsTableBody.addEventListener('click', handleTableClick);
             historicalTableBody.addEventListener('click', handleTableClick);
 
-            newsTableBody.addEventListener('change', e => {
-                if (e.target.classList.contains('news-migration-checkbox')) {
-                    const newsId = e.target.dataset.id;
-                    e.target.checked ? selectedNewsIdsToMigrate.add(newsId) : selectedNewsIdsToMigrate.delete(newsId);
-                    
-                    const confirmBtn = document.getElementById('confirm-migration-btn');
-                    confirmBtn.disabled = selectedNewsIdsToMigrate.size === 0;
-
-                    const selectAllCheckbox = document.getElementById('select-all-news-checkbox');
-                    const visibleCheckboxes = newsTableBody.querySelectorAll('.news-migration-checkbox');
-                    selectAllCheckbox.checked = selectedNewsIdsToMigrate.size === visibleCheckboxes.length && visibleCheckboxes.length > 0;
-                }
-            });
-
             if (reportSettingsBtn) {
                 reportSettingsBtn.addEventListener('click', () => {
                     // Cargar la configuración actual en el modal antes de abrirlo
@@ -5437,22 +5423,7 @@
                 });
             });
 
-        newsTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, false));
-
-            historicalTableBody.addEventListener('change', e => {
-                // Lógica para seleccionar/deseleccionar noticias del histórico
-                if (e.target.classList.contains('historical-news-migration-checkbox')) {
-                    const newsId = e.target.dataset.id;
-                    e.target.checked ? selectedHistoricalNewsIdsToMigrate.add(newsId) : selectedHistoricalNewsIdsToMigrate.delete(newsId);
-                    
-                    const confirmBtn = document.getElementById('confirm-reverse-migration-btn');
-                    confirmBtn.disabled = selectedHistoricalNewsIdsToMigrate.size === 0;
-
-                    const selectAllCheckbox = document.getElementById('select-all-historical-news-checkbox');
-                    const visibleCheckboxes = historicalTableBody.querySelectorAll('.historical-news-migration-checkbox');
-                    selectAllCheckbox.checked = selectedHistoricalNewsIdsToMigrate.size === visibleCheckboxes.length && visibleCheckboxes.length > 0;
-                }
-            });
+            newsTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, false));
 
             // --- INICIO: Lógica para Migración Inversa (Eventos) ---
 
@@ -5495,7 +5466,7 @@
 
             // --- FIN: Lógica para Migración Inversa (Eventos) ---
 
-        historicalTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, true));
+            historicalTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, true));
 
             cancelDeleteBtn.addEventListener('click', () => {
                 closeModal(confirmModal);
@@ -5523,7 +5494,7 @@
 
 
             // =============================================
-            // MÓDULO: Importación de datos históricos (mejorado)
+            // MÓDULO: Eventos de la Importación de datos históricos (mejorado)
             // =============================================
 
             importHistoricalBtn.addEventListener('click', () => {
@@ -5792,13 +5763,101 @@
                     navigateAndFilter(targetTab, { [filterVariable]: [filterValue] });
                 }
             });
+        }
 
-            // El evento 'shown' no es un evento estándar del DOM. 
-            // La lógica para establecer la fecha ya está en el listener de 'addNewsBtn'.
-            // newsModal.addEventListener('shown', () => {
-            //     const today = new Date().toISOString().split('T')[0];
-            //     document.getElementById('news-date').value = today;
-            // });
+        // =============================================
+        // DELEGACIÓN CENTRALIZADA DE EVENTOS (AQUÍ PONDRE LAS FUNCIONES)
+        // =============================================
+
+        /**
+        * Configura la delegación global de eventos para elementos dinámicos.
+        * Esta función se llama una sola vez al inicio.
+        */
+        function setupGlobalEventDelegation() {
+        // === Delegación para cambios en checkboxes (migración) ===
+        document.addEventListener('change', function(e) {
+            const target = e.target;
+
+            // Caso 1: Checkbox de noticias principales
+            if (target.classList.contains('news-migration-checkbox')) {
+            const newsId = target.dataset.id;
+            if (target.checked) {
+                selectedNewsIdsToMigrate.add(newsId);
+            } else {
+                selectedNewsIdsToMigrate.delete(newsId);
+            }
+
+            // Actualizar botón de migración
+            const confirmBtn = document.getElementById('confirm-migration-btn');
+            if (confirmBtn) {
+                confirmBtn.disabled = selectedNewsIdsToMigrate.size === 0;
+            }
+
+            // Sincronizar "Seleccionar todos"
+            const selectAllCheckbox = document.getElementById('select-all-news-checkbox');
+            if (selectAllCheckbox) {
+                const visibleCheckboxes = document.querySelectorAll('#news-table-body .news-migration-checkbox');
+                const totalVisible = visibleCheckboxes.length;
+                const totalChecked = selectedNewsIdsToMigrate.size;
+
+                selectAllCheckbox.checked = totalVisible > 0 && totalChecked === totalVisible;
+                selectAllCheckbox.indeterminate = totalChecked > 0 && totalChecked < totalVisible;
+            }
+
+            return;
+            }
+
+            // Caso 2: Checkbox de noticias históricas
+            if (target.classList.contains('historical-news-migration-checkbox')) {
+            const newsId = target.dataset.id;
+            if (target.checked) {
+                selectedHistoricalNewsIdsToMigrate.add(newsId);
+            } else {
+                selectedHistoricalNewsIdsToMigrate.delete(newsId);
+            }
+
+            // Actualizar botón de reversión
+            const confirmBtn = document.getElementById('confirm-reverse-migration-btn');
+            if (confirmBtn) {
+                confirmBtn.disabled = selectedHistoricalNewsIdsToMigrate.size === 0;
+            }
+
+            // Sincronizar "Seleccionar todos" del historial
+            const selectAllCheckbox = document.getElementById('select-all-historical-news-checkbox');
+            if (selectAllCheckbox) {
+                const visibleCheckboxes = document.querySelectorAll('#historical-table-body .historical-news-migration-checkbox');
+                const totalVisible = visibleCheckboxes.length;
+                const totalChecked = selectedHistoricalNewsIdsToMigrate.size;
+
+                selectAllCheckbox.checked = totalVisible > 0 && totalChecked === totalVisible;
+                selectAllCheckbox.indeterminate = totalChecked > 0 && totalChecked < totalVisible;
+            }
+
+            return;
+            }
+        });
+
+        // === Delegación para celdas clickeables en reportes ===
+        document.addEventListener('click', function(e) {
+            const cell = e.target.closest('td.clickable-cell');
+            if (!cell) return;
+
+            const { filterVariable, filterValue } = cell.dataset;
+            const targetTab = document.getElementById('reportesDataSource')?.value;
+
+            if (filterVariable && filterValue && filterValue !== 'Total' && targetTab) {
+            navigateAndFilter(targetTab, { [filterVariable]: [filterValue] });
+            }
+        });
+
+        // === Doble clic en filas para vista rápida ===
+        document.addEventListener('dblclick', function(e) {
+            const row = e.target.closest('tr[data-quickview="true"]');
+            if (!row) return;
+
+            const isHistorical = row.closest('tbody')?.id === 'historical-table-body';
+            handleRowDoubleClick(e, isHistorical);
+        });
         }
 
         // =============================================
@@ -5899,6 +5958,7 @@
             // Inicializar la autenticación y los listeners
             initializeAppWithAuth();
             setupEventListeners();
+            setupGlobalEventDelegation();
             setupMediosDashboardFilter();
 
             // Configurar Select2 para los selects
