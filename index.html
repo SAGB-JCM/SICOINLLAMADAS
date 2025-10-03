@@ -2937,20 +2937,31 @@
             });
         }
 
+        //Función Anterior sin delegación de eventos
+        //function handleDeleteClick(button) {
+          //  requirePassword(() => {
+            //    newsToDeleteId = button.getAttribute('data-id');
+              //  newsToDeleteIsHistorical = button.getAttribute('data-is-historical') === 'true';
+                
+                //if (!newsToDeleteId) {
+                  //  console.error("ID de noticia no encontrado para eliminación");
+                    //return;
+                //}
+                
+                //openModal(confirmModal);
+           // });
+        //}
+        
+        //Nueva funcion acorde a delegación de eventos
         function handleDeleteClick(button) {
             requirePassword(() => {
-                newsToDeleteId = button.getAttribute('data-id');
-                newsToDeleteIsHistorical = button.getAttribute('data-is-historical') === 'true';
-                
-                if (!newsToDeleteId) {
-                    console.error("ID de noticia no encontrado para eliminación");
-                    return;
-                }
-                
+                confirmModal.dataset.pendingId = button.dataset.id || button.getAttribute('data-id');
+                confirmModal.dataset.pendingIsHistorical = button.dataset.isHistorical || button.getAttribute('data-is-historical') || 'false';
                 openModal(confirmModal);
             });
         }
-
+        
+        
         function showDetailsModal(newsItem, isHistorical = false) {
             if (!newsItem) return;
 
@@ -5462,17 +5473,60 @@
 
             historicalTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, true));
 
+            //Eventos de eliminacion de registro
+
+            //Anterior sin delegación de eventos
+            //cancelDeleteBtn.addEventListener('click', () => {
+              //  closeModal(confirmModal);
+                //newsToDeleteId = null;
+            //});
+            
+
+            //Anterior sin delegacion de eventos
+            //confirmDeleteBtn.addEventListener('click', async () => {
+              //  if (newsToDeleteId) {
+                //    await deleteNews(newsToDeleteId, newsToDeleteIsHistorical);
+                  //  closeModal(confirmModal);
+              //  }
+           // });
+
+            //Listener para cancelar eliminación de registro
             cancelDeleteBtn.addEventListener('click', () => {
                 closeModal(confirmModal);
+                delete confirmModal.dataset.pendingId;
+                delete confirmModal.dataset.pendingIsHistorical;
                 newsToDeleteId = null;
             });
-            
-            confirmDeleteBtn.addEventListener('click', async () => {
-                if (newsToDeleteId) {
-                    await deleteNews(newsToDeleteId, newsToDeleteIsHistorical);
-                    closeModal(confirmModal);
-                }
-            });
+
+
+        // --- Listener directo y robusto para confirmar eliminación ---
+        // Pegar justo después de cancelDeleteBtn.addEventListener('click', ...)
+        confirmDeleteBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            // Tomamos el id del dataset del modal (flujo con delegación en handleDeleteClick)
+            const pendingId = confirmModal?.dataset?.pendingId;
+            const isHist = confirmModal?.dataset?.pendingIsHistorical === 'true';
+
+            if (!pendingId) {
+                console.warn('Confirm delete clicked but no pendingId found on modal');
+                return;
+            }
+
+            try {
+                await deleteNews(pendingId, isHist);
+            } catch (err) {
+                console.error('Error eliminando noticia:', err);
+                showAlert('Error al eliminar la noticia.', 'error');
+            } finally {
+                // limpiar dataset y estado
+                delete confirmModal.dataset.pendingId;
+                delete confirmModal.dataset.pendingIsHistorical;
+                newsToDeleteId = null;
+                newsToDeleteIsHistorical = false;
+                closeModal(confirmModal);
+            }
+        });
+
 
             historicalFileInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
@@ -5484,8 +5538,6 @@
                     importHistoricalBtn.disabled = true;
                 }
             });
-
-
 
             // =============================================
             // MÓDULO: Eventos de la Importación de datos históricos (mejorado)
