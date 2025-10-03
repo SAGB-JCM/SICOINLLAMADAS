@@ -2916,6 +2916,10 @@
 
                     document.getElementById('edit-conference-summary').innerHTML = newsToEdit.resumen || '';
 
+                    // SOLUCIÓN: Limpiar el input del archivo para evitar que se use un archivo anterior.
+                    const docxInput = document.getElementById('edit-conference-docx');
+                    if (docxInput) docxInput.value = '';
+
                     openModal(editConferenceModal);
                 } else {
                     // Abrir modal de edición normal
@@ -5156,17 +5160,23 @@
                 }
 
                 const id = document.getElementById('edit-conference-id').value;
+                const newDocxFile = await processFile(document.getElementById('edit-conference-docx'));
                 
                 // Construir el objeto de datos manualmente para evitar el objeto File
                 const updateData = {
                     fecha: document.getElementById('edit-conference-date').value,
                     medio: document.getElementById('edit-conference-medio').value,
                     fuente: document.getElementById('edit-conference-source').value,
-                    resumen: document.getElementById('edit-conference-summary').innerHTML,
-                    conferenceDocx: await processFile(document.getElementById('edit-conference-docx')),
+                    resumen: document.getElementById('edit-conference-summary').innerHTML,                    
                     // Añadir campos vacíos para mantener la estructura de datos consistente
                     proyecto: '', subproyecto: '', categoria: '', comentario: '', cita: ''
                 };
+
+                // SOLUCIÓN: Solo actualizar el documento si se ha cargado uno nuevo.
+                // Si no, el documento existente en la base de datos se preservará.
+                if (newDocxFile) {
+                    updateData.conferenceDocx = newDocxFile;
+                }
 
                 await updateNews(id, updateData, currentEditIsHistorical);
                 closeModal(editConferenceModal);
