@@ -1634,83 +1634,6 @@
         // =============================================
         // MÓDULO: Utilidades
         // =============================================
-
-        // ----- Debug: wrapper de performance (Pegar al inicio del script, quitar cuando termines) -----
-        (function(){
-        if (!window.performance) return;
-
-        // Nombres de funciones a instrumentar (ajusta si tus nombres son distintos)
-        const toWrap = [
-            'renderTable', 'sortAndRenderTable',
-            'updateDynamicSelectOptions', 'calculateWeeklyAlertCounts',
-            'checkAndShowTrainAlerts', 'applyAllFilters',
-            'updateNewsMediosDashboard', 'updateMediosDashboard'
-        ];
-
-        function wrap(fnName) {
-            try {
-            const orig = window[fnName];
-            if (typeof orig !== 'function') return;
-            window[fnName] = function(...args) {
-                const start = `${fnName}::start`;
-                const end = `${fnName}::end`;
-                try { performance.mark(start); } catch(e){}
-                const result = orig.apply(this, args);
-                // Si devuelve Promise, medir cuando resuelva
-                if (result && typeof result.then === 'function') {
-                return result.then(res => {
-                    try { performance.mark(end); performance.measure(fnName, start, end); } catch(e){}
-                    return res;
-                }).catch(err => {
-                    try { performance.mark(end); performance.measure(fnName, start, end); } catch(e){}
-                    throw err;
-                });
-                } else {
-                try { performance.mark(end); performance.measure(fnName, start, end); } catch(e){}
-                return result;
-                }
-            };
-            } catch (e) {
-            console.warn('wrap error', fnName, e);
-            }
-        }
-
-        toWrap.forEach(wrap);
-
-        // Observador: cuando la tabla de noticias reciba filas, imprimimos los measures
-        const tableBody = document.getElementById('news-table-body');
-        function printMeasuresAndClear() {
-            // Tomar medidas relevantes y mostrar ordenado por duración
-            const measures = performance.getEntriesByType('measure').map(m => ({ name: m.name, duration: Math.round(m.duration) }));
-            measures.sort((a,b) => b.duration - a.duration);
-            console.groupCollapsed('🧪 Performance measures (debug):');
-            console.table(measures);
-            console.groupEnd();
-            // limpieza opcional de marks/measures para futuras mediciones
-            try { performance.clearMarks(); performance.clearMeasures(); } catch(e){}
-        }
-
-        if (tableBody) {
-            const obs = new MutationObserver((mutations, observer) => {
-            if (tableBody.children.length > 0) {
-                // esperar un ratito para que las marcas se registren
-                setTimeout(() => {
-                printMeasuresAndClear();
-                }, 300);
-                observer.disconnect();
-            }
-            });
-            obs.observe(tableBody, { childList: true });
-        } else {
-            // fallback: si no existe el body aún (por orden de carga), imprimimos pasado 1s
-            setTimeout(() => {
-            printMeasuresAndClear();
-            }, 1000);
-        }
-
-        // También exponemos una función manual por si quieres llamar desde consola después:
-        window.__printNewsPerf = printMeasuresAndClear;
-        })();
         
         function showApp() {
             loader.classList.add('hidden');
@@ -3941,6 +3864,8 @@
             }
         }
 
+        //INICIALIZA APP CON AUTENTICACION
+
         async function initializeAppWithAuth() {
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
@@ -3961,35 +3886,104 @@
             });
         }
         
+        //INICIALIZA LAS TABLAS Y DEMÁS
+
         function setupRealtimeListeners() {
+            let noticiasCargadas = false;
+            let historicoCargado = false;
+
+            // Función para verificar si ambos están listos y ocultar el loader
+            const checkAndHideLoader = () => {
+                if (noticiasCargadas && historicoCargado) {
+                showLoader(false); // ← Usa TU función existente
+                }
+            };
+
             // Listener para la colección de noticias
             newsCollectionRef.onSnapshot((snapshot) => {
-                // Paso 1: Mapeo y renderización síncrona para una carga visual inmediata.
-                news = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));                
+                const startTotal = performance.now();
+                console.log(`[NOTICIAS] Snapshot recibido en ${startTotal.toFixed(2)}ms`);
+
+                // --- Paso 1: Procesamiento de datos ---
+                const startProcessing = performance.now();
+                news = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const endProcessing = performance.now();
+                console.log(`[NOTICIAS] Procesamiento completado en ${(endProcessing - startProcessing).toFixed(2)}ms | Total docs: ${news.length}`);
+
+                // --- Paso 2: Renderizado principal ---
+                const startRender = performance.now();
                 sortAndRenderTable(newsTableBody, news, false);
-                
-                // Paso 2: Desacoplar operaciones pesadas para que se ejecuten de forma asíncrona.
+                const endRender = performance.now();
+                console.log(`[NOTICIAS] sortAndRenderTable completado en ${(endRender - startRender).toFixed(2)}ms`);
+
+                // --- Paso 3: Operaciones diferidas ---
                 setTimeout(() => {
-                    updateNewsMediosDashboard();
-                    updateDynamicSelectOptions();
-                    const alertCounts = calculateWeeklyAlertCounts();
-                    checkAndShowTrainAlerts(alertCounts);
-                }, 100);
-            }, (error) => console.error("Error en listener de noticias:", error));
+                const startAsync = performance.now();
+
+                updateNewsMediosDashboard();
+                updateDynamicSelectOptions();
+
+                const alertCounts = calculateWeeklyAlertCounts();
+                checkAndShowTrainAlerts(alertCounts);
+
+                const endAsync = performance.now();
+                console.log(`[NOTICIAS] Operaciones asíncronas completadas en ${(endAsync - startAsync).toFixed(2)}ms`);
+                console.log(`[NOTICIAS] Tiempo total desde recepción: ${(endAsync - startTotal).toFixed(2)}ms`);
+                }, 0);
+
+                // Marcar como cargado
+                noticiasCargadas = true;
+                checkAndHideLoader(); // Verifica si ya puede ocultar el loader
+
+            }, (error) => {
+                console.error("Error en listener de noticias:", error);
+                noticiasCargadas = true;
+                checkAndHideLoader(); // No bloquear el loader si hay error
+            });
 
             // Listener para la colección de histórico
             historicalNewsCollectionRef.onSnapshot((snapshot) => {
-                // Paso 1: Mapeo y renderización síncrona.
-                historicalNews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));                
+                const startTotal = performance.now();
+                console.log(`[HISTÓRICO] Snapshot recibido en ${startTotal.toFixed(2)}ms`);
+
+                // --- Paso 1: Procesamiento de datos ---
+                const startProcessing = performance.now();
+                historicalNews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const endProcessing = performance.now();
+                console.log(`[HISTÓRICO] Procesamiento completado en ${(endProcessing - startProcessing).toFixed(2)}ms | Total docs: ${historicalNews.length}`);
+
+                // --- Paso 2: Renderizado principal ---
+                const startRender = performance.now();
                 sortAndRenderTable(historicalTableBody, historicalNews, true);
-                
-                // Paso 2: Desacoplar operaciones pesadas.
+                const endRender = performance.now();
+                console.log(`[HISTÓRICO] sortAndRenderTable completado en ${(endRender - startRender).toFixed(2)}ms`);
+
+                // --- Paso 3: Operaciones diferidas ---
                 setTimeout(() => {
-                    updateMediosDashboard();
-                    updateDynamicSelectOptions();
-                }, 100);
-            }, (error) => console.error("Error en listener de histórico:", error));
+                const startAsync = performance.now();
+
+                updateMediosDashboard();
+                updateDynamicSelectOptions();
+
+                const endAsync = performance.now();
+                console.log(`[HISTÓRICO] Operaciones asíncronas completadas en ${(endAsync - startAsync).toFixed(2)}ms`);
+                console.log(`[HISTÓRICO] Tiempo total desde recepción: ${(endAsync - startTotal).toFixed(2)}ms`);
+                }, 0);
+
+                // Marcar como cargado
+                historicoCargado = true;
+                checkAndHideLoader(); // Verifica si ya puede ocultar el loader
+
+            }, (error) => {
+                console.error("Error en listener de histórico:", error);
+                historicoCargado = true;
+                checkAndHideLoader(); // No bloquear el loader si hay error
+            });
+
+            // Mostrar loader al inicio de los listeners
+            showLoader(true); // ← Usa TU función existente
         }
+
 
         /**
          * Actualiza el dashboard de medios basándose en los datos de Noticias.
