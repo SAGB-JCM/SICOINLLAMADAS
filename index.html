@@ -5210,9 +5210,53 @@
                 });
             }
 
-            // Añadimos UN SOLO listener a cada cuerpo de tabla, ambos usan el mismo manejador
-            newsTableBody.addEventListener('click', handleTableClick);
-            historicalTableBody.addEventListener('click', handleTableClick);
+            // comentadas para verificar si la mejora es correcta....
+            //newsTableBody.addEventListener('click', handleTableClick);
+            //historicalTableBody.addEventListener('click', handleTableClick);
+
+            // CÓDIGO NUEVO Y MEJORADO
+            function handlePrimaryTableClick(e) {
+                // Primero, ejecuta el manejador de acciones de botones
+                handleTableClick(e);
+
+                // Si el clic fue en un botón o enlace, la función anterior ya hizo 'return',
+                // así que no necesitamos preocuparnos. Ahora manejamos el clic en la fila.
+                if (isMigrationModeActive) {
+                    const row = e.target.closest('tr');
+                    // Asegurarnos de no activar esto si se hizo clic en un botón o enlace
+                    if (row && !e.target.closest('button, a, .link-cell')) {
+                        const checkbox = row.querySelector('.news-migration-checkbox');
+                        if (checkbox) {
+                            checkbox.checked = !checkbox.checked;
+                            // Disparamos el evento 'change' para que la lógica de selección se active
+                            checkbox.dispatchEvent(new Event('change', { 'bubbles': true }));
+                        }
+                    }
+                }
+            }
+
+            function handleHistoricalTableClick(e) {
+                // Primero, ejecuta el manejador de acciones de botones
+                handleTableClick(e);
+
+                // Lógica para la tabla de histórico
+                if (isReverseMigrationModeActive) {
+                    const row = e.target.closest('tr');
+                    if (row && !e.target.closest('button, a, .link-cell')) {
+                        const checkbox = row.querySelector('.historical-news-migration-checkbox');
+                        if (checkbox) {
+                            checkbox.checked = !checkbox.checked;
+                            checkbox.dispatchEvent(new Event('change', { 'bubbles': true }));
+                        }
+                    }
+                }
+            }
+
+            // Asignamos los nuevos manejadores mejorados
+            newsTableBody.addEventListener('click', handlePrimaryTableClick);
+            historicalTableBody.addEventListener('click', handleHistoricalTableClick);
+
+
 
             if (document.getElementById('save-report-settings-btn')) {
                 document.getElementById('save-report-settings-btn').addEventListener('click', () => {
