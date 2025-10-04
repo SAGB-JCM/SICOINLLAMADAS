@@ -5214,31 +5214,6 @@
             newsTableBody.addEventListener('click', handleTableClick);
             historicalTableBody.addEventListener('click', handleTableClick);
 
-            if (reportSettingsBtn) {
-                reportSettingsBtn.addEventListener('click', () => {
-                    // Cargar la configuración actual en el modal antes de abrirlo
-                    document.querySelector(`input[name="date-filter-mode"][value="${reportSettings.dateFilterMode}"]`).checked = true;
-                    const startDateInput = document.getElementById('report-start-date');
-                    const endDateInput = document.getElementById('report-end-date');
-                    const dateContainer = document.getElementById('date-range-picker-container');
-
-                    startDateInput.value = reportSettings.startDate;
-                    endDateInput.value = reportSettings.endDate;
-
-                    if (reportSettings.dateFilterMode === 'period') {
-                        dateContainer.classList.remove('opacity-50');
-                        startDateInput.disabled = false;
-                        endDateInput.disabled = false;
-                    } else {
-                        dateContainer.classList.add('opacity-50');
-                        startDateInput.disabled = true;
-                        endDateInput.disabled = true;
-                    }
-
-                    openModal(reportSettingsModal);
-                });
-            }
-
             if (document.getElementById('save-report-settings-btn')) {
                 document.getElementById('save-report-settings-btn').addEventListener('click', () => {
                     const dateFilterMode = document.querySelector('input[name="date-filter-mode"]:checked').value;
@@ -5439,47 +5414,6 @@
             });
 
             newsTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, false));
-
-            // --- INICIO: Lógica para Migración Inversa (Eventos) ---
-
-            document.getElementById('start-reverse-migration-btn').addEventListener('click', () => {
-                toggleReverseMigrationMode(true);
-            });
-
-            document.getElementById('cancel-reverse-migration-btn').addEventListener('click', () => {
-                toggleReverseMigrationMode(false);
-            });
-
-            document.getElementById('confirm-reverse-migration-btn').addEventListener('click', () => {
-                if (selectedHistoricalNewsIdsToMigrate.size === 0) return;
-                requirePassword(async () => {
-                    await migrateSelectedNewsToRegistry();
-                });
-            });
-
-            document.getElementById('select-all-historical-news-checkbox').addEventListener('change', e => {
-                const isChecked = e.target.checked;
-                const visibleCheckboxes = historicalTableBody.querySelectorAll('.historical-news-migration-checkbox');
-                visibleCheckboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                    const newsId = checkbox.dataset.id;
-                    isChecked ? selectedHistoricalNewsIdsToMigrate.add(newsId) : selectedHistoricalNewsIdsToMigrate.delete(newsId);
-                });
-                document.getElementById('confirm-reverse-migration-btn').disabled = selectedHistoricalNewsIdsToMigrate.size === 0;
-            });
-
-            document.getElementById('select-all-news-checkbox').addEventListener('change', e => {
-                const isChecked = e.target.checked;
-                const visibleCheckboxes = newsTableBody.querySelectorAll('.news-migration-checkbox');
-                visibleCheckboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                    const newsId = checkbox.dataset.id;
-                    isChecked ? selectedNewsIdsToMigrate.add(newsId) : selectedNewsIdsToMigrate.delete(newsId);
-                });
-                document.getElementById('confirm-migration-btn').disabled = selectedNewsIdsToMigrate.size === 0;
-            });
-
-            // --- FIN: Lógica para Migración Inversa (Eventos) ---
 
             historicalTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, true));
 
@@ -5719,22 +5653,6 @@
                 exportToExcelWithFormatting(dataToExport, sheetName, fileName);
             });
             
-            // --- INICIO: Lógica para Migración ---
-            document.getElementById('start-migration-btn').addEventListener('click', () => {
-                toggleMigrationMode(true);
-            });
-
-            document.getElementById('cancel-migration-btn').addEventListener('click', () => {
-                toggleMigrationMode(false);
-            });
-
-            document.getElementById('confirm-migration-btn').addEventListener('click', () => {
-                if (selectedNewsIdsToMigrate.size === 0) return;
-                requirePassword(async () => {
-                    await migrateSelectedNewsToHistorical();
-                });
-            });
-
             // Limpiar el src al cerrar para detener la carga y liberar recursos
             closeWebviewBtn.addEventListener('click', () => {
                 webviewFrame.src = 'about:blank';
@@ -5830,6 +5748,7 @@
         * Esta función se llama una sola vez al inicio.
         */
         function setupGlobalEventDelegation() {
+
         // === Delegación para cambios en checkboxes (migración) ===
         document.addEventListener('change', function(e) {
             const target = e.target;
@@ -5863,6 +5782,42 @@
             return;
             }
 
+            // Caso 3: Checkbox "Seleccionar Todo" de noticias principales
+            if (target.id === 'select-all-news-checkbox') {
+                const isChecked = target.checked;
+                const visibleCheckboxes = document.querySelectorAll('#news-table-body .news-migration-checkbox');
+                
+                visibleCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    const newsId = checkbox.dataset.id;
+                    if (isChecked) {
+                        selectedNewsIdsToMigrate.add(newsId);
+                    } else {
+                        selectedNewsIdsToMigrate.delete(newsId);
+                    }
+                });
+
+                const confirmBtn = document.getElementById('confirm-migration-btn');
+                if(confirmBtn) confirmBtn.disabled = selectedNewsIdsToMigrate.size === 0;
+                return;
+            }
+
+            // Caso 4: Checkbox "Seleccionar Todo" de noticias históricas
+            if (target.id === 'select-all-historical-news-checkbox') {
+                const isChecked = target.checked;
+                const visibleCheckboxes = document.querySelectorAll('#historical-table-body .historical-news-migration-checkbox');
+                
+                visibleCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    const newsId = checkbox.dataset.id;
+                    isChecked ? selectedHistoricalNewsIdsToMigrate.add(newsId) : selectedHistoricalNewsIdsToMigrate.delete(newsId);
+                });
+
+                const confirmBtn = document.getElementById('confirm-reverse-migration-btn');
+                if(confirmBtn) confirmBtn.disabled = selectedHistoricalNewsIdsToMigrate.size === 0;
+                return;
+            }
+
             // Caso 2: Checkbox de noticias históricas
             if (target.classList.contains('historical-news-migration-checkbox')) {
             const newsId = target.dataset.id;
@@ -5893,17 +5848,102 @@
             }
         });
 
+        // === Delegación para clics en botones y elementos interactivos ===
         // === Delegación para celdas clickeables en reportes ===
         document.addEventListener('click', function(e) {
-            const cell = e.target.closest('td.clickable-cell');
-            if (!cell) return;
+            const target = e.target;
+            const button = target.closest('button'); // Encuentra el botón más cercano
+            if (!button) return; // Si no se hizo clic en un botón, salimos
 
-            const { filterVariable, filterValue } = cell.dataset;
-            const targetTab = document.getElementById('reportesDataSource')?.value;
+            const id = button.id;
 
-            if (filterVariable && filterValue && filterValue !== 'Total' && targetTab) {
-            navigateAndFilter(targetTab, { [filterVariable]: [filterValue] });
+            // --- Botones de Migración ---
+            if (id === 'start-migration-btn') {
+                toggleMigrationMode(true);
+                return;
             }
+            if (id === 'cancel-migration-btn') {
+                toggleMigrationMode(false);
+                return;
+            }
+            if (id === 'confirm-migration-btn') {
+                if (selectedNewsIdsToMigrate.size > 0) {
+                    requirePassword(async () => {
+                        await migrateSelectedNewsToHistorical();
+                    });
+                }
+                return;
+            }
+
+            // --- Botones de Migración Inversa ---
+            if (id === 'start-reverse-migration-btn') {
+                toggleReverseMigrationMode(true);
+                return;
+            }
+            if (id === 'cancel-reverse-migration-btn') {
+                toggleReverseMigrationMode(false);
+                return;
+            }
+            if (id === 'confirm-reverse-migration-btn') {
+                if (selectedHistoricalNewsIdsToMigrate.size > 0) {
+                    requirePassword(async () => {
+                        await migrateSelectedNewsToRegistry();
+                    });
+                }
+                return;
+            }
+
+            // --- Botón de configuración de reportes ---
+            if (id === 'report-settings-btn') {
+                // Cargar la configuración actual en el modal antes de abrirlo
+                document.querySelector(`input[name="date-filter-mode"][value="${reportSettings.dateFilterMode}"]`).checked = true;
+                const startDateInput = document.getElementById('report-start-date');
+                const endDateInput = document.getElementById('report-end-date');
+                const dateContainer = document.getElementById('date-range-picker-container');
+
+                startDateInput.value = reportSettings.startDate;
+                endDateInput.value = reportSettings.endDate;
+
+                if (reportSettings.dateFilterMode === 'period') {
+                    dateContainer.classList.remove('opacity-50');
+                    startDateInput.disabled = false;
+                    endDateInput.disabled = false;
+                } else {
+                    dateContainer.classList.add('opacity-50');
+                    startDateInput.disabled = true;
+                    endDateInput.disabled = true;
+                }
+
+                openModal(reportSettingsModal);
+                return;
+            }
+
+        });
+
+
+        // === Delegación para celdas clickeables en reportes ===
+        document.addEventListener('click', function(e) {
+             const cell = e.target.closest('td.clickable-cell');
+             if (!cell) return;
+ 
+             // Extraer todos los posibles datos de filtro de la celda
+             const { filterVariable, filterValue, filterCategory } = cell.dataset;
+             const filtersToApply = {};
+             const dataSourceSelect = document.getElementById('reportes-data-source');
+             if (!dataSourceSelect) return;
+             const targetTab = dataSourceSelect.value;
+ 
+             // Construir el objeto de filtros combinando los datos disponibles
+             if (filterVariable && filterValue && filterValue !== 'Total') {
+                 filtersToApply[filterVariable] = [filterValue];
+             }
+             if (filterCategory) {
+                 filtersToApply['categoria'] = [filterCategory];
+             }
+ 
+             if (Object.keys(filtersToApply).length > 0 && targetTab) {
+                 navigateAndFilter(targetTab, filtersToApply);
+             }
         });
 
         // === Doble clic en filas para vista rápida ===
