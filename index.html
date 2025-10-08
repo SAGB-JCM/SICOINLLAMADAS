@@ -3858,10 +3858,8 @@
             });
         }
 
-
         function requirePassword(action, isAsync = false) {
             pendingAction = action;
-            openModal(passwordModal); // Se corregirá a openModalWithFocus más adelante
             openModalWithFocus(passwordModal, passwordInput);
             
             if (isAsync) {
