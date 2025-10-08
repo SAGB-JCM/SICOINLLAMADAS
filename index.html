@@ -1282,13 +1282,13 @@
                         </div>
                     </div>
                     <div class="form-field full-width">
-                        <label for="edit-conference-summary" id="edit-conference-summary-label">Resumen de la Conferencia</label>
-                        <div id="edit-conference-summary" name="resumen" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 contenteditable" contenteditable="true"></div>
-                    </div>
-                    <div class="form-field full-width">
                         <label for="edit-conference-docx">Subir Documento (docx)</label>
                         <input type="file" id="edit-conference-docx" name="editConferenceDocx" accept=".docx" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-dark" />
                         <p class="mt-1 text-sm text-gray-500" id="edit-conference-docx-label">Cargue un archivo .docx para usarlo como reporte individual. Si no se carga nada, se usará la plantilla.</p>
+                    </div>
+                    <div class="form-field full-width">
+                        <label for="edit-conference-summary" id="edit-conference-summary-label">Resumen de la Conferencia</label>
+                        <div id="edit-conference-summary" name="resumen" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 contenteditable" contenteditable="true"></div>
                     </div>
                     <div class="flex items-center justify-end pt-4">
                         <button type="submit" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Guardar Cambios</button>
@@ -2352,38 +2352,6 @@
         // MÓDULO: Interfaz de usuario
         // =============================================
         
-        function handleTableClick(event) {
-            const target = event.target; // El elemento exacto donde se hizo clic (ej. el <i>)
-        
-            // Usamos .closest() para encontrar el botón o enlace interactivo más cercano
-            const editButton = target.closest('.edit-btn');
-            if (editButton) {
-                handleEditClick(editButton); // Tu función existente
-                return; // Salimos para no procesar otros clics
-            }
-        
-            const deleteButton = target.closest('.delete-btn');
-            if (deleteButton) {
-                handleDeleteClick(deleteButton); // Tu función existente
-                return;
-            }
-        
-            const docButton = target.closest('.generate-doc-btn');
-            if (docButton) {
-                handleGenerateDocClick(docButton); // Tu función existente
-                return;
-            }
-        
-            const linkCell = target.closest('.link-cell');
-            if (linkCell) {
-                const url = linkCell.getAttribute('data-url');
-                if (url && isValidUrl(url)) {
-                    openWebviewModal(url); // Tu función existente
-                }
-                return;
-            }
-        }
-        
         function renderTable(tableBody, data, isHistorical = false) {
             const noDataMessage = isHistorical ? document.getElementById('no-historical-message') : document.getElementById('no-news-message');
 
@@ -2474,6 +2442,15 @@
             // 3. Actualizar el mensaje de "no hay datos" después de la inserción.
             noDataMessage.classList.toggle('hidden', data.length > 0);
 
+            // Los listeners se pueden añadir después de que el contenido está en el DOM
+            document.querySelectorAll('.link-cell').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const url = e.currentTarget.getAttribute('data-url');
+                    if (url && isValidUrl(url)) {
+                        openWebviewModal(url);
+                    }
+                });
+            });
         }
 
         /**
@@ -2941,31 +2918,20 @@
             });
         }
 
-        //Función Anterior sin delegación de eventos
-        //function handleDeleteClick(button) {
-          //  requirePassword(() => {
-            //    newsToDeleteId = button.getAttribute('data-id');
-              //  newsToDeleteIsHistorical = button.getAttribute('data-is-historical') === 'true';
-                
-                //if (!newsToDeleteId) {
-                  //  console.error("ID de noticia no encontrado para eliminación");
-                    //return;
-                //}
-                
-                //openModal(confirmModal);
-           // });
-        //}
-        
-        //Nueva funcion acorde a delegación de eventos
         function handleDeleteClick(button) {
             requirePassword(() => {
-                confirmModal.dataset.pendingId = button.dataset.id || button.getAttribute('data-id');
-                confirmModal.dataset.pendingIsHistorical = button.dataset.isHistorical || button.getAttribute('data-is-historical') || 'false';
+                newsToDeleteId = button.getAttribute('data-id');
+                newsToDeleteIsHistorical = button.getAttribute('data-is-historical') === 'true';
+                
+                if (!newsToDeleteId) {
+                    console.error("ID de noticia no encontrado para eliminación");
+                    return;
+                }
+                
                 openModal(confirmModal);
             });
         }
-        
-        
+
         function showDetailsModal(newsItem, isHistorical = false) {
             if (!newsItem) return;
 
@@ -3455,45 +3421,7 @@
         // =============================================
         // MÓDULO: Gestión de datos históricos
         // =============================================
-
-        /*
-        * Utilerías de soporte para migraciones seguras
-        */
-
-        // Trocea un array en chunks de tamaño 'size'
-        function chunkArray(arr, size) {
-            const chunks = [];
-            for (let i = 0; i < arr.length; i += size) {
-                chunks.push(arr.slice(i, i + size));
-            }
-            return chunks;
-        }
-
-        // Pequeña espera (ms)
-        function sleep(ms) {
-            return new Promise(res => setTimeout(res, ms));
-        }
-
-        // Mapea de forma segura un objeto histórico/nota a la forma "newsData" esperada.
-        // Si existe newsItem.newsData lo usa, si no, intenta reconstruir a partir de campos conocidos.
-        function resolveNewsDataFromItem(newsItem) {
-            if (!newsItem) return {};
-            if (newsItem.newsData && typeof newsItem.newsData === 'object') return newsItem.newsData;
-            // Fallback: reconstruir conservadoramente desde campos planos
-            return {
-                fecha: newsItem.fecha || '',
-                fuente: newsItem.fuente || '',
-                proyecto: newsItem.proyecto || '',
-                subproyecto: newsItem.subproyecto || '',
-                comentario: newsItem.comentario || '',
-                cita: newsItem.cita || '',
-                resumen: newsItem.resumen || '',
-                categoria: newsItem.categoria || '',
-                medio: newsItem.medio || ''
-            };
-        }
-
-
+        
         /**
          * Elimina todos los registros del histórico EXCEPTO las conferencias.
          * Se utiliza antes de importar un nuevo archivo de Excel.
@@ -3896,6 +3824,7 @@
             });
         }
 
+
         function requirePassword(action, isAsync = false) {
             pendingAction = action;
             openModalWithFocus(passwordModal, passwordInput);
@@ -3914,8 +3843,6 @@
                 });
             }
         }
-
-        //INICIALIZA APP CON AUTENTICACION
 
         async function initializeAppWithAuth() {
             auth.onAuthStateChanged(async (user) => {
@@ -3937,104 +3864,35 @@
             });
         }
         
-        //INICIALIZA LAS TABLAS Y DEMÁS
-
         function setupRealtimeListeners() {
-            let noticiasCargadas = false;
-            let historicoCargado = false;
-
-            // Función para verificar si ambos están listos y ocultar el loader
-            const checkAndHideLoader = () => {
-                if (noticiasCargadas && historicoCargado) {
-                showLoader(false); // ← Usa TU función existente
-                }
-            };
-
             // Listener para la colección de noticias
             newsCollectionRef.onSnapshot((snapshot) => {
-                const startTotal = performance.now();
-                console.log(`[NOTICIAS] Snapshot recibido en ${startTotal.toFixed(2)}ms`);
-
-                // --- Paso 1: Procesamiento de datos ---
-                const startProcessing = performance.now();
-                news = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                const endProcessing = performance.now();
-                console.log(`[NOTICIAS] Procesamiento completado en ${(endProcessing - startProcessing).toFixed(2)}ms | Total docs: ${news.length}`);
-
-                // --- Paso 2: Renderizado principal ---
-                const startRender = performance.now();
+                // Paso 1: Mapeo y renderización síncrona para una carga visual inmediata.
+                news = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));                
                 sortAndRenderTable(newsTableBody, news, false);
-                const endRender = performance.now();
-                console.log(`[NOTICIAS] sortAndRenderTable completado en ${(endRender - startRender).toFixed(2)}ms`);
-
-                // --- Paso 3: Operaciones diferidas ---
+                
+                // Paso 2: Desacoplar operaciones pesadas para que se ejecuten de forma asíncrona.
                 setTimeout(() => {
-                const startAsync = performance.now();
-
-                updateNewsMediosDashboard();
-                updateDynamicSelectOptions();
-
-                const alertCounts = calculateWeeklyAlertCounts();
-                checkAndShowTrainAlerts(alertCounts);
-
-                const endAsync = performance.now();
-                console.log(`[NOTICIAS] Operaciones asíncronas completadas en ${(endAsync - startAsync).toFixed(2)}ms`);
-                console.log(`[NOTICIAS] Tiempo total desde recepción: ${(endAsync - startTotal).toFixed(2)}ms`);
-                }, 0);
-
-                // Marcar como cargado
-                noticiasCargadas = true;
-                checkAndHideLoader(); // Verifica si ya puede ocultar el loader
-
-            }, (error) => {
-                console.error("Error en listener de noticias:", error);
-                noticiasCargadas = true;
-                checkAndHideLoader(); // No bloquear el loader si hay error
-            });
+                    updateNewsMediosDashboard();
+                    updateDynamicSelectOptions();
+                    const alertCounts = calculateWeeklyAlertCounts();
+                    checkAndShowTrainAlerts(alertCounts);
+                }, 100);
+            }, (error) => console.error("Error en listener de noticias:", error));
 
             // Listener para la colección de histórico
             historicalNewsCollectionRef.onSnapshot((snapshot) => {
-                const startTotal = performance.now();
-                console.log(`[HISTÓRICO] Snapshot recibido en ${startTotal.toFixed(2)}ms`);
-
-                // --- Paso 1: Procesamiento de datos ---
-                const startProcessing = performance.now();
-                historicalNews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                const endProcessing = performance.now();
-                console.log(`[HISTÓRICO] Procesamiento completado en ${(endProcessing - startProcessing).toFixed(2)}ms | Total docs: ${historicalNews.length}`);
-
-                // --- Paso 2: Renderizado principal ---
-                const startRender = performance.now();
+                // Paso 1: Mapeo y renderización síncrona.
+                historicalNews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));                
                 sortAndRenderTable(historicalTableBody, historicalNews, true);
-                const endRender = performance.now();
-                console.log(`[HISTÓRICO] sortAndRenderTable completado en ${(endRender - startRender).toFixed(2)}ms`);
-
-                // --- Paso 3: Operaciones diferidas ---
+                
+                // Paso 2: Desacoplar operaciones pesadas.
                 setTimeout(() => {
-                const startAsync = performance.now();
-
-                updateMediosDashboard();
-                updateDynamicSelectOptions();
-
-                const endAsync = performance.now();
-                console.log(`[HISTÓRICO] Operaciones asíncronas completadas en ${(endAsync - startAsync).toFixed(2)}ms`);
-                console.log(`[HISTÓRICO] Tiempo total desde recepción: ${(endAsync - startTotal).toFixed(2)}ms`);
-                }, 0);
-
-                // Marcar como cargado
-                historicoCargado = true;
-                checkAndHideLoader(); // Verifica si ya puede ocultar el loader
-
-            }, (error) => {
-                console.error("Error en listener de histórico:", error);
-                historicoCargado = true;
-                checkAndHideLoader(); // No bloquear el loader si hay error
-            });
-
-            // Mostrar loader al inicio de los listeners
-            showLoader(true); // ← Usa TU función existente
+                    updateMediosDashboard();
+                    updateDynamicSelectOptions();
+                }, 100);
+            }, (error) => console.error("Error en listener de histórico:", error));
         }
-
 
         /**
          * Actualiza el dashboard de medios basándose en los datos de Noticias.
@@ -4731,56 +4589,22 @@
 
                 if (newsToMigrate.length === 0) return; // Doble verificación
 
-                // --- Migración segura por chunks (forward) ---
-                const CHUNK_SIZE = 450; // mantener por debajo de 500 (límite de writes por batch)
-                const chunks = chunkArray(newsToMigrate, CHUNK_SIZE);
-                let migratedCount = 0;
-
-                for (let ci = 0; ci < chunks.length; ci++) {
-                    const chunk = chunks[ci];
-                    const batchChunk = db.batch();
-
-                    chunk.forEach(newsItem => {
-                        const historicalDocRef = historicalNewsCollectionRef.doc();
-                        const { id } = newsItem;
-                        const newsData = resolveNewsDataFromItem(newsItem);
-
-                        batchChunk.set(historicalDocRef, {
-                            ...newsData,
-                            migratedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            originalId: id || newsItem.id || null
-                        });
-
-                        const newsDocRef = newsCollectionRef.doc(newsItem.id);
-                        batchChunk.delete(newsDocRef);
+                newsToMigrate.forEach(newsItem => {
+                    const historicalDocRef = historicalNewsCollectionRef.doc(); // Crea un nuevo doc en el histórico
+                    const { id, ...newsData } = newsItem;
+                    batch.set(historicalDocRef, { 
+                        ...newsData,
+                        migratedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        originalId: id
                     });
 
-                    // Intento con reintentos simples y backoff
-                    let committed = false;
-                    let attempt = 0;
-                    const maxAttempts = 3;
-                    while (!committed && attempt < maxAttempts) {
-                        try {
-                            await batchChunk.commit();
-                            committed = true;
-                            migratedCount += chunk.length;
-                            console.log(`Forward migration: committed chunk ${ci + 1}/${chunks.length} (${chunk.length} docs).`);
-                        } catch (err) {
-                            attempt++;
-                            const backoff = 300 * Math.pow(2, attempt);
-                            console.warn(`Forward migration: commit failed (attempt ${attempt}) — retrying in ${backoff}ms`, err);
-                            await sleep(backoff);
-                        }
-                    }
-                    if (!committed) {
-                        throw new Error(`Forward migration: fallo persistente al commitear chunk ${ci + 1}`);
-                    }
-
-                    // Pequeña pausa entre chunks para evitar throttling
-                    await sleep(200);
-                }
-
-                showAlert(`Se migraron ${migratedCount} noticias al histórico.`, "success");
+                    const newsDocRef = newsCollectionRef.doc(newsItem.id);
+                    batch.delete(newsDocRef);
+                });
+                
+                await batch.commit();
+                
+                showAlert(`Se migraron ${newsToMigrate.length} noticias al histórico.`, "success");
             } catch (error) {
                 console.error("Error al migrar noticias:", error);
                 showAlert(`Error al migrar: ${error.message}`, "error");
@@ -4847,63 +4671,23 @@
 
                 showLoader(true);
 
+                const batch = db.batch();
                 // Obtener los datos filtrados actualmente en la tabla para solo migrar lo visible
                 const currentlyVisibleNews = applyAllFilters(historicalNews, 'historical');
                 const newsToMigrate = currentlyVisibleNews.filter(item => selectedHistoricalNewsIdsToMigrate.has(item.id));
 
-                if (newsToMigrate.length === 0) {
-                    showAlert("No hay noticias visibles seleccionadas para migrar.", "warning");
-                    return;
-                }
+                newsToMigrate.forEach(newsItem => {
+                    const newNewsDocRef = newsCollectionRef.doc();
+                    const { id, migratedAt, originalId, ...newsData } = newsItem;
+                    
+                    batch.set(newNewsDocRef, { ...newsData, createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
 
-                const CHUNK_SIZE = 450;
-                const chunks = chunkArray(newsToMigrate, CHUNK_SIZE);
-                let migratedCount = 0;
+                    const historicalDocRef = historicalNewsCollectionRef.doc(newsItem.id);
+                    batch.delete(historicalDocRef);
+                });
 
-                for (let ci = 0; ci < chunks.length; ci++) {
-                    const chunk = chunks[ci];
-                    const batchChunk = db.batch();
-
-                    chunk.forEach(newsItem => {
-                        const newNewsDocRef = newsCollectionRef.doc();
-                        // resolver datos seguros (no usar destructuring inválido)
-                        const newsData = resolveNewsDataFromItem(newsItem);
-                        batchChunk.set(newNewsDocRef, {
-                            ...newsData,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            restoredFromHistoricalId: newsItem.id || null
-                        });
-
-                        const historicalDocRef = historicalNewsCollectionRef.doc(newsItem.id);
-                        batchChunk.delete(historicalDocRef);
-                    });
-
-                    // commit con reintentos simples y backoff
-                    let committed = false;
-                    let attempt = 0;
-                    const maxAttempts = 3;
-                    while (!committed && attempt < maxAttempts) {
-                        try {
-                            await batchChunk.commit();
-                            committed = true;
-                            migratedCount += chunk.length;
-                            console.log(`Reverse migration: committed chunk ${ci + 1}/${chunks.length} (${chunk.length} docs).`);
-                        } catch (err) {
-                            attempt++;
-                            const backoff = 300 * Math.pow(2, attempt);
-                            console.warn(`Reverse migration: commit failed (attempt ${attempt}) — retrying in ${backoff}ms`, err);
-                            await sleep(backoff);
-                        }
-                    }
-                    if (!committed) {
-                        throw new Error(`Reverse migration: fallo persistente al commitear chunk ${ci + 1}`);
-                    }
-
-                    await sleep(200);
-                }
-
-                showAlert(`Se migraron ${migratedCount} noticias al registro principal.`, "success");
+                await batch.commit();
+                showAlert(`Se migraron ${newsToMigrate.length} noticias al registro principal.`, "success");
             } catch (error) {
                 console.error("Error en la migración inversa:", error);
                 showAlert(`Error en la migración inversa: ${error.message}`, "error");
@@ -5291,7 +5075,7 @@
                 await updateNews(id, updateData, currentEditIsHistorical);
                 closeModal(editConferenceModal);
             });
-            
+                        
             editForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!editForm.checkValidity()) {
@@ -5320,53 +5104,73 @@
                 });
             }
 
-            // comentadas para verificar si la mejora es correcta....
-            //newsTableBody.addEventListener('click', handleTableClick);
-            //historicalTableBody.addEventListener('click', handleTableClick);
+            newsTableBody.addEventListener('click', e => {
+                const target = e.target.closest('button');
+                if (!target) return;
+                if (target.classList.contains('edit-btn')) handleEditClick(target);
+                if (target.classList.contains('delete-btn')) handleDeleteClick(target);
+                if (target.classList.contains('generate-doc-btn')) handleGenerateDocClick(target);
+            });
 
-            // CÓDIGO NUEVO Y MEJORADO
-            function handlePrimaryTableClick(e) {
-                // Primero, ejecuta el manejador de acciones de botones
-                handleTableClick(e);
+            // Lógica para seleccionar/deseleccionar noticias
+            newsTableBody.addEventListener('click', e => {
+                // Si se hizo clic en un botón, manejar la acción del botón y detener.
+                const buttonTarget = e.target.closest('button');
+                if (buttonTarget) {
+                    if (buttonTarget.classList.contains('edit-btn')) handleEditClick(buttonTarget);
+                    if (buttonTarget.classList.contains('delete-btn')) handleDeleteClick(buttonTarget);
+                    if (buttonTarget.classList.contains('generate-doc-btn')) handleGenerateDocClick(buttonTarget);
+                    return;
+                }
 
-                // Si el clic fue en un botón o enlace, la función anterior ya hizo 'return',
-                // así que no necesitamos preocuparnos. Ahora manejamos el clic en la fila.
                 if (isMigrationModeActive) {
                     const row = e.target.closest('tr');
-                    // Asegurarnos de no activar esto si se hizo clic en un botón o enlace
-                    if (row && !e.target.closest('button, a, .link-cell')) {
-                        const checkbox = row.querySelector('.news-migration-checkbox');
-                        if (checkbox) {
-                            checkbox.checked = !checkbox.checked;
-                            // Disparamos el evento 'change' para que la lógica de selección se active
-                            checkbox.dispatchEvent(new Event('change', { 'bubbles': true }));
-                        }
+                    const checkbox = row.querySelector('.news-migration-checkbox');
+                    if (checkbox && e.target !== checkbox) { // No procesar si el clic fue directamente en el checkbox
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
                     }
                 }
-            }
+            });
 
-            function handleHistoricalTableClick(e) {
-                // Primero, ejecuta el manejador de acciones de botones
-                handleTableClick(e);
+            newsTableBody.addEventListener('change', e => {
+                if (e.target.classList.contains('news-migration-checkbox')) {
+                    const newsId = e.target.dataset.id;
+                    e.target.checked ? selectedNewsIdsToMigrate.add(newsId) : selectedNewsIdsToMigrate.delete(newsId);
+                    
+                    const confirmBtn = document.getElementById('confirm-migration-btn');
+                    confirmBtn.disabled = selectedNewsIdsToMigrate.size === 0;
 
-                // Lógica para la tabla de histórico
-                if (isReverseMigrationModeActive) {
-                    const row = e.target.closest('tr');
-                    if (row && !e.target.closest('button, a, .link-cell')) {
-                        const checkbox = row.querySelector('.historical-news-migration-checkbox');
-                        if (checkbox) {
-                            checkbox.checked = !checkbox.checked;
-                            checkbox.dispatchEvent(new Event('change', { 'bubbles': true }));
-                        }
-                    }
+                    const selectAllCheckbox = document.getElementById('select-all-news-checkbox');
+                    const visibleCheckboxes = newsTableBody.querySelectorAll('.news-migration-checkbox');
+                    selectAllCheckbox.checked = selectedNewsIdsToMigrate.size === visibleCheckboxes.length && visibleCheckboxes.length > 0;
                 }
+            });
+
+            if (reportSettingsBtn) {
+                reportSettingsBtn.addEventListener('click', () => {
+                    // Cargar la configuración actual en el modal antes de abrirlo
+                    document.querySelector(`input[name="date-filter-mode"][value="${reportSettings.dateFilterMode}"]`).checked = true;
+                    const startDateInput = document.getElementById('report-start-date');
+                    const endDateInput = document.getElementById('report-end-date');
+                    const dateContainer = document.getElementById('date-range-picker-container');
+
+                    startDateInput.value = reportSettings.startDate;
+                    endDateInput.value = reportSettings.endDate;
+
+                    if (reportSettings.dateFilterMode === 'period') {
+                        dateContainer.classList.remove('opacity-50');
+                        startDateInput.disabled = false;
+                        endDateInput.disabled = false;
+                    } else {
+                        dateContainer.classList.add('opacity-50');
+                        startDateInput.disabled = true;
+                        endDateInput.disabled = true;
+                    }
+
+                    openModal(reportSettingsModal);
+                });
             }
-
-            // Asignamos los nuevos manejadores mejorados
-            newsTableBody.addEventListener('click', handlePrimaryTableClick);
-            historicalTableBody.addEventListener('click', handleHistoricalTableClick);
-
-
 
             if (document.getElementById('save-report-settings-btn')) {
                 document.getElementById('save-report-settings-btn').addEventListener('click', () => {
@@ -5569,62 +5373,106 @@
 
             newsTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, false));
 
-            historicalTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, true));
-
-            //Eventos de eliminacion de registro
-
-            //Anterior sin delegación de eventos
-            //cancelDeleteBtn.addEventListener('click', () => {
-              //  closeModal(confirmModal);
-                //newsToDeleteId = null;
-            //});
-            
-
-            //Anterior sin delegacion de eventos
-            //confirmDeleteBtn.addEventListener('click', async () => {
-              //  if (newsToDeleteId) {
-                //    await deleteNews(newsToDeleteId, newsToDeleteIsHistorical);
-                  //  closeModal(confirmModal);
-              //  }
-           // });
-
-            //Listener para cancelar eliminación de registro
-            cancelDeleteBtn.addEventListener('click', () => {
-                closeModal(confirmModal);
-                delete confirmModal.dataset.pendingId;
-                delete confirmModal.dataset.pendingIsHistorical;
-                newsToDeleteId = null;
+            historicalTableBody.addEventListener('click', e => {
+                const target = e.target.closest('button');
+                if (!target) return;
+                if (target.classList.contains('edit-btn')) handleEditClick(target);
+                if (target.classList.contains('delete-btn')) handleDeleteClick(target);
+                if (target.classList.contains('generate-doc-btn')) handleGenerateDocClick(target);
             });
 
+            historicalTableBody.addEventListener('change', e => {
+                // Lógica para seleccionar/deseleccionar noticias del histórico
+                if (e.target.classList.contains('historical-news-migration-checkbox')) {
+                    const newsId = e.target.dataset.id;
+                    e.target.checked ? selectedHistoricalNewsIdsToMigrate.add(newsId) : selectedHistoricalNewsIdsToMigrate.delete(newsId);
+                    
+                    const confirmBtn = document.getElementById('confirm-reverse-migration-btn');
+                    confirmBtn.disabled = selectedHistoricalNewsIdsToMigrate.size === 0;
 
-        // --- Listener directo y robusto para confirmar eliminación ---
-        // Pegar justo después de cancelDeleteBtn.addEventListener('click', ...)
-        confirmDeleteBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            // Tomamos el id del dataset del modal (flujo con delegación en handleDeleteClick)
-            const pendingId = confirmModal?.dataset?.pendingId;
-            const isHist = confirmModal?.dataset?.pendingIsHistorical === 'true';
+                    const selectAllCheckbox = document.getElementById('select-all-historical-news-checkbox');
+                    const visibleCheckboxes = historicalTableBody.querySelectorAll('.historical-news-migration-checkbox');
+                    selectAllCheckbox.checked = selectedHistoricalNewsIdsToMigrate.size === visibleCheckboxes.length && visibleCheckboxes.length > 0;
+                }
+            });
 
-            if (!pendingId) {
-                console.warn('Confirm delete clicked but no pendingId found on modal');
-                return;
-            }
+            // --- INICIO: Lógica para Migración Inversa (Eventos) ---
 
-            try {
-                await deleteNews(pendingId, isHist);
-            } catch (err) {
-                console.error('Error eliminando noticia:', err);
-                showAlert('Error al eliminar la noticia.', 'error');
-            } finally {
-                // limpiar dataset y estado
-                delete confirmModal.dataset.pendingId;
-                delete confirmModal.dataset.pendingIsHistorical;
-                newsToDeleteId = null;
-                newsToDeleteIsHistorical = false;
+            document.getElementById('start-reverse-migration-btn').addEventListener('click', () => {
+                toggleReverseMigrationMode(true);
+            });
+
+            document.getElementById('cancel-reverse-migration-btn').addEventListener('click', () => {
+                toggleReverseMigrationMode(false);
+            });
+
+            document.getElementById('confirm-reverse-migration-btn').addEventListener('click', () => {
+                if (selectedHistoricalNewsIdsToMigrate.size === 0) return;
+                requirePassword(async () => {
+                    await migrateSelectedNewsToRegistry();
+                });
+            });
+
+            document.getElementById('select-all-historical-news-checkbox').addEventListener('change', e => {
+                const isChecked = e.target.checked;
+                const visibleCheckboxes = historicalTableBody.querySelectorAll('.historical-news-migration-checkbox');
+                visibleCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    const newsId = checkbox.dataset.id;
+                    isChecked ? selectedHistoricalNewsIdsToMigrate.add(newsId) : selectedHistoricalNewsIdsToMigrate.delete(newsId);
+                });
+                document.getElementById('confirm-reverse-migration-btn').disabled = selectedHistoricalNewsIdsToMigrate.size === 0;
+            });
+
+            document.getElementById('select-all-news-checkbox').addEventListener('change', e => {
+                const isChecked = e.target.checked;
+                const visibleCheckboxes = newsTableBody.querySelectorAll('.news-migration-checkbox');
+                visibleCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    const newsId = checkbox.dataset.id;
+                    isChecked ? selectedNewsIdsToMigrate.add(newsId) : selectedNewsIdsToMigrate.delete(newsId);
+                });
+                document.getElementById('confirm-migration-btn').disabled = selectedNewsIdsToMigrate.size === 0;
+            });
+
+            // --- FIN: Lógica para Migración Inversa (Eventos) ---
+
+            historicalTableBody.addEventListener('click', e => {
+                if (isReverseMigrationModeActive) { // Lógica para seleccionar fila en modo de migración INVERSA
+                    const row = e.target.closest('tr');
+                    if (!row || e.target.closest('button')) return;
+
+                    const checkbox = row.querySelector('.historical-news-migration-checkbox');
+                    if (checkbox && e.target !== checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                }
+
+                const target = e.target.closest('button');
+                if (!target) return;
+
+                if (target.classList.contains('edit-btn')) handleEditClick(target);
+                if (target.classList.contains('delete-btn')) handleDeleteClick(target);
+                if (target.classList.contains('generate-doc-btn')) handleGenerateDocClick(target);
+
+
+
+            });
+
+            historicalTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, true));
+
+            cancelDeleteBtn.addEventListener('click', () => {
                 closeModal(confirmModal);
-            }
-        });
-
+                newsToDeleteId = null;
+            });
+            
+            confirmDeleteBtn.addEventListener('click', async () => {
+                if (newsToDeleteId) {
+                    await deleteNews(newsToDeleteId, newsToDeleteIsHistorical);
+                    closeModal(confirmModal);
+                }
+            });
 
             historicalFileInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
@@ -5638,7 +5486,7 @@
             });
 
             // =============================================
-            // MÓDULO: Eventos de la Importación de datos históricos (mejorado)
+            // MÓDULO: Importación de datos históricos (mejorado)
             // =============================================
 
             importHistoricalBtn.addEventListener('click', () => {
@@ -5807,6 +5655,22 @@
                 exportToExcelWithFormatting(dataToExport, sheetName, fileName);
             });
             
+            // --- INICIO: Lógica para Migración ---
+            document.getElementById('start-migration-btn').addEventListener('click', () => {
+                toggleMigrationMode(true);
+            });
+
+            document.getElementById('cancel-migration-btn').addEventListener('click', () => {
+                toggleMigrationMode(false);
+            });
+
+            document.getElementById('confirm-migration-btn').addEventListener('click', () => {
+                if (selectedNewsIdsToMigrate.size === 0) return;
+                requirePassword(async () => {
+                    await migrateSelectedNewsToHistorical();
+                });
+            });
+
             // Limpiar el src al cerrar para detener la carga y liberar recursos
             closeWebviewBtn.addEventListener('click', () => {
                 webviewFrame.src = 'about:blank';
@@ -5891,223 +5755,6 @@
                     navigateAndFilter(targetTab, { [filterVariable]: [filterValue] });
                 }
             });
-        }
-
-        // =============================================
-        // DELEGACIÓN CENTRALIZADA DE EVENTOS (AQUÍ PONDRE LAS FUNCIONES)
-        // =============================================
-
-        /**
-        * Configura la delegación global de eventos para elementos dinámicos.
-        * Esta función se llama una sola vez al inicio.
-        */
-        function setupGlobalEventDelegation() {
-
-        // === Delegación para cambios en checkboxes (migración) ===
-        document.addEventListener('change', function(e) {
-            const target = e.target;
-
-            // Caso 1: Checkbox de noticias principales
-            if (target.classList.contains('news-migration-checkbox')) {
-            const newsId = target.dataset.id;
-            if (target.checked) {
-                selectedNewsIdsToMigrate.add(newsId);
-            } else {
-                selectedNewsIdsToMigrate.delete(newsId);
-            }
-
-            // Actualizar botón de migración
-            const confirmBtn = document.getElementById('confirm-migration-btn');
-            if (confirmBtn) {
-                confirmBtn.disabled = selectedNewsIdsToMigrate.size === 0;
-            }
-
-            // Sincronizar "Seleccionar todos"
-            const selectAllCheckbox = document.getElementById('select-all-news-checkbox');
-            if (selectAllCheckbox) {
-                const visibleCheckboxes = document.querySelectorAll('#news-table-body .news-migration-checkbox');
-                const totalVisible = visibleCheckboxes.length;
-                const totalChecked = selectedNewsIdsToMigrate.size;
-
-                selectAllCheckbox.checked = totalVisible > 0 && totalChecked === totalVisible;
-                selectAllCheckbox.indeterminate = totalChecked > 0 && totalChecked < totalVisible;
-            }
-
-            return;
-            }
-
-            // Caso 3: Checkbox "Seleccionar Todo" de noticias principales
-            if (target.id === 'select-all-news-checkbox') {
-                const isChecked = target.checked;
-                const visibleCheckboxes = document.querySelectorAll('#news-table-body .news-migration-checkbox');
-                
-                visibleCheckboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                    const newsId = checkbox.dataset.id;
-                    if (isChecked) {
-                        selectedNewsIdsToMigrate.add(newsId);
-                    } else {
-                        selectedNewsIdsToMigrate.delete(newsId);
-                    }
-                });
-
-                const confirmBtn = document.getElementById('confirm-migration-btn');
-                if(confirmBtn) confirmBtn.disabled = selectedNewsIdsToMigrate.size === 0;
-                return;
-            }
-
-            // Caso 4: Checkbox "Seleccionar Todo" de noticias históricas
-            if (target.id === 'select-all-historical-news-checkbox') {
-                const isChecked = target.checked;
-                const visibleCheckboxes = document.querySelectorAll('#historical-table-body .historical-news-migration-checkbox');
-                
-                visibleCheckboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                    const newsId = checkbox.dataset.id;
-                    isChecked ? selectedHistoricalNewsIdsToMigrate.add(newsId) : selectedHistoricalNewsIdsToMigrate.delete(newsId);
-                });
-
-                const confirmBtn = document.getElementById('confirm-reverse-migration-btn');
-                if(confirmBtn) confirmBtn.disabled = selectedHistoricalNewsIdsToMigrate.size === 0;
-                return;
-            }
-
-            // Caso 2: Checkbox de noticias históricas
-            if (target.classList.contains('historical-news-migration-checkbox')) {
-            const newsId = target.dataset.id;
-            if (target.checked) {
-                selectedHistoricalNewsIdsToMigrate.add(newsId);
-            } else {
-                selectedHistoricalNewsIdsToMigrate.delete(newsId);
-            }
-
-            // Actualizar botón de reversión
-            const confirmBtn = document.getElementById('confirm-reverse-migration-btn');
-            if (confirmBtn) {
-                confirmBtn.disabled = selectedHistoricalNewsIdsToMigrate.size === 0;
-            }
-
-            // Sincronizar "Seleccionar todos" del historial
-            const selectAllCheckbox = document.getElementById('select-all-historical-news-checkbox');
-            if (selectAllCheckbox) {
-                const visibleCheckboxes = document.querySelectorAll('#historical-table-body .historical-news-migration-checkbox');
-                const totalVisible = visibleCheckboxes.length;
-                const totalChecked = selectedHistoricalNewsIdsToMigrate.size;
-
-                selectAllCheckbox.checked = totalVisible > 0 && totalChecked === totalVisible;
-                selectAllCheckbox.indeterminate = totalChecked > 0 && totalChecked < totalVisible;
-            }
-
-            return;
-            }
-        });
-
-        // === Delegación para clics en botones y elementos interactivos ===
-        // === Delegación para celdas clickeables en reportes ===
-        document.addEventListener('click', function(e) {
-            const target = e.target;
-            const button = target.closest('button'); // Encuentra el botón más cercano
-            if (!button) return; // Si no se hizo clic en un botón, salimos
-
-            const id = button.id;
-
-            // --- Botones de Migración ---
-            if (id === 'start-migration-btn') {
-                toggleMigrationMode(true);
-                return;
-            }
-            if (id === 'cancel-migration-btn') {
-                toggleMigrationMode(false);
-                return;
-            }
-            if (id === 'confirm-migration-btn') {
-                if (selectedNewsIdsToMigrate.size > 0) {
-                    requirePassword(async () => {
-                        await migrateSelectedNewsToHistorical();
-                    });
-                }
-                return;
-            }
-
-            // --- Botones de Migración Inversa ---
-            if (id === 'start-reverse-migration-btn') {
-                toggleReverseMigrationMode(true);
-                return;
-            }
-            if (id === 'cancel-reverse-migration-btn') {
-                toggleReverseMigrationMode(false);
-                return;
-            }
-            if (id === 'confirm-reverse-migration-btn') {
-                if (selectedHistoricalNewsIdsToMigrate.size > 0) {
-                    requirePassword(async () => {
-                        await migrateSelectedNewsToRegistry();
-                    });
-                }
-                return;
-            }
-
-            // --- Botón de configuración de reportes ---
-            if (id === 'report-settings-btn') {
-                // Cargar la configuración actual en el modal antes de abrirlo
-                document.querySelector(`input[name="date-filter-mode"][value="${reportSettings.dateFilterMode}"]`).checked = true;
-                const startDateInput = document.getElementById('report-start-date');
-                const endDateInput = document.getElementById('report-end-date');
-                const dateContainer = document.getElementById('date-range-picker-container');
-
-                startDateInput.value = reportSettings.startDate;
-                endDateInput.value = reportSettings.endDate;
-
-                if (reportSettings.dateFilterMode === 'period') {
-                    dateContainer.classList.remove('opacity-50');
-                    startDateInput.disabled = false;
-                    endDateInput.disabled = false;
-                } else {
-                    dateContainer.classList.add('opacity-50');
-                    startDateInput.disabled = true;
-                    endDateInput.disabled = true;
-                }
-
-                openModal(reportSettingsModal);
-                return;
-            }
-
-        });
-
-
-        // === Delegación para celdas clickeables en reportes ===
-        document.addEventListener('click', function(e) {
-             const cell = e.target.closest('td.clickable-cell');
-             if (!cell) return;
- 
-             // Extraer todos los posibles datos de filtro de la celda
-             const { filterVariable, filterValue, filterCategory } = cell.dataset;
-             const filtersToApply = {};
-             const dataSourceSelect = document.getElementById('reportes-data-source');
-             if (!dataSourceSelect) return;
-             const targetTab = dataSourceSelect.value;
- 
-             // Construir el objeto de filtros combinando los datos disponibles
-             if (filterVariable && filterValue && filterValue !== 'Total') {
-                 filtersToApply[filterVariable] = [filterValue];
-             }
-             if (filterCategory) {
-                 filtersToApply['categoria'] = [filterCategory];
-             }
- 
-             if (Object.keys(filtersToApply).length > 0 && targetTab) {
-                 navigateAndFilter(targetTab, filtersToApply);
-             }
-        });
-
-        // === Doble clic en filas para vista rápida ===
-        document.addEventListener('dblclick', function(e) {
-            const row = e.target.closest('tr[data-quickview="true"]');
-            if (!row) return;
-
-            const isHistorical = row.closest('tbody')?.id === 'historical-table-body';
-            handleRowDoubleClick(e, isHistorical);
-        });
         }
 
         // =============================================
@@ -6208,7 +5855,6 @@
             // Inicializar la autenticación y los listeners
             initializeAppWithAuth();
             setupEventListeners();
-            setupGlobalEventDelegation();
             setupMediosDashboardFilter();
 
             // Configurar Select2 para los selects
