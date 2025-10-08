@@ -3455,7 +3455,45 @@
         // =============================================
         // MÓDULO: Gestión de datos históricos
         // =============================================
-        
+
+        /*
+        * Utilerías de soporte para migraciones seguras
+        */
+
+        // Trocea un array en chunks de tamaño 'size'
+        function chunkArray(arr, size) {
+            const chunks = [];
+            for (let i = 0; i < arr.length; i += size) {
+                chunks.push(arr.slice(i, i + size));
+            }
+            return chunks;
+        }
+
+        // Pequeña espera (ms)
+        function sleep(ms) {
+            return new Promise(res => setTimeout(res, ms));
+        }
+
+        // Mapea de forma segura un objeto histórico/nota a la forma "newsData" esperada.
+        // Si existe newsItem.newsData lo usa, si no, intenta reconstruir a partir de campos conocidos.
+        function resolveNewsDataFromItem(newsItem) {
+            if (!newsItem) return {};
+            if (newsItem.newsData && typeof newsItem.newsData === 'object') return newsItem.newsData;
+            // Fallback: reconstruir conservadoramente desde campos planos
+            return {
+                fecha: newsItem.fecha || '',
+                fuente: newsItem.fuente || '',
+                proyecto: newsItem.proyecto || '',
+                subproyecto: newsItem.subproyecto || '',
+                comentario: newsItem.comentario || '',
+                cita: newsItem.cita || '',
+                resumen: newsItem.resumen || '',
+                categoria: newsItem.categoria || '',
+                medio: newsItem.medio || ''
+            };
+        }
+
+
         /**
          * Elimina todos los registros del histórico EXCEPTO las conferencias.
          * Se utiliza antes de importar un nuevo archivo de Excel.
@@ -4693,22 +4731,56 @@
 
                 if (newsToMigrate.length === 0) return; // Doble verificación
 
-                newsToMigrate.forEach(newsItem => {
-                    const historicalDocRef = historicalNewsCollectionRef.doc(); // Crea un nuevo doc en el histórico
-                    const { id, ...newsData } = newsItem;
-                    batch.set(historicalDocRef, { 
-                        ...newsData,
-                        migratedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        originalId: id
+                // --- Migración segura por chunks (forward) ---
+                const CHUNK_SIZE = 450; // mantener por debajo de 500 (límite de writes por batch)
+                const chunks = chunkArray(newsToMigrate, CHUNK_SIZE);
+                let migratedCount = 0;
+
+                for (let ci = 0; ci < chunks.length; ci++) {
+                    const chunk = chunks[ci];
+                    const batchChunk = db.batch();
+
+                    chunk.forEach(newsItem => {
+                        const historicalDocRef = historicalNewsCollectionRef.doc();
+                        const { id } = newsItem;
+                        const newsData = resolveNewsDataFromItem(newsItem);
+
+                        batchChunk.set(historicalDocRef, {
+                            ...newsData,
+                            migratedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            originalId: id || newsItem.id || null
+                        });
+
+                        const newsDocRef = newsCollectionRef.doc(newsItem.id);
+                        batchChunk.delete(newsDocRef);
                     });
 
-                    const newsDocRef = newsCollectionRef.doc(newsItem.id);
-                    batch.delete(newsDocRef);
-                });
-                
-                await batch.commit();
-                
-                showAlert(`Se migraron ${newsToMigrate.length} noticias al histórico.`, "success");
+                    // Intento con reintentos simples y backoff
+                    let committed = false;
+                    let attempt = 0;
+                    const maxAttempts = 3;
+                    while (!committed && attempt < maxAttempts) {
+                        try {
+                            await batchChunk.commit();
+                            committed = true;
+                            migratedCount += chunk.length;
+                            console.log(`Forward migration: committed chunk ${ci + 1}/${chunks.length} (${chunk.length} docs).`);
+                        } catch (err) {
+                            attempt++;
+                            const backoff = 300 * Math.pow(2, attempt);
+                            console.warn(`Forward migration: commit failed (attempt ${attempt}) — retrying in ${backoff}ms`, err);
+                            await sleep(backoff);
+                        }
+                    }
+                    if (!committed) {
+                        throw new Error(`Forward migration: fallo persistente al commitear chunk ${ci + 1}`);
+                    }
+
+                    // Pequeña pausa entre chunks para evitar throttling
+                    await sleep(200);
+                }
+
+                showAlert(`Se migraron ${migratedCount} noticias al histórico.`, "success");
             } catch (error) {
                 console.error("Error al migrar noticias:", error);
                 showAlert(`Error al migrar: ${error.message}`, "error");
@@ -4775,23 +4847,63 @@
 
                 showLoader(true);
 
-                const batch = db.batch();
                 // Obtener los datos filtrados actualmente en la tabla para solo migrar lo visible
                 const currentlyVisibleNews = applyAllFilters(historicalNews, 'historical');
                 const newsToMigrate = currentlyVisibleNews.filter(item => selectedHistoricalNewsIdsToMigrate.has(item.id));
 
-                newsToMigrate.forEach(newsItem => {
-                    const newNewsDocRef = newsCollectionRef.doc();
-                    const { id, migratedAt, originalId, ...newsData } = newsItem;
-                    
-                    batch.set(newNewsDocRef, { ...newsData, createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                if (newsToMigrate.length === 0) {
+                    showAlert("No hay noticias visibles seleccionadas para migrar.", "warning");
+                    return;
+                }
 
-                    const historicalDocRef = historicalNewsCollectionRef.doc(newsItem.id);
-                    batch.delete(historicalDocRef);
-                });
+                const CHUNK_SIZE = 450;
+                const chunks = chunkArray(newsToMigrate, CHUNK_SIZE);
+                let migratedCount = 0;
 
-                await batch.commit();
-                showAlert(`Se migraron ${newsToMigrate.length} noticias al registro principal.`, "success");
+                for (let ci = 0; ci < chunks.length; ci++) {
+                    const chunk = chunks[ci];
+                    const batchChunk = db.batch();
+
+                    chunk.forEach(newsItem => {
+                        const newNewsDocRef = newsCollectionRef.doc();
+                        // resolver datos seguros (no usar destructuring inválido)
+                        const newsData = resolveNewsDataFromItem(newsItem);
+                        batchChunk.set(newNewsDocRef, {
+                            ...newsData,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            restoredFromHistoricalId: newsItem.id || null
+                        });
+
+                        const historicalDocRef = historicalNewsCollectionRef.doc(newsItem.id);
+                        batchChunk.delete(historicalDocRef);
+                    });
+
+                    // commit con reintentos simples y backoff
+                    let committed = false;
+                    let attempt = 0;
+                    const maxAttempts = 3;
+                    while (!committed && attempt < maxAttempts) {
+                        try {
+                            await batchChunk.commit();
+                            committed = true;
+                            migratedCount += chunk.length;
+                            console.log(`Reverse migration: committed chunk ${ci + 1}/${chunks.length} (${chunk.length} docs).`);
+                        } catch (err) {
+                            attempt++;
+                            const backoff = 300 * Math.pow(2, attempt);
+                            console.warn(`Reverse migration: commit failed (attempt ${attempt}) — retrying in ${backoff}ms`, err);
+                            await sleep(backoff);
+                        }
+                    }
+                    if (!committed) {
+                        throw new Error(`Reverse migration: fallo persistente al commitear chunk ${ci + 1}`);
+                    }
+
+                    await sleep(200);
+                }
+
+                showAlert(`Se migraron ${migratedCount} noticias al registro principal.`, "success");
             } catch (error) {
                 console.error("Error en la migración inversa:", error);
                 showAlert(`Error en la migración inversa: ${error.message}`, "error");
