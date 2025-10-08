@@ -4566,27 +4566,35 @@
 
                             if (processedData.length === 0) return showAlert("El archivo Excel está vacío o no es válido.", "warning");
                             
-                            let replace = false;
+                            let proceedWithImport = false;
+
                             if (historicalLicitaciones.length > 0) {
                                 openModal(replaceHistoricalModal);
-                                await new Promise(resolve => {
+                                const userConfirmed = await new Promise(resolve => {
                                     confirmReplaceBtn.onclick = () => {
-                                        replace = true;
                                         closeModal(replaceHistoricalModal);
-                                        resolve();
+                                        resolve(true);
                                     };
                                     cancelReplaceBtn.onclick = () => {
-                                        replace = false;
                                         closeModal(replaceHistoricalModal);
-                                        resolve();
+                                        resolve(false);
                                     };
                                 });
-                                if (replace) {
+
+                                if (userConfirmed) {
                                     await deleteAllHistorical();
+                                    proceedWithImport = true;
                                 }
+                            } else {
+                                proceedWithImport = true; // No hay datos, así que se puede importar directamente.
                             }
-                            await importHistoricalData(processedData);
+
+                            if (proceedWithImport) {
+                                await importHistoricalData(processedData);
+                            }
+
                             historicalFileInput.value = '';
+                            
                         } catch (error) {
                             console.error("Error al procesar el archivo:", error);
                             showAlert("Error al procesar el archivo. Asegúrese de que es un Excel válido.", "error");
