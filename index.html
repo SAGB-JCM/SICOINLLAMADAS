@@ -4232,7 +4232,12 @@
             setupAddEditButtons();
             // Listener para el nuevo botón de limpiar filtros
             document.getElementById('clear-all-filters-btn').addEventListener('click', () => clearAllFilters('historical'));
-
+            
+            // Listener para el botón de cerrar el modal de carga de plantillas
+            if (closeTemplateUploadModalBtn) {
+                closeTemplateUploadModalBtn.addEventListener('click', () => closeModal(templateUploadModal));
+            }
+            
             // Listener para el botón de carga de plantilla (ahora dentro del modal de configuración)
             if (openTemplateUploaderBtn) {
                 openTemplateUploaderBtn.addEventListener('click', () => {
