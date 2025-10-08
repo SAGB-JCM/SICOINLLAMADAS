@@ -3413,10 +3413,7 @@
         }
 
         function requirePassword(action, isAsync = false) {
-            pendingAction = action;
-            //openModal(passwordModal); // Se corregirá a openModalWithFocus más adelante
-            //openModalWithFocus(passwordModal, passwordInput);
-    
+            pendingAction = action;    
             openModalWithFocus(passwordModal, passwordInput); // Llamada única para abrir el modal y enfocar
             
             if (isAsync) {
