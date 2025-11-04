@@ -126,16 +126,6 @@
             transform: translateY(-2px);
         }
 
-        /* Estilo para los botones de filtro de tipo de tren */
-        .train-filter-btn {
-            transition: all 0.2s ease-in-out;
-        }
-        .train-filter-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 600;
-        }
-
         /* Estilo especial para resaltar la tarjeta de la semana actual en el dashboard. */
         .indicator-card.current-week-highlight {
             border-bottom: 3px solid var(--primary-color);
@@ -266,14 +256,8 @@
             font-size: 0.875rem;
             font-weight: 500;
             color: #374151;
-            text-align: center; /* Centrar el texto de las etiquetas */
         }
-
-        /* Nueva clase para alinear etiquetas específicas a la izquierda */
-        .label-left-align {
-            text-align: left !important;
-        }
-
+        
         /* Campo de formulario que ocupa todo el ancho del grid. */
         .form-field.full-width {
             grid-column: 1 / -1;
@@ -342,13 +326,6 @@
         .flex-with-buttons input,
         .flex-with-buttons textarea {
             min-width: 0; /* Permite que el campo se encoja. */
-        }
-
-        /* Mejora de visibilidad para todos los campos de entrada en los modales */
-        .licitacion-form-container input,
-        .licitacion-form-container textarea {
-            border-color: #bcbab8 !important; /* Usamos !important para asegurar que sobreescriba las clases de Tailwind */
-            border-width: 1px;
         }
 
         /* Estilos base para los botones de acción (ej. editar) junto a los campos. */
@@ -480,12 +457,6 @@
             text-align: left;
         }
         
-        /* Asegura que las celdas de monto en las tablas de reportes estén alineadas a la derecha. */
-        .dynamic-table td.text-right {
-            text-align: right !important;
-            padding-right: 1rem; /* Añade un poco de espacio para que no se pegue al borde. */
-        }
-
         .dynamic-table th {
             background-color: var(--primary-color);
             color: white;
@@ -627,21 +598,6 @@
         .multi-details-item:last-child {
             margin-bottom: 0;
         }
-
-        /* --- INICIO: Estilos para tarjetas de resumen desplegables --- */
-        .summary-card-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease-in-out, margin-top 0.5s ease-in-out;
-            margin-top: 0;
-        }
-
-        .summary-card-content.expanded {
-            max-height: 500px; /* Altura suficiente para el contenido */
-            margin-top: 1rem; /* Espacio cuando está expandido */
-        }
-        /* --- FIN: Estilos para tarjetas de resumen desplegables --- */
-
 
         /* ============================================= */
         /* === 7. COMPONENTES ESPECÍFICOS === */
@@ -840,9 +796,6 @@
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                         <button data-tab="historico" class="tab-btn active whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Licitaciones</button>
                         <button data-tab="reportes" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Reportes</button>
-                        <button data-tab="costos" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                            Costos
-                        </button>
                     </nav>
                 </div>
             </div>
@@ -883,7 +836,6 @@
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombreLicitantes">Licitantes<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="ganadorLicitacion">Ganador<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="monto">Monto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="costoPorKm">Costo por KM<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6">Link</th>
                                     <th scope="col" class="py-3 px-6">Acciones</th>
                                 </tr>
@@ -942,21 +894,11 @@
 
                 <!-- SECCIÓN TABLA DE LICITACIONES: Contiene los controles de la tabla y la tabla principal de datos. -->
                 <section id="historical-log-section">
-                    <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-                        <div class="flex flex-wrap items-center gap-4">
-                            <h2 class="text-xl font-bold text-primary">Licitaciones Registradas</h2>
-                            <!-- INICIO: Marcadores de filtro de tipo de tren -->
-                            <div id="train-type-filter-container" class="flex items-center space-x-2 bg-slate-200 p-1 rounded-lg">
-                                <button data-filter="todos" class="train-filter-btn active text-xs font-medium py-1 px-3 rounded-md">Todos</button>
-                                <button data-filter="trenes-del-norte" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Trenes del Norte</button>
-                                <button data-filter="tren-maya" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Tren Maya</button>
-                                <button data-filter="trolebus" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Trolebús</button>
-                                <button data-filter="trenes" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Otros Trenes</button>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <div id="filtered-total-amount-container" class="text-sm font-medium text-slate-500 flex items-center gap-x-2"></div>
-                            <div class="flex items-center gap-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-primary">Licitaciones Registradas</h2>
+                        <div class="flex items-center space-x-2">
+                            <div id="filtered-total-amount-container" class="text-sm font-medium text-slate-500 mr-4 flex items-center gap-x-2"></div>
+                            <div class="flex items-center space-x-2">
                                 <button id="view-all-details-btn" class="text-slate-500 hover:text-primary p-2 rounded-lg" title="Ver detalles de todos los resultados visibles">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
@@ -984,10 +926,8 @@
                         <table class="w-full text-sm text-left text-slate-500">
                             <thead class="text-xs text-slate-700 uppercase bg-slate-100">
                                 <tr id="historical-table-header">
-                                    <th scope="col" class="py-3 px-6">No.</th>                                    
-                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="tipoTren">Tipo de Tren<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6">No.</th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="proyecto">Proyecto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="tramo">Tramo<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombre">Nombre<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="descripcion">Descripción<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="generalidades">Generalidades<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
@@ -1003,8 +943,6 @@
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombreLicitantes">Licitantes<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="ganadorLicitacion">Ganador<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="monto">Monto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="kmAdjudicados">KM Adjudicados<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="costoPorKm">Costo por KM<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6">Link</th>
                                     <th scope="col" class="py-3 px-6 actions-header">Acciones</th>
                                 </tr>
@@ -1096,6 +1034,9 @@
                                 <i class="fa-solid fa-eye"></i>
                             </button>
                         </div>
+                        <div class="chart-wrapper" style="height: 400px;">
+                            <canvas id="projectProcedureChart"></canvas>
+                        </div>
                         <div class="dynamic-table-container mt-4">
                             <div class="flex justify-between items-center mb-2">
                                 <h4 class="text-lg font-semibold text-slate-800 text-center flex-grow">Montos Detallados por Procedimiento (mdp)</h4>
@@ -1115,41 +1056,6 @@
                                 <tfoot></tfoot>
                             </table>
                         </div>
-                        <div class="chart-wrapper mt-6" style="height: 400px;">
-                            <canvas id="projectProcedureChart"></canvas>
-                        </div>
-                    </div>
-                </section>
-            </div>
-            <!-- ================================================================= -->
-            <!-- ================ PESTAÑA 3: COSTOS ============================== -->
-            <!-- ================================================================= -->
-            <div id="tab-content-costos" class="tab-content hidden">
-                <section class="bg-white p-8 rounded-xl shadow-md">
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                        <h2 class="text-2xl font-bold text-primary">Análisis de Costos por KM</h2>
-                        <div class="flex items-center gap-4 w-full md:w-auto">
-                            <select id="costos-proyecto-selector" class="w-full md:w-80 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                                <option value="">-- Seleccione un Proyecto --</option>
-                            </select>
-                            <select id="costos-tramo-selector" class="w-full md:w-80 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" disabled>
-                                <option value="">-- Seleccione un Tramo --</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Contenedor del Dashboard de Costos -->
-                    <div id="costos-dashboard-container" class="hidden space-y-8">
-                        <div id="costos-cards-grid" class="grid grid-cols-1 gap-8">
-                            <!-- Las tarjetas de costos se generarán aquí dinámicamente -->
-                        </div>
-                    </div>
-
-                    <!-- Mensaje inicial -->
-                    <div id="no-costos-selected" class="text-center py-12">
-                        <i class="fa-solid fa-hand-pointer text-6xl text-gray-300 mb-4"></i>
-                        <p class="text-gray-500 text-lg">Seleccione un proyecto y un tramo para visualizar los costos</p>
-                        <p class="text-gray-400 mt-2">Las tablas de costos por kilómetro aparecerán aquí.</p>
                     </div>
                 </section>
             </div>
@@ -1173,7 +1079,7 @@
                     <div class="section-title">Identificación del Proyecto</div>
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
                         <div class="form-field">
-                            <label for="licitacion-proyecto" class="label-left-align">Proyecto</label>
+                            <label for="licitacion-proyecto">Proyecto</label>
                             <div class="flex-with-buttons">
                                 <select id="licitacion-proyecto" name="proyecto" required></select>
                                 <button type="button" id="edit-proyecto-btn" class="edit-btn">
@@ -1182,25 +1088,7 @@
                             </div>
                         </div>
                         <div class="form-field">
-                            <label for="licitacion-tramo" class="label-left-align">Tramo</label>
-                            <div class="flex-with-buttons">
-                                <select id="licitacion-tramo" name="tramo"></select>
-                                <button type="button" id="edit-tramo-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="licitacion-tipoTren" class="label-left-align">Tipo de Tren</label>
-                            <div class="flex-with-buttons">
-                                <select id="licitacion-tipoTren" name="tipoTren"></select>
-                                <button type="button" id="edit-tipoTren-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="licitacion-nombre" class="label-left-align">Nombre</label>
+                            <label for="licitacion-nombre">Nombre</label>
                             <div class="flex-with-buttons">
                                 <select id="licitacion-nombre" name="nombre"></select>
                                 <button type="button" id="edit-nombre-btn" class="edit-btn">
@@ -1208,26 +1096,17 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="form-field">
-                            <label for="licitacion-siglasDependencia" class="label-left-align">Siglas Dependencia</label>
-                            <div class="flex-with-buttons">
-                                <select id="licitacion-siglasDependencia" name="siglasDependencia"></select>
-                                <button type="button" id="edit-siglasDependencia-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
                         <div class="form-field full-width">
                             <label for="licitacion-descripcion">Descripción</label>
                             <div class="flex-with-buttons">
-                                <textarea id="licitacion-descripcion" name="descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <textarea id="licitacion-descripcion" name="descripcion" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
                                 <button type="button" id="edit-descripcion-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
                         <div class="form-field full-width">
                             <label for="licitacion-generalidades">Generalidades Del Proyecto</label>
                             <div class="flex-with-buttons">
-                                <textarea id="licitacion-generalidades" name="generalidades" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <textarea id="licitacion-generalidades" name="generalidades" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
                                 <button type="button" id="edit-generalidades-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
@@ -1237,19 +1116,10 @@
                     <div class="section-title">Detalles Administrativos de la Licitación</div>
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
                         <div class="form-field">
-                            <label for="licitacion-tipo" class="label-left-align">Tipo</label>
+                            <label for="licitacion-siglasDependencia">Siglas Dependencia</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-tipo" name="tipo"></select>
-                                <button type="button" id="edit-tipo-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="licitacion-procedimientoContratacion" class="label-left-align">Procedimiento de Contratación</label>
-                            <div class="flex-with-buttons">
-                                <select id="licitacion-procedimientoContratacion" name="procedimientoContratacion"></select>
-                                <button type="button" id="edit-procedimientoContratacion-btn" class="edit-btn">
+                                <select id="licitacion-siglasDependencia" name="siglasDependencia"></select>
+                                <button type="button" id="edit-siglasDependencia-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
@@ -1259,15 +1129,34 @@
                             <input type="text" id="licitacion-codigoExpediente" name="codigoExpediente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                         <div class="form-field">
-                            <label for="licitacion-anoPublicacion">Año De Publicación</label>
-                            <!-- REFACTOR: Cambiado de select a input con datalist -->
-                            <input type="number" id="licitacion-anoPublicacion" name="anoPublicacion" list="anos-datalist" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                            <label for="licitacion-procedimientoContratacion">Procedimiento de Contratación</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-procedimientoContratacion" name="procedimientoContratacion"></select>
+                                <button type="button" id="edit-procedimientoContratacion-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-tipo">Tipo</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-tipo" name="tipo"></select>
+                                <button type="button" id="edit-tipo-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Grupo 3: Cronología del Proceso -->
                     <div class="section-title">Cronología del Proceso</div>
-                    <div class="form-grid grid-cols-1 sm:grid-cols-3">
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field">
+                            <label for="licitacion-anoPublicacion">Año De Publicación</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-anoPublicacion" name="anoPublicacion"></select>
+                            </div>
+                        </div>
                         <div class="form-field">
                             <label for="licitacion-fechaPresentacionApertura">Fecha De Presentación Y Apertura De Proposiciones</label>
                             <input type="date" id="licitacion-fechaPresentacionApertura" name="fechaPresentacionApertura" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
@@ -1287,23 +1176,34 @@
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
                         <div class="form-field">
                             <label for="licitacion-registradosInteres">Registrados o Manifestaron interés por participar</label>
-                            <textarea id="licitacion-registradosInteres" name="registradosInteres" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-registradosInteres" name="registradosInteres"></select>
+                                <button type="button" id="edit-registradosInteres-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="form-field">
                             <label for="licitacion-nombreLicitantes">Nombre del o de los licitantes o cotizantes</label>
-                            <textarea id="licitacion-nombreLicitantes" name="nombreLicitantes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
-                        </div>
-                        <div class="form-field full-width">
-                            <label for="licitacion-ganadorLicitacion">Ganador De La Licitación</label>
-                            <textarea id="licitacion-ganadorLicitacion" name="ganadorLicitacion" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
-                        </div>
-                        <!-- Contenedor para alinear los 3 campos de monto/km -->
-                        <div class="form-field full-width">
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div class="form-field"><label for="licitacion-monto">Monto</label><input type="number" id="licitacion-monto" name="monto" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></div>
-                                <div class="form-field"><label for="licitacion-kmAdjudicados">KM Adjudicados</label><input type="number" id="licitacion-kmAdjudicados" name="kmAdjudicados" step="any" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></div>
-                                <div class="form-field"><label for="licitacion-costoPorKm">Costo por KM</label><input type="number" id="licitacion-costoPorKm" name="costoPorKm" step="any" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></div>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-nombreLicitantes" name="nombreLicitantes"></select>
+                                <button type="button" id="edit-nombreLicitantes-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
                             </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-ganadorLicitacion">Ganador De La Licitación</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-ganadorLicitacion" name="ganadorLicitacion"></select>
+                                <button type="button" id="edit-ganadorLicitacion-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-monto">Monto</label>
+                            <input type="number" id="licitacion-monto" name="monto" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                     </div>
 
@@ -1347,7 +1247,7 @@
                     <div class="section-title">Identificación del Proyecto</div>
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
                         <div class="form-field">
-                            <label for="edit-licitacion-proyecto" class="label-left-align">Proyecto</label>
+                            <label for="edit-licitacion-proyecto">Proyecto</label>
                             <div class="flex-with-buttons">
                                 <select id="edit-licitacion-proyecto" name="proyecto" required></select>
                                 <button type="button" id="edit-proyecto-edit-btn" class="edit-btn">
@@ -1356,25 +1256,7 @@
                             </div>
                         </div>
                         <div class="form-field">
-                            <label for="edit-licitacion-tramo" class="label-left-align">Tramo</label>
-                            <div class="flex-with-buttons">
-                                <select id="edit-licitacion-tramo" name="tramo"></select>
-                                <button type="button" id="edit-tramo-edit-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="edit-licitacion-tipoTren">Tipo de Tren</label>
-                            <div class="flex-with-buttons">
-                                <select id="edit-licitacion-tipoTren" name="tipoTren"></select>
-                                <button type="button" id="edit-tipoTren-edit-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="edit-licitacion-nombre" class="label-left-align">Nombre</label>
+                            <label for="edit-licitacion-nombre">Nombre</label>
                             <div class="flex-with-buttons">
                                 <select id="edit-licitacion-nombre" name="nombre"></select>
                                 <button type="button" id="edit-nombre-edit-btn" class="edit-btn">
@@ -1382,26 +1264,17 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="form-field">
-                            <label for="edit-licitacion-siglasDependencia" class="label-left-align">Siglas Dependencia</label>
-                            <div class="flex-with-buttons">
-                                <select id="edit-licitacion-siglasDependencia" name="siglasDependencia"></select>
-                                <button type="button" id="edit-siglasDependencia-edit-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
                         <div class="form-field full-width">
                             <label for="edit-licitacion-descripcion">Descripción</label>
                             <div class="flex-with-buttons">
-                                <textarea id="edit-licitacion-descripcion" name="descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <textarea id="edit-licitacion-descripcion" name="descripcion" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
                                 <button type="button" id="edit-descripcion-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
                         <div class="form-field full-width">
                             <label for="edit-licitacion-generalidades">Generalidades Del Proyecto</label>
                             <div class="flex-with-buttons">
-                                <textarea id="edit-licitacion-generalidades" name="generalidades" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <textarea id="edit-licitacion-generalidades" name="generalidades" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
                                 <button type="button" id="edit-generalidades-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
@@ -1411,19 +1284,10 @@
                     <div class="section-title">Detalles Administrativos de la Licitación</div>
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
                         <div class="form-field">
-                            <label for="edit-licitacion-tipo" class="label-left-align">Tipo</label>
+                            <label for="edit-licitacion-siglasDependencia">Siglas Dependencia</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-tipo" name="tipo"></select>
-                                <button type="button" id="edit-tipo-edit-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="edit-licitacion-procedimientoContratacion" class="label-left-align">Procedimiento de Contratación</label>
-                            <div class="flex-with-buttons">
-                                <select id="edit-licitacion-procedimientoContratacion" name="procedimientoContratacion"></select>
-                                <button type="button" id="edit-procedimientoContratacion-edit-btn" class="edit-btn">
+                                <select id="edit-licitacion-siglasDependencia" name="siglasDependencia"></select>
+                                <button type="button" id="edit-siglasDependencia-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
@@ -1433,15 +1297,34 @@
                             <input type="text" id="edit-licitacion-codigoExpediente" name="codigoExpediente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                         <div class="form-field">
-                            <label for="edit-licitacion-anoPublicacion">Año De Publicación</label>
-                            <!-- REFACTOR: Cambiado de select a input con datalist -->
-                            <input type="number" id="edit-licitacion-anoPublicacion" name="anoPublicacion" list="anos-datalist" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                            <label for="edit-licitacion-procedimientoContratacion">Procedimiento de Contratación</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-procedimientoContratacion" name="procedimientoContratacion"></select>
+                                <button type="button" id="edit-procedimientoContratacion-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-tipo">Tipo</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-tipo" name="tipo"></select>
+                                <button type="button" id="edit-tipo-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Grupo 3: Cronología del Proceso -->
                     <div class="section-title">Cronología del Proceso</div>
-                    <div class="form-grid grid-cols-1 sm:grid-cols-3">
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field">
+                            <label for="edit-licitacion-anoPublicacion">Año De Publicación</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-anoPublicacion" name="anoPublicacion"></select>
+                            </div>
+                        </div>
                         <div class="form-field">
                             <label for="edit-licitacion-fechaPresentacionApertura">Fecha De Presentación Y Apertura De Proposiciones</label>
                             <input type="date" id="edit-licitacion-fechaPresentacionApertura" name="fechaPresentacionApertura" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
@@ -1461,23 +1344,34 @@
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
                         <div class="form-field">
                             <label for="edit-licitacion-registradosInteres">Registrados o Manifestaron interés por participar</label>
-                            <textarea id="edit-licitacion-registradosInteres" name="registradosInteres" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-registradosInteres" name="registradosInteres"></select>
+                                <button type="button" id="edit-registradosInteres-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="form-field">
                             <label for="edit-licitacion-nombreLicitantes">Nombre del o de los licitantes o cotizantes</label>
-                            <textarea id="edit-licitacion-nombreLicitantes" name="nombreLicitantes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
-                        </div>
-                        <div class="form-field full-width">
-                            <label for="edit-licitacion-ganadorLicitacion">Ganador De La Licitación</label>
-                            <textarea id="edit-licitacion-ganadorLicitacion" name="ganadorLicitacion" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
-                        </div>
-                        <!-- Contenedor para alinear los 3 campos de monto/km -->
-                        <div class="form-field full-width">
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div class="form-field"><label for="edit-licitacion-monto">Monto</label><input type="number" id="edit-licitacion-monto" name="monto" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></div>
-                                <div class="form-field"><label for="edit-licitacion-kmAdjudicados">KM Adjudicados</label><input type="number" id="edit-licitacion-kmAdjudicados" name="kmAdjudicados" step="any" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></div>
-                                <div class="form-field"><label for="edit-licitacion-costoPorKm">Costo por KM</label><input type="number" id="edit-licitacion-costoPorKm" name="costoPorKm" step="any" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></div>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-nombreLicitantes" name="nombreLicitantes"></select>
+                                <button type="button" id="edit-nombreLicitantes-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
                             </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-ganadorLicitacion">Ganador De La Licitación</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-ganadorLicitacion" name="ganadorLicitacion"></select>
+                                <button type="button" id="edit-ganadorLicitacion-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-monto">Monto</label>
+                            <input type="number" id="edit-licitacion-monto" name="monto" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                     </div>
 
@@ -1695,24 +1589,6 @@
         </div>
     </div>
 
-    <!-- DATALIST GLOBAL: Contiene las opciones para el campo de año de publicación. -->
-    <datalist id="anos-datalist">
-        <option value="2017"></option>
-        <option value="2018"></option>
-        <option value="2019"></option>
-        <option value="2020"></option>
-        <option value="2021"></option>
-        <option value="2022"></option>
-        <option value="2023"></option>
-        <option value="2024"></option>
-        <option value="2025"></option>
-        <option value="2026"></option>
-        <option value="2027"></option>
-        <option value="2028"></option>
-        <option value="2029"></option>
-        <option value="2030"></option>
-    </div>
-
     <!-- ================================================================= -->
     <!-- ================ 4. SCRIPT PRINCIPAL DE LA APP ================== -->
     <!-- ================================================================= -->
@@ -1825,20 +1701,9 @@
         // --- FIN: Variables para la nueva funcionalidad ---
 
         let currentEditIsHistorical = false;
-            // --- INICIO: Variables para la nueva pestaña de Costos ---
-            let costosProyectoSelector, costosTramoSelector, costosDashboardContainer, noCostosSelected, costosCardsGrid;
-            const tiposDeLicitacionParaCostos = {
-                "1.1 Obra": "Licitaciones de Construcción - Costo por Km",
-                "1.2 Supervisión": "Licitaciones de Supervisión - Costo por Km",
-                "1.3 Adquisición": "Licitaciones de Adquisición - Costo por Km",
-                "1.4 Servicios Relacionados con la Obra": "Licitaciones de Servicios Relacionados - Costo por Km",
-                "1.5 Servicio de Testigo Social": "Licitaciones de Testigo Social - Costo por Km"
-            };
         let quickViewTooltip;
         let fieldOptions = {
             proyectos: [],
-            tramos: [], // Añadido para el nuevo campo
-            tiposTren: [],
             nombres: [],
             siglasDependencias: [],
             procedimientosContratacion: [],
@@ -1868,7 +1733,6 @@
         let showProjectChartLegend = true; // Variable de estado para la leyenda de la segunda gráfica
         let isProjectChartStacked = true; // Variable de estado para el tipo de la segunda gráfica
         let activeFalloDashboardFilter = null; // Para el filtro del radar de fallo
-        let activeTrainTypeFilter = 'todos'; // 'todos', 'trenes', 'trenes-del-norte'
 
         // --- INICIO: Variables para el ordenamiento dinámico de tablas de reportes ---
         let dynamicChartSortBy = 'amount'; // 'count' o 'amount'
@@ -2214,9 +2078,8 @@
                 row.dataset.id = licitacionItem.id;
 
                 row.dataset.quickview = 'true';
-                
+
                 row.dataset.nombre = licitacionItem.nombre || 'N/A';
-                row.dataset.tramo = licitacionItem.tramo || 'N/A'; // Añadido para el tooltip
                 row.dataset.proyecto = licitacionItem.proyecto || 'N/A';
                 row.dataset.dependencia = licitacionItem.siglasDependencia || 'N/A';
                 row.dataset.expediente = licitacionItem.codigoExpediente || 'N/A';
@@ -2226,8 +2089,6 @@
                 row.dataset.tipo = licitacionItem.tipo || 'N/A';
                 row.dataset.ganador = licitacionItem.ganadorLicitacion || 'N/A';
                 row.dataset.monto = licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A';
-                row.dataset.kmAdjudicados = licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A';
-                row.dataset.costoPorKm = licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
                 
                 const linkCell = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM)
                     ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline" title="${licitacionItem.linkComprasXM}"><i class="fa-solid fa-link"></i></a>`
@@ -2237,9 +2098,7 @@
 
                 row.innerHTML = `
                     <td class="py-4 px-6">${applyHighlight(index + 1)}</td>
-                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.tipoTren, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.proyecto, 30))}</td>
-                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.tramo, 30))}</td>
                     <td class="py-4 px-6 clickable-cell">${applyHighlight(truncateText(licitacionItem.nombre, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.descripcion, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.generalidades, 30))}</td>
@@ -2255,8 +2114,6 @@
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.nombreLicitantes, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.ganadorLicitacion, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A')}</td>
-                    <td class="py-4 px-6">${applyHighlight(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A')}</td>
-                    <td class="py-4 px-6">${applyHighlight(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A')}</td>
                     <td class="py-4 px-6 text-center">${linkCell}</td>
                     ${isLoggedIn ? `
                         <td class="py-4 px-6 flex space-x-2 actions-cell">
@@ -2294,24 +2151,6 @@
             const columnFilters = activeFilters[filterKey];
 
             return data.filter(item => {
-                // -1. Check train type filter (only for historical table)
-                if (filterKey === 'historical' && activeTrainTypeFilter !== 'todos') {
-                    const tipoTren = (item.tipoTren || '').toLowerCase().trim();
-                    if (activeTrainTypeFilter === 'trenes') {
-                        if (tipoTren !== 'trenes') return false;
-                    } else if (activeTrainTypeFilter === 'trenes-del-norte') { // Añadir la nueva condición
-                        if (tipoTren !== 'trenes del norte') return false;
-                    } else if (activeTrainTypeFilter === 'tren-maya') { // CORRECCIÓN: Comparar con 'tren maya'
-                        if (tipoTren !== 'tren maya') return false;
-                    } else if (activeTrainTypeFilter === 'trolebus') {
-                        if (tipoTren !== 'trolebús') return false;
-                    }
-                    // Si se añade otro filtro, se puede extender aquí.
-                }
-
-
-
-
                 // 1. Check search box filter
                 const matchesSearch = searchText === '' || Object.values(item).some(value => 
                     String(value).toLowerCase().includes(searchText)
@@ -2332,31 +2171,9 @@
                 // 2. Check column filters
                 for (const col in columnFilters) {
                     if (columnFilters[col].length > 0) {
-                        let itemValue = item[col] || 'N/A';
-
-                        if (col === 'fechaPresentacionApertura' || col === 'fechaFallo') {
-                            itemValue = formatDate(itemValue);
-                        } else if (col === 'monto' && typeof itemValue === 'number') {
-                            itemValue = '$' + itemValue.toLocaleString('es-MX');
-                        } else if (col === 'kmAdjudicados' && typeof itemValue === 'number') {
-                            itemValue = itemValue.toLocaleString('es-MX');
-                        } else if (col === 'costoPorKm' && typeof itemValue === 'number') {
-                            itemValue = '$' + itemValue.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                        } else {
-                            // Solución: Normalizar el valor de la base de datos reemplazando saltos de línea por espacios.
-                            itemValue = String(itemValue).replace(/\n/g, ' ').trim();
-                        }
-                        
-                        // Solución: Normalizar también los valores del filtro de la misma manera.
-                        const normalizedFilterValues = columnFilters[col].map(v => String(v).replace(/\n/g, ' ').trim());
-
-                        if (col === 'tramo' && columnFilters[col].includes('N/A')) {
-                            if (!columnFilters[col].includes(itemValueForFilter) && itemValueForFilter !== 'N/A' && item[col]) {
-                                return false; // No coincide y no es un valor vacío/nulo
-                            }
-                        } else {
-                            // Lógica de filtro estándar para todas las demás columnas.
-                            if (!normalizedFilterValues.includes(itemValue)) return false;
+                        const itemValue = col === 'fechaPresentacionApertura' || col === 'fechaFallo' ? formatDate(item[col]) : (item[col] || 'N/A');
+                        if (!columnFilters[col].includes(itemValue)) {
+                            return false;
                         }
                     }
                 }
@@ -2379,24 +2196,6 @@
             const columnFilters = activeFilters[filterKey];
 
             return allData.filter(item => { // Usamos allData que es el set completo
-                // --- INICIO DE LA SOLUCIÓN MEJORADA ---
-                // Aplicar el filtro de tipo de tren primero para que las opciones del dropdown sean correctas,
-                // sin importar el tipo de dato de la columna.
-                const tipoTren = (item.tipoTren || '').toLowerCase().trim();
-                if (activeTrainTypeFilter === 'trenes' && tipoTren !== 'trenes') {
-                    return false;
-                }
-                if (activeTrainTypeFilter === 'trenes-del-norte' && tipoTren !== 'trenes del norte') {
-                    return false;
-                }
-                if (activeTrainTypeFilter === 'tren-maya' && tipoTren !== 'tren maya') {
-                    return false;
-                }
-                if (activeTrainTypeFilter === 'trolebus' && tipoTren !== 'trolebús') {
-                    return false;
-                }
-                // --- FIN DE LA SOLUCIÓN MEJORADA ---
-
                 // Primero, aplicar el filtro del dashboard si está activo
                 if (filterKey === 'historical' && activeFalloDashboardFilter) {
                     const falloDate = new Date(item.fechaFallo + 'T00:00:00');
@@ -2412,16 +2211,7 @@
 
                 return Object.entries(columnFilters).every(([col, values]) => {
                     if (col === excludeColumn || values.length === 0) return true;
-                    let itemValue = item[col];
-                    if (col === 'fechaPresentacionApertura' || col === 'fechaFallo') {
-                        itemValue = formatDate(item[col]);
-                    } else if (col === 'monto' && typeof itemValue === 'number') {
-                        itemValue = '$' + itemValue.toLocaleString('es-MX');
-                    } else if (col === 'kmAdjudicados' && typeof itemValue === 'number') {
-                        itemValue = itemValue.toLocaleString('es-MX');
-                    } else if (col === 'costoPorKm' && typeof itemValue === 'number') {
-                        itemValue = '$' + item[col].toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                    }
+                    const itemValue = col === 'fechaPresentacionApertura' || col === 'fechaFallo' ? formatDate(item[col]) : (item[col] || 'N/A');
                     return values.includes(itemValue);
                 });
             });
@@ -2452,38 +2242,24 @@
 
                 const uniqueValues = [...new Set(preFilteredData.map(item => {
                     let value = item[filterBy] || 'N/A';
-                    // --- INICIO DE LA SOLUCIÓN ---
-                    // Normalización para todos los tipos de datos para evitar duplicados como "2025" y " 2025".
-                    // 1. Manejar las fechas como un caso especial.
-                    if (filterBy === 'fechaPresentacionApertura' || filterBy === 'fechaFallo') {
-                        return formatDate(value);
-                    } else if (filterBy === 'monto' && typeof value === 'number') {
-                        // Formatear el monto como moneda para el filtro
-                        return '$' + value.toLocaleString('es-MX');
-                    } else if (filterBy === 'kmAdjudicados' && typeof value === 'number') {
-                        // Formatear los KM como número localizado para el filtro
-                        return value.toLocaleString('es-MX');
-                    } else if (filterBy === 'costoPorKm' && typeof value === 'number') {
-                        // Formatear el costo por KM como moneda para el filtro
-                        return '$' + value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    // Normalización para campos de texto (proyecto, resumen, etc.)
+                    if (typeof value === 'string') {
+                        // Para la fecha, usamos el formato específico.
+                        if (filterBy === 'fechaPresentacionApertura' || filterBy === 'fechaFallo') return formatDate(value);
+                        // Para otros strings, normalizamos eliminando espacios al inicio y final.
+                        return value.trim();
                     }
-                    // 2. Para todos los demás valores (números o strings), convertirlos a string y aplicar trim.
-                    return String(value).trim();
-                    // --- FIN DE LA SOLUCIÓN ---
-                }))].sort((a, b) => { // Convertir a string antes de comparar
-                    const valA = String(a);
-                    const valB = String(b);
-
+                    return value;
+                }))].sort((a, b) => {
                     // Lógica de ordenamiento personalizada para fechas en el filtro
                     if (filterBy === 'fechaPresentacionApertura' || filterBy === 'fechaFallo') {
                         try {
-                            // Usar los valores originales (a, b) que son strings de fecha formateados
-                            const dateA = new Date(valA.split('/').reverse().join('-'));
-                            const dateB = new Date(valB.split('/').reverse().join('-'));
+                            const dateA = new Date(a.split('/').reverse().join('-'));
+                            const dateB = new Date(b.split('/').reverse().join('-'));
                             return dateA - dateB; // Orden ascendente
-                        } catch (err) { return valA.localeCompare(valB); }
+                        } catch (err) { return a.localeCompare(b); }
                     }
-                    return valA.localeCompare(valB, 'es', { numeric: true });
+                    return a.localeCompare(b, 'es', { numeric: true });
                 });
 
                 const dropdown = document.createElement('div');
@@ -2601,13 +2377,6 @@
             // 4. Limpiar el filtro del dashboard de fechas de fallo
             activeFalloDashboardFilter = null;
             document.querySelectorAll('#dashboard-historico .indicator-card.active-filter').forEach(card => card.classList.remove('active-filter'));
-
-            // 5. Limpiar el filtro de tipo de tren
-            activeTrainTypeFilter = 'todos';
-            document.querySelectorAll('#train-type-filter-container .train-filter-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.filter === 'todos');
-            });
-
 
             // 5. Re-renderizar la tabla con los datos completos y el orden por defecto
             sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
@@ -2783,27 +2552,18 @@
                 document.getElementById('edit-licitacion-codigoExpediente').value = licitacionToEdit.codigoExpediente || '';
                 document.getElementById('edit-licitacion-descripcion').value = licitacionToEdit.descripcion || '';
                 document.getElementById('edit-licitacion-generalidades').value = licitacionToEdit.generalidades || '';
-                document.getElementById('edit-licitacion-registradosInteres').value = licitacionToEdit.registradosInteres || '';
-                document.getElementById('edit-licitacion-nombreLicitantes').value = licitacionToEdit.nombreLicitantes || '';
-                document.getElementById('edit-licitacion-ganadorLicitacion').value = licitacionToEdit.ganadorLicitacion || '';
                 document.getElementById('edit-licitacion-monto').value = licitacionToEdit.monto || '';
-                document.getElementById('edit-licitacion-kmAdjudicados').value = licitacionToEdit.kmAdjudicados || ''; // Se mantiene como string para el input
-                document.getElementById('edit-licitacion-costoPorKm').value = licitacionToEdit.costoPorKm || ''; // Se mantiene como string para el input
 
                 // Set select values
                 $('#edit-licitacion-proyecto').val(licitacionToEdit.proyecto || '').trigger('change');
-                $('#edit-licitacion-tramo').val(licitacionToEdit.tramo || '').trigger('change');
                 $('#edit-licitacion-nombre').val(licitacionToEdit.nombre || '').trigger('change');
                 $('#edit-licitacion-siglasDependencia').val(licitacionToEdit.siglasDependencia || '').trigger('change');
-                
-                // --- INICIO: Cargar valor para el nuevo campo "Tipo de Tren" ---
-                // Asegurarse de que el valor exista como opción antes de seleccionarlo
-                const tipoTrenValue = licitacionToEdit.tipoTren || '';
-                $('#edit-licitacion-tipoTren').val(tipoTrenValue).trigger('change');
-                // --- FIN: Cargar valor ---
                 $('#edit-licitacion-procedimientoContratacion').val(licitacionToEdit.procedimientoContratacion || '').trigger('change');
                 $('#edit-licitacion-tipo').val(licitacionToEdit.tipo || '').trigger('change');
-                document.getElementById('edit-licitacion-anoPublicacion').value = licitacionToEdit.anoPublicacion || '';
+                $('#edit-licitacion-anoPublicacion').val(licitacionToEdit.anoPublicacion || '').trigger('change');
+                $('#edit-licitacion-registradosInteres').val(licitacionToEdit.registradosInteres || '').trigger('change');
+                $('#edit-licitacion-nombreLicitantes').val(licitacionToEdit.nombreLicitantes || '').trigger('change');
+                $('#edit-licitacion-ganadorLicitacion').val(licitacionToEdit.ganadorLicitacion || '').trigger('change');
 
                 openModal(editModal);
             });
@@ -2835,18 +2595,16 @@
         function showDetailsModal(licitacionItem, isHistorical = false) {
             if (!licitacionItem) return;
 
-            // Ocultar el tooltip de vista rápida al abrir el modal de detalles
-            if (quickViewTooltip) quickViewTooltip.classList.remove('visible');
-
             const filterKey = isHistorical ? 'historical' : 'main';
             const searchInput = document.getElementById(`filter-input-${filterKey}`);
             const searchText = searchInput ? searchInput.value.trim() : '';
 
+            // Ocultar el tooltip de vista rápida al abrir el modal de detalles.
+            if (quickViewTooltip) quickViewTooltip.classList.remove('visible');
  
             const downloadButtonHTML = `
                 <button id="download-details-docx-btn" data-id="${licitacionItem.id}" data-is-historical="${isHistorical}" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Descargar reporte DOCX">
                     <i class="fa-solid fa-file-word fa-lg"></i>
-                    <i class="fa-solid fa-file-pdf fa-lg ml-2"></i>
                 </button>
             `;
 
@@ -2885,7 +2643,6 @@
                 <div class="details-header flex justify-between items-start">
                     <div>
                         <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
-                        <p class="date">Tramo: ${highlightText(licitacionItem.tramo || 'N/A', searchText)}</p>
                         <p class="date">${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
                         <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
                         <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
@@ -2928,26 +2685,6 @@
                                 <td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td>
                                 <td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td>
                                 <td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="details-section">
-                    <h4>Costo por Kilómetro</h4>
-                    <table class="details-table">
-                        <thead>
-                            <tr>
-                                <th>KM del Proyecto</th>
-                                <th>KM Adjudicados</th>
-                                <th>Costo por KM</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>N/A</td>
-                                <td>${highlightText(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A', searchText)}</td>
-                                <td class="highlight-fallo">${highlightText(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A', searchText)}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -3057,7 +2794,6 @@
                     <div class="details-header flex justify-between items-start">
                         <div>
                            <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
-                            <p class="date">Tramo: ${highlightText(licitacionItem.tramo || 'N/A', searchText)}</p>
                             <p class="date">${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
                             <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
                             <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
@@ -3075,26 +2811,7 @@
 
                     <div class="details-section">
                         <h4>Detalles de Contratación</h4>
-                        <table class="details-table">
-                            <thead><tr><th>Procedimiento de Contratación</th><th>Tipo</th><th>Monto</th></tr></thead>
-                            <tbody><tr><td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td><td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td><td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td></tr></tbody>
-                        </table>
-                    </div>
-
-                    <div class="details-section">
-                        <h4>Costo por Kilómetro</h4>
-                        <table class="details-table">
-                            <thead>
-                                <tr><th>KM del Proyecto</th><th>KM Adjudicados</th><th>Costo por KM</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>N/A</td>
-                                    <td>${highlightText(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A', searchText)}</td>
-                                    <td class="highlight-fallo">${highlightText(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A', searchText)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <table class="details-table"><thead><tr><th>Procedimiento de Contratación</th><th>Tipo</th><th>Monto</th></tr></thead><tbody><tr><td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td><td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td><td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td></tr></tbody></table>
                     </div>
             
                     <div class="details-section">
@@ -3228,7 +2945,6 @@
                 // 4. Mapeo de datos (asegurando que no haya valores nulos)
                 const dataForTemplate = {
                     palabra_clave_0: record.proyecto || 'No especificado',
-                    palabra_clave_0_1: record.tramo || 'No especificado', // Nuevo campo para Tramo
                     palabra_clave_1: record.nombre || 'No especificado',
                     palabra_clave_2: record.descripcion || 'No especificado',
                     palabra_clave_3: record.generalidades || 'No especificado',
@@ -3244,7 +2960,6 @@
                     palabra_clave_13: record.nombreLicitantes || 'No especificado',
                     palabra_clave_14: record.ganadorLicitacion || 'No especificado',
                     palabra_clave_15: record.monto ? '$' + Number(record.monto).toLocaleString('es-MX') : 'No especificado',
-                    palabra_clave_15_1: record.costoPorKm ? '$' + Number(record.costoPorKm).toLocaleString('es-MX') : 'No especificado', // Nuevo campo
                     palabra_clave_16: record.linkComprasXM || 'No especificado',
                 };
 
@@ -3317,10 +3032,6 @@
 
         // Catálogo de proyectos
         const catalogoProyectos = [
-        ];
-
-        // Catálogo de tramos (inicialmente vacío)
-        const catalogoTramos = [
         ];
 
         // Catálogo de nombres de licitaciones
@@ -3626,6 +3337,16 @@
         const catalogoTipos = [
         ];
 
+        // Catálogo de años de publicación
+        const catalogoAnosPublicacion = [
+            "2020",
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025"
+        ];
+
         /**
          * Actualiza las opciones de todos los selectores dinámicos de la aplicación.
          * Extrae valores únicos de los datos existentes y los fusiona con catálogos base.
@@ -3654,18 +3375,6 @@
             fieldOptions.proyectos = combinedProyectos;
             updateSelectOptions('proyectos', fieldOptions.proyectos);
         
-            // Tramos
-            const historicalTramos = getUniqueTrimmedOptions(allData, 'tramo');
-            const combinedTramos = [...new Set([...catalogoTramos, ...historicalTramos])].sort();
-            fieldOptions.tramos = combinedTramos;
-            updateSelectOptions('tramos', fieldOptions.tramos);
-
-            // Tipo de Tren
-            const historicalTiposTren = getUniqueTrimmedOptions(allData, 'tipoTren');
-            const combinedTiposTren = [...new Set([...historicalTiposTren])].sort(); // No tiene catálogo base
-            fieldOptions.tiposTren = combinedTiposTren;
-            updateSelectOptions('tiposTren', fieldOptions.tiposTren);
-
             // Nombres
             const historicalNombres = getUniqueTrimmedOptions(allData, 'nombre');
             const combinedNombres = [...new Set([...catalogoNombres, ...historicalNombres])].sort();
@@ -3689,6 +3398,12 @@
             const combinedTipos = [...new Set([...catalogoTipos, ...historicalTipos])].sort();
             fieldOptions.tipos = combinedTipos;
             updateSelectOptions('tipos', fieldOptions.tipos);
+
+            // Años Publicación
+            const historicalAnosPublicacion = getUniqueTrimmedOptions(allData, 'anoPublicacion');
+            const combinedAnosPublicacion = [...new Set([...catalogoAnosPublicacion, ...historicalAnosPublicacion])].sort();
+            fieldOptions.anosPublicacion = combinedAnosPublicacion;
+            updateSelectOptions('anosPublicacion', fieldOptions.anosPublicacion);
 
             // Registrados Interés, Nombre Licitantes y Ganadores (usando la misma lógica)
             const historicalRegistradosInteres = getUniqueTrimmedOptions(allData, 'registradosInteres');
@@ -3716,12 +3431,14 @@
         function updateSelectOptions(field, options, selectedId = null) {
             const fieldToSelectMap = {
                 'proyectos': ['licitacion-proyecto', 'edit-licitacion-proyecto'],
-                'tramos': ['licitacion-tramo', 'edit-licitacion-tramo'],
-                'tiposTren': ['licitacion-tipoTren', 'edit-licitacion-tipoTren'],
                 'nombres': ['licitacion-nombre', 'edit-licitacion-nombre'],
                 'siglasDependencias': ['licitacion-siglasDependencia', 'edit-licitacion-siglasDependencia'],
                 'procedimientosContratacion': ['licitacion-procedimientoContratacion', 'edit-licitacion-procedimientoContratacion'],
                 'tipos': ['licitacion-tipo', 'edit-licitacion-tipo'],
+                'anosPublicacion': ['licitacion-anoPublicacion', 'edit-licitacion-anoPublicacion'],
+                'registradosInteres': ['licitacion-registradosInteres', 'edit-licitacion-registradosInteres'],
+                'nombreLicitantes': ['licitacion-nombreLicitantes', 'edit-licitacion-nombreLicitantes'],
+                'ganadoresLicitacion': ['licitacion-ganadorLicitacion', 'edit-licitacion-ganadorLicitacion']
             };
 
             const normalizedOptions = options.map(opt => ({id: opt, text: opt}));
@@ -3763,12 +3480,11 @@
         async function findAndReplaceInDatabase(field, oldValue, newValue, activeFormId, formStateBeforeEdit) {
             const fieldToDbFieldMap = {
                 'proyectos': 'proyecto', 
-                'tramos': 'tramo',
-                'tiposTren': 'tipoTren',
                 'nombres': 'nombre',
                 'siglasDependencias': 'siglasDependencia',
                 'procedimientosContratacion': 'procedimientoContratacion',
                 'tipos': 'tipo',
+                'anosPublicacion': 'anoPublicacion',
                 'registradosInteres': 'registradosInteres',
                 'nombreLicitantes': 'nombreLicitantes',
                 'ganadoresLicitacion': 'ganadorLicitacion'
@@ -3887,8 +3603,6 @@
         function setupAddEditButtons() {
             const buttonToFieldMap = {
                 'edit-proyecto-btn': 'proyectos',
-                'edit-tramo-btn': 'tramos',
-                'edit-tipoTren-btn': 'tiposTren',
                 'edit-nombre-btn': 'nombres',
                 'edit-descripcion-btn': 'descripcion',
                 'edit-generalidades-btn': 'generalidades',
@@ -3899,21 +3613,18 @@
                 'edit-nombreLicitantes-btn': 'nombreLicitantes',
                 'edit-ganadorLicitacion-btn': 'ganadoresLicitacion',
                 'edit-monto-btn': 'monto',
-                'edit-costoPorKm-btn': 'costosPorKm',
                 'edit-linkComprasXM-btn': 'linkComprasXM',
                 'edit-proyecto-edit-btn': 'proyectos',
-                'edit-tramo-edit-btn': 'tramos',
-                'edit-tipoTren-edit-btn': 'tiposTren',
                 'edit-nombre-edit-btn': 'nombres',
                 'edit-descripcion-edit-btn': 'descripcion',
                 'edit-generalidades-edit-btn': 'generalidades',
                 'edit-siglasDependencia-edit-btn': 'siglasDependencias',
                 'edit-procedimientoContratacion-edit-btn': 'procedimientosContratacion',
                 'edit-tipo-edit-btn': 'tipos',
+                'edit-registradosInteres-edit-btn': 'registradosInteres',
                 'edit-nombreLicitantes-edit-btn': 'nombreLicitantes',
                 'edit-ganadorLicitacion-edit-btn': 'ganadoresLicitacion',
                 'edit-monto-edit-btn': 'monto',
-                'edit-costoPorKm-edit-btn': 'costosPorKm',                
                 'edit-linkComprasXM-edit-btn': 'linkComprasXM'
             };
             
@@ -3924,7 +3635,7 @@
                 button.addEventListener('click', (e) => {
                     let inputElement;
                     
-                    if (['descripcion', 'generalidades', 'codigoExpediente', 'monto', 'costoPorKm', 'linkComprasXM'].includes(field)) {
+                    if (['descripcion', 'generalidades', 'codigoExpediente', 'monto', 'linkComprasXM'].includes(field)) {
                         inputElement = e.currentTarget.parentElement.querySelector('input') || 
                                       e.currentTarget.parentElement.querySelector('textarea');
                     } else {
@@ -3961,7 +3672,7 @@
                 const formStateBeforeEdit = activeFormId ? getFormState(activeFormId) : null;
                 requirePassword(async () => {
                     try {
-                        if (['proyectos', 'tramos', 'tiposTren', 'nombres', 'siglasDependencias', 'procedimientosContratacion', 'tipos', 'anosPublicacion', 'registradosInteres', 'nombreLicitantes', 'ganadoresLicitacion', 'costosPorKm'].includes(currentEditingField)) {
+                        if (['proyectos', 'nombres', 'siglasDependencias', 'procedimientosContratacion', 'tipos', 'anosPublicacion', 'registradosInteres', 'nombreLicitantes', 'ganadoresLicitacion'].includes(currentEditingField)) {
                             await findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue, activeFormId, formStateBeforeEdit);
                         } else {
                             // Lógica para campos de texto (no afecta a otros campos)
@@ -3974,8 +3685,6 @@
                                 inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-codigoExpediente' : 'edit-licitacion-codigoExpediente');
                             } else if (currentEditingField === 'monto') {
                                 inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-monto' : 'edit-licitacion-monto');
-                            } else if (currentEditingField === 'costoPorKm') {
-                                inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-costoPorKm' : 'edit-licitacion-costoPorKm');
                             } else if (currentEditingField === 'linkComprasXM') {
                                 inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-linkComprasXM' : 'edit-licitacion-linkComprasXM');
                             }
@@ -4016,11 +3725,6 @@
                     } else if (tabName === 'historico') {
                         setTimeout(() => updateFalloDashboard(selectedBaseDate), 50); // Actualizar el radar al cambiar a la pestaña
                     }
-                    // --- INICIO: Lógica para la nueva pestaña de Costos ---
-                    else if (tabName === 'costos') {
-                        populateCostosProyectoSelector(); // Poblar el selector de proyectos al entrar a la pestaña
-                    }
-                    // --- FIN: Lógica para la nueva pestaña de Costos ---
                 }
             });
         }
@@ -4327,17 +4031,9 @@
 
             // --- Lógica de la tabla con montos y totales ---
             const table = document.getElementById('projectProcedureTable');
-
             // Encabezado de dos niveles
-            let headerRow1 = `<tr class="bg-slate-200"><th rowspan="2" class="align-bottom text-center">Proyecto</th>`;
-            let headerRow2 = `<tr>`;
-
-            sortedProcedures.forEach(proc => {
-                headerRow1 += `<th colspan="2" class="text-center">${proc}</th>`;
-                headerRow2 += `<th class="text-center">Cantidad</th><th class="text-center">Monto (mdp)</th>`;
-            });
-            headerRow1 += `<th colspan="2" class="text-center">Total</th></tr>`;
-            headerRow2 += `<th class="text-center">Cantidad</th><th class="text-center">Monto (mdp)</th></tr>`;
+            const headerRow1 = `<tr class="bg-slate-200"><th rowspan="2" class="align-bottom text-center">Proyecto</th>${sortedProcedures.map(proc => `<th colspan="2" class="text-center">${proc}</th>`).join('')}<th colspan="2" class="text-center">Total</th></tr>`;
+            const headerRow2 = `<tr>${sortedProcedures.map(() => `<th class="text-center">Cantidad</th><th class="text-center">Monto (mdp)</th>`).join('')}<th class="text-center">Cantidad</th><th class="text-center">Monto (mdp)</th></tr>`;
             table.querySelector('thead').innerHTML = headerRow1 + headerRow2;
             
             const tbody = table.querySelector('tbody');
@@ -4538,24 +4234,20 @@
         // =============================================
 
         const exportHeaders = [
-            "No.", "Tipo de Tren", "Proyecto", "Tramo", "Nombre", "Descripción", "Generalidades", "Siglas Dependencia",
+            "No.", "Proyecto", "Nombre", "Descripción", "Generalidades", "Siglas Dependencia",
             "Código Expediente", "Procedimiento", "Tipo", "Año Publicación", "Fecha Apertura",
-            "Fecha Fallo", "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto (Pesos)", "KM Adjudicados", "Costo por KM", "Link Compras XM"
+            "Fecha Fallo", "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto (Pesos)", "Link Compras XM"
         ];
 
-
         /**
-         * Prepara los datos para la exportación a Excel, asegurando el formato y el orden correctos.
          * Prepara los datos para la exportación a Excel, asegurando el formato y el orden correctos.
          */
         function prepareExportData(data) {
             return data.map((licitacionItem, index) => {
                 const fallback = (value) => value || "N/A";
                 return {
-                    "No.": index + 1,                    
-                    "Tipo de Tren": fallback(licitacionItem.tipoTren),
+                    "No.": index + 1,
                     "Proyecto": fallback(licitacionItem.proyecto),
-                    "Tramo": fallback(licitacionItem.tramo),
                     "Nombre": fallback(licitacionItem.nombre),
                     "Descripción": fallback(licitacionItem.descripcion),
                     "Generalidades": fallback(licitacionItem.generalidades),
@@ -4570,10 +4262,7 @@
                     "Participantes": fallback(licitacionItem.registradosInteres),
                     "Licitantes": fallback(licitacionItem.nombreLicitantes),
                     "Ganador": fallback(licitacionItem.ganadorLicitacion),
-                    // SOLUCIÓN: Si el monto no es un número válido, exportar `null` en lugar de "N/A".
-                    "Monto (Pesos)": licitacionItem.monto && !isNaN(Number(licitacionItem.monto)) ? Number(licitacionItem.monto) : null,
-                    "KM Adjudicados": licitacionItem.kmAdjudicados && !isNaN(Number(licitacionItem.kmAdjudicados)) ? Number(licitacionItem.kmAdjudicados) : null,
-                    "Costo por KM": licitacionItem.costoPorKm && !isNaN(Number(licitacionItem.costoPorKm)) ? Number(licitacionItem.costoPorKm) : null, // Corregido
+                    "Monto (Pesos)": licitacionItem.monto ? Number(licitacionItem.monto) : "N/A", // Exportar como número o "N/A"
                     "Link Compras XM": fallback(licitacionItem.linkComprasXM)
                 };
             });
@@ -4582,7 +4271,7 @@
         /**
          * Aplica formato profesional a una hoja de cálculo de Excel antes de descargarla.
          * Añade título, totales, estilos de celda y autofiltros.
-         * @param {object} ws - La hoja de cálculo (worksheet) de la librería XLSX. // REFACTOR: La hoja de cálculo (worksheet) de la librería XLSX.
+         * @param {object} ws - La hoja de cálculo (worksheet) de la librería XLSX.
          * @param {Array<object>} data - Los datos que se van a exportar, para calcular dimensiones.
          */
         function applyExcelFormatting(ws, data) {
@@ -4623,14 +4312,9 @@
                 alignment: { horizontal: "right", vertical: "center" }
             };
 
-            const numberCellStyle = {
+            const currencyCellStyle = {
                 ...rightAlignedCellStyle,
                 numFmt: "#,##0.00"
-            };
-
-            const currencyCellStyle = {
-                ...numberCellStyle,
-                numFmt: "$#,##0.00"
             };
 
             // 2. Añadir fila de título en la parte superior
@@ -4645,7 +4329,7 @@
             const numCols = exportHeaders.length;
             const montoColIndex = exportHeaders.indexOf("Monto (Pesos)");
             if (montoColIndex !== -1) {
-                const montoColLetter = XLSX.utils.encode_col(montoColIndex); // Esto no cambia
+                const montoColLetter = XLSX.utils.encode_col(montoColIndex);
                 const formula = `SUBTOTAL(9,${montoColLetter}3:${montoColLetter}${data.length + 2})`;
 
                 const totalCellRef = XLSX.utils.encode_cell({ r: 0, c: montoColIndex -1 }); // Celda P1 para la etiqueta
@@ -4672,20 +4356,14 @@
             // Definir columnas con alineación especial
             const centeredColumns = ["No.", "Código Expediente", "Tipo", "Año Publicación", "Fecha Apertura", "Fecha Fallo", "Fecha Estimada Inicio"];
             const montoColumnIndex = exportHeaders.indexOf("Monto (Pesos)");
-            const kmAdjudicadosColumnIndex = exportHeaders.indexOf("KM Adjudicados");
-            const costoPorKmColumnIndex = exportHeaders.indexOf("Costo por KM");
-            const centeredColumnIndices = centeredColumns.map(header => exportHeaders.indexOf(header));
+            const centeredColumnIndices = centeredColumns.map(header => exportHeaders.indexOf(header)); // Esto no cambia
 
             // Recorrer y aplicar estilos a encabezados y celdas de datos
             for (let R = 1; R <= numRows + 1; ++R) { // El bucle empieza en la fila de encabezados (R=1, que es la Fila 2 en Excel)
                 for (let C = 0; C < numCols; ++C) {
                     const cell_address = { c: C, r: R };
-                    const cell_ref = XLSX.utils.encode_cell(cell_address);                    
-                    // SOLUCIÓN: Asegurarse de que la celda exista en la hoja de cálculo, incluso si está vacía.
-                    // Si no existe, la creamos como una celda vacía para poder aplicarle un estilo.
-                    if (!ws[cell_ref]) {
-                        ws[cell_ref] = { t: 's', v: '' }; // Crear celda de tipo string vacía
-                    }
+                    const cell_ref = XLSX.utils.encode_cell(cell_address);
+                    if (!ws[cell_ref]) continue;
 
                     if (R === 1) { // Fila de encabezados (Fila 2 en Excel)
                         ws[cell_ref].s = headerStyle;
@@ -4696,18 +4374,6 @@
                             // Si el valor es un número, aplicar formato de moneda. Si no (ej. "N/A"), solo alinear a la derecha.
                             if (typeof ws[cell_ref].v === 'number') {
                                 ws[cell_ref].s = currencyCellStyle;
-                            } else {
-                                ws[cell_ref].s = rightAlignedCellStyle;
-                            }
-                        } else if (C === costoPorKmColumnIndex) {
-                            if (typeof ws[cell_ref].v === 'number') {
-                                ws[cell_ref].s = currencyCellStyle;
-                            } else {
-                                ws[cell_ref].s = rightAlignedCellStyle;
-                            }
-                        } else if (C === kmAdjudicadosColumnIndex) {
-                            if (typeof ws[cell_ref].v === 'number') {
-                                ws[cell_ref].s = numberCellStyle;
                             } else {
                                 ws[cell_ref].s = rightAlignedCellStyle;
                             }
@@ -4728,8 +4394,8 @@
 
             // 5. Ajustar el ancho de las columnas automáticamente
             ws['!cols'] = [
-                { wch: 5 }, // No.
-                ...Array(exportHeaders.length - 1).fill({ wpx: 130 })
+                { wch: 5 }, // Columna A (No.)
+                ...Array(exportHeaders.length - 1).fill({ wpx: 130 }) // Resto de columnas
             ];
 
             return ws;
@@ -5122,8 +4788,7 @@
 
                 // Clear form
                 licitacionForm.reset();
-                $('#licitacion-proyecto, #licitacion-tramo, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-tipoTren').val(null).trigger('change');
-                document.getElementById('licitacion-anoPublicacion').value = ''; // Limpia el nuevo input de año
+                $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion').val(null).trigger('change');
 
                 openModalWithFocus(licitacionModal, document.getElementById('licitacion-proyecto'));
             });
@@ -5138,8 +4803,7 @@
                 
                 const formData = new FormData(licitacionForm);
                 const licitacionData = Object.fromEntries(formData.entries());
-                licitacionData.kmAdjudicados = parseFloat(licitacionData.kmAdjudicados) || 0; // Asegurar que sea número
-                licitacionData.costoPorKm = parseFloat(licitacionData.costoPorKm) || 0; // Asegurar que sea número
+                
                 saveLicitacion(licitacionData, true); // Guardar directamente en el histórico
                 closeModal(licitacionModal);
             });
@@ -5154,8 +4818,6 @@
                 
                 const formData = new FormData(editForm);
                 const updateData = Object.fromEntries(formData.entries());
-                updateData.kmAdjudicados = parseFloat(updateData.kmAdjudicados) || 0; // Asegurar que sea número
-                updateData.costoPorKm = parseFloat(updateData.costoPorKm) || 0; // Asegurar que sea número
                 const id = document.getElementById('edit-id').value;
                 
                 await updateLicitacion(id, updateData, currentEditIsHistorical);
@@ -5301,14 +4963,11 @@
 
                                 const keyMapping = {
                                     'no.': 'no',
-                                    'tipo de tren': 'tipoTren',
-                                    'tramo': 'tramo',
                                     'proyecto': 'proyecto',
                                     'nombre': 'nombre',
                                     'descripción': 'descripcion', // Con acento
                                     'descripcion': 'descripcion', // Sin acento
                                     'generalidades': 'generalidades',
-                                    'km adjudicados': 'kmAdjudicados',
                                     'siglas dependencia': 'siglasDependencia',
                                     'código expediente': 'codigoExpediente',
                                     'procedimiento': 'procedimientoContratacion', // Nombre corto
@@ -5325,14 +4984,10 @@
                                     'nombre licitantes': 'nombreLicitantes',
                                     'ganador': 'ganadorLicitacion', // Nombre corto
                                     'monto (pesos)': 'monto', // Nuevo alias para importación
-                                    'monto(pesos)': 'monto', // Alias sin espacio
                                     'ganador licitación': 'ganadorLicitacion',
                                     'monto': 'monto',
-                                    'km adjudicados': 'kmAdjudicados',
-                                    'Costo por KM': 'costoPorKm', // Con espacio
-                                    'costo por km': 'costoPorKm', // Con espacio y minúsculas
-                                    'link compras xm': 'linkComprasXM', // Con espacio
-                                    'Link Compras XM': 'linkComprasXM' // Alias común para el link
+                                    'link compras xm': 'linkComprasXM',
+                                    'link': 'linkComprasXM' // Alias común para el link
                                 };
                                 const mappedRow = mapKeys(row, keyMapping);
 
@@ -5383,12 +5038,9 @@
 
                                 return {
                                     proyecto: trimIfString(mappedRow.proyecto) || '',
-                                    tramo: trimIfString(mappedRow.tramo) || '',
-                                    tipoTren: trimIfString(mappedRow.tipoTren) || '',
                                     nombre: trimIfString(mappedRow.nombre) || '',
                                     descripcion: trimIfString(mappedRow.descripcion) || '',
                                     generalidades: trimIfString(mappedRow.generalidades) || '',
-                                    kmAdjudicados: !isNaN(parseFloat(mappedRow.kmAdjudicados)) ? parseFloat(mappedRow.kmAdjudicados) : '',
                                     siglasDependencia: trimIfString(mappedRow.siglasDependencia) || '',
                                     codigoExpediente: trimIfString(mappedRow.codigoExpediente) || '',
                                     procedimientoContratacion: trimIfString(mappedRow.procedimientoContratacion) || '',
@@ -5400,10 +5052,9 @@
                                     registradosInteres: trimIfString(mappedRow.registradosInteres) || '',
                                     nombreLicitantes: trimIfString(mappedRow.nombreLicitantes) || '',
                                     ganadorLicitacion: trimIfString(mappedRow.ganadorLicitacion) || '',
-                                    // SOLUCIÓN: Asegurar que el monto se guarde como un número o un valor vacío.
-                                    // Se convierte a número y si el resultado no es un número válido (NaN), se guarda como ''.
-                                    monto: !isNaN(parseFloat(mappedRow.monto)) ? parseFloat(mappedRow.monto) : '',
-                                    costoPorKm: !isNaN(parseFloat(mappedRow.costoPorKm)) ? parseFloat(mappedRow.costoPorKm) : '',
+                                    // Si el monto es "N/A" (texto del excel exportado), se convierte a '' para que sea un valor falsy.
+                                    // Si es un número, se mantiene. Si no, se trata como vacío.
+                                    monto: mappedRow.monto === "N/A" ? '' : mappedRow.monto || '',
                                     linkComprasXM: trimIfString(mappedRow.linkComprasXM) || ''
                                 };
                             });
@@ -5453,23 +5104,18 @@
                 const filteredData = applyAllFilters(historicalLicitaciones, 'historical');
 
                 if (filteredData.length === 0) return showAlert("No hay datos en la tabla para descargar.", "warning");
-                const dataToExport = filteredData.map((item, index) => ({ "No.": index + 1, ...item }));
+                const dataToExport = prepareExportData(filteredData);
                 
-                // --- INICIO: Lógica de exportación restaurada a la versión anterior ---
-                // 1. Preparar los datos para la exportación.
-                const preparedData = prepareExportData(filteredData);
-
-                // 2. Crear un array de arrays: primero los encabezados, luego los datos.
+                // Crear la hoja de cálculo directamente con los datos y encabezados, pero dejando espacio para el título.
+                // 1. Crear un array de arrays, empezando con los encabezados.
                 const sheetData = [exportHeaders];
-                preparedData.forEach(item => sheetData.push(Object.values(item)));
-
-                // 3. Crear la hoja de cálculo a partir del array, especificando que comience en la celda A2.
+                // 2. Añadir los datos de cada fila.
+                dataToExport.forEach(item => sheetData.push(Object.values(item)));
+                // 3. Crear la hoja a partir de este array, insertándola desde la celda A2.
                 const ws = XLSX.utils.aoa_to_sheet(sheetData, { origin: "A2" });
 
-                // 4. Aplicar todo el formato profesional a la hoja.
-                applyExcelFormatting(ws, preparedData);
-                // --- FIN: Lógica de exportación restaurada ---
-
+                // Aplicar todo el formato
+                applyExcelFormatting(ws, dataToExport); // Llamada corregida, sin reasignación
 
                 const wb = XLSX.utils.book_new();
                 // Generar nombre de archivo con fecha actual
@@ -5582,19 +5228,6 @@
                     }
                 }
             });
-
-            // Listener para los nuevos marcadores de filtro de tipo de tren
-            document.getElementById('train-type-filter-container').addEventListener('click', (e) => {
-                const button = e.target.closest('.train-filter-btn');
-                if (!button) return;
-
-                activeTrainTypeFilter = button.dataset.filter;
-
-                document.querySelectorAll('.train-filter-btn').forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-
-                sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
-            });
         }
 
         /**
@@ -5602,35 +5235,26 @@
          */
         function setupQuickViewTooltip() {
             const showTooltip = (e) => {
-                const row = e.target.closest('tr[data-id]'); // Apuntar a la fila por su ID
+                const row = e.target.closest('tr[data-quickview="true"]'); // Asegurarse de que el tooltip solo se active en las filas correctas
                 if (!row) return;
         
-                // Usar el ID para encontrar el objeto de datos completo
-                const licitacionItem = historicalLicitaciones.find(l => l.id === row.dataset.id);
-                if (!licitacionItem) return;
+                const { dependencia, proyecto, nombre, procedimiento, tipo, ganador, monto, fallo } = row.dataset;
         
                 // Función auxiliar para mostrar el valor o un guion si está vacío
                 const displayValue = (value, formatter = v => v) => {
                     return (value && value.trim() !== '' && value !== 'N/A') ? formatter(value) : '-';
                 };
-                
-                // Obtener el valor de costoPorKm y kmAdjudicados directamente del objeto de datos
-                const costoPorKm = licitacionItem && licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
-                const kmAdjudicados = licitacionItem && licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
-                const monto = licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A';
+        
                 // Construcción del contenido del tooltip usando la función auxiliar
                 quickViewTooltip.innerHTML = `
-                    <p><strong>Dependencia:</strong> ${truncateText(licitacionItem.siglasDependencia, 100)}</p>
-                    <p><strong>Proyecto:</strong> ${truncateText(licitacionItem.proyecto, 100)}</p>
-                    <p><strong>Tramo:</strong> ${truncateText(licitacionItem.tramo, 100)}</p>
-                    <p><strong>Nombre:</strong> ${truncateText(licitacionItem.nombre, 100)}</p>
-                    <p><strong>Procedimiento:</strong> ${displayValue(truncateText(licitacionItem.procedimientoContratacion, 100))}</p>
-                    <p><strong>Tipo:</strong> ${displayValue(truncateText(licitacionItem.tipo, 100))}</p>
-                    <p><strong>Ganador:</strong> ${displayValue(truncateText(licitacionItem.ganadorLicitacion, 100))}</p>
-                    <p><strong>KM Adjudicados:</strong> ${kmAdjudicados}</p>
+                    <p><strong>Dependencia:</strong> ${truncateText(dependencia, 100)}</p>
+                    <p><strong>Proyecto:</strong> ${truncateText(proyecto, 100)}</p>
+                    <p><strong>Nombre:</strong> ${truncateText(nombre, 100)}</p>
+                    <p><strong>Procedimiento:</strong> ${displayValue(truncateText(procedimiento, 100))}</p>
+                    <p><strong>Tipo:</strong> ${displayValue(truncateText(tipo, 100))}</p>
+                    <p><strong>Ganador:</strong> ${displayValue(truncateText(ganador, 100))}</p>
                     <div class="fallo-monto-container">
-                        <p class="text-sm text-gray-500 m-0"><strong>Costo/KM:</strong> ${displayValue(costoPorKm)}</p>
-                        <p class="text-sm text-gray-500 m-0"><strong>Fallo:</strong> ${displayValue(licitacionItem.fechaFallo, formatLongDate)}</p>
+                        <p class="text-sm text-gray-500 m-0"><strong>Fallo:</strong> ${displayValue(fallo, formatLongDate)}</p>
                         <div class="monto-highlight">${displayValue(monto)}</div>
                     </div>
                 `;
@@ -5765,315 +5389,6 @@
             }, 15000); // 15000 milisegundos = 15 segundos
         }
 
-        // =============================================
-        // MÓDULO: Pestaña de Costos
-        // =============================================
-
-        /**
-         * Configura los listeners para la nueva pestaña de Costos.
-         */
-        function setupCostosTabListeners() {
-            costosProyectoSelector.addEventListener('change', () => {
-                const selectedProyecto = costosProyectoSelector.value;
-                populateCostosTramoSelector(selectedProyecto);
-                // Resetear la vista si se cambia el proyecto
-                costosDashboardContainer.classList.add('hidden');
-                noCostosSelected.classList.remove('hidden');
-            });
-
-            costosTramoSelector.addEventListener('change', () => {
-                const selectedProyecto = costosProyectoSelector.value;
-                const selectedTramo = costosTramoSelector.value;
-                if (selectedProyecto && selectedTramo) {
-                    renderCostosDashboard(selectedProyecto, selectedTramo);
-                }
-            });
-        }
-
-        /**
-         * Puebla el selector de proyectos en la pestaña de Costos.
-         */
-        function populateCostosProyectoSelector() {
-            const proyectos = [...new Set(
-                historicalLicitaciones
-                    .map(item => item.proyecto)
-                    .filter(p => p && !p.includes('\n')) // Filtrar proyectos nulos/vacíos Y que no contengan saltos de línea
-            )].sort();
-            costosProyectoSelector.innerHTML = '<option value="">-- Seleccione un Proyecto --</option>';
-            proyectos.forEach(p => {
-                costosProyectoSelector.innerHTML += `<option value="${p}">${p}</option>`;
-            });
-            // Resetear y deshabilitar el selector de tramos
-            costosTramoSelector.innerHTML = '<option value="">-- Seleccione un Tramo --</option>';
-            costosTramoSelector.disabled = true;
-        }
-
-        /**
-         * Puebla el selector de tramos basado en el proyecto seleccionado.
-         * @param {string} proyecto - El nombre del proyecto seleccionado.
-         */
-        function populateCostosTramoSelector(proyecto) {
-            if (!proyecto) {
-                costosTramoSelector.innerHTML = '<option value="">-- Seleccione un Tramo --</option>';
-                costosTramoSelector.disabled = true;
-                return;
-            }
-
-            const tramos = [...new Set(
-                historicalLicitaciones
-                    .filter(item => item.proyecto === proyecto && item.tramo)
-                    .map(item => item.tramo)
-            )].sort();
-
-            costosTramoSelector.innerHTML = '<option value="">-- Seleccione un Tramo --</option>';
-            tramos.forEach(t => {
-                costosTramoSelector.innerHTML += `<option value="${t}">${t}</option>`;
-            });
-            costosTramoSelector.disabled = false;
-        }
-
-        /**
-         * Renderiza el dashboard completo de costos para un proyecto y tramo específicos.
-         * @param {string} proyecto - El nombre del proyecto.
-         * @param {string} tramo - El nombre del tramo.
-         */
-        function renderCostosDashboard(proyecto, tramo) {
-            const licitacionesFiltradas = historicalLicitaciones.filter(lic => lic.proyecto === proyecto && lic.tramo === tramo);
- 
-             if (licitacionesFiltradas.length === 0) {
-                 costosDashboardContainer.classList.add('hidden');
-                 noCostosSelected.classList.remove('hidden');
-                 return;
-             }
- 
-             costosDashboardContainer.classList.remove('hidden');
-             noCostosSelected.classList.add('hidden');
-             costosCardsGrid.innerHTML = ''; // Limpiar contenido anterior
- 
-             // --- INICIO: Sección de Resumen Financiero General ---
-             let totalMontoGeneral = 0;
-             let totalKmAdjudicadosGeneral = 0;
-             const costosPorTipo = {};
-             const licitacionesDeObra = [];
- 
-             licitacionesFiltradas.forEach(lic => {
-                 const monto = parseFloat(lic.monto) || 0;
-                 const km = parseFloat(lic.kmAdjudicados) || 0;
-                 const tipo = lic.tipo || 'Sin Tipo';
- 
-                 totalMontoGeneral += monto;
-                 if (lic.tipo === "1.1 Obra") { // Sumar KM solo para licitaciones de obra
-                     totalKmAdjudicadosGeneral += km;
-                     licitacionesDeObra.push(lic);
-                 }
- 
-                 if (!costosPorTipo[tipo]) {
-                     costosPorTipo[tipo] = 0;
-                 }
-                 costosPorTipo[tipo] += monto;
-             });
- 
-             const costoTotalPorKmGeneral = totalKmAdjudicadosGeneral > 0 ? totalMontoGeneral / totalKmAdjudicadosGeneral : 0;
- 
-             let resumenHTML = `
-                 <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-primary mb-8">
-                     <h3 class="text-xl font-bold text-primary mb-4 text-center">Resumen Financiero del Tramo: ${tramo}</h3>
-                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 summary-card-container">
-                         <!-- Card Costo Total -->
-                         <div class="bg-slate-50 p-4 rounded-lg hover:shadow-md transition-shadow">
-                             <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this)">
-                                 <p class="text-sm font-medium text-slate-500">Costo Total del Tramo <i class="fa-solid fa-chevron-down fa-xs ml-1"></i></p>
-                                 <p id="costo-tramo-total-display" class="text-2xl font-bold text-primary mt-1">${totalMontoGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
-                                 <p id="costo-tramo-total-millones-display" class="text-md text-slate-600">(${(totalMontoGeneral / 1000000).toFixed(2)} Millones)</p>
-                             </div>
-                             <div class="summary-card-content">
-                                 <ul id="costo-total-breakdown-list" class="text-sm space-y-1 mt-2 border-t pt-2">
-                                     ${Object.entries(costosPorTipo).sort(([,a],[,b]) => b-a).map(([tipo, monto]) => `
-                                         <li class="flex justify-between items-center">
-                                             <label class="flex items-center cursor-pointer text-slate-600 flex-grow">
-                                                 <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mr-2" data-monto="${monto}" checked>
-                                                 <span class="truncate" title="${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}">
-                                                     ${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}:
-                                                 </span>
-                                             </label>
-                                             <span class="font-semibold text-primary ml-2">${monto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</span>
-                                         </li>
-                                     `).join('')}
-                                 </ul>
-                             </div>
-                         </div>
-                         <!-- Card KM Adjudicados (Obra) -->
-                         <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-300 hover:shadow-md transition-shadow">
-                             <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this)">
-                                 <p class="text-sm font-medium text-slate-500">KM Adjudicados (Solo Obra) <i class="fa-solid fa-chevron-down fa-xs ml-1"></i></p>
-                                 <p class="text-2xl font-bold text-secondary mt-1">${totalKmAdjudicadosGeneral.toLocaleString('es-MX')} km</p>
-                                 <p class="text-md text-slate-600">Suma de KM de licitaciones tipo "1.1 Obra"</p>
-                             </div>
-                             <div id="km-obra-details" class="summary-card-content">
-                                 <ul class="text-sm space-y-1 mt-2 border-t pt-2">
-                                     ${licitacionesDeObra.map(lic => `
-                                         <li class="flex justify-between"><span class="text-slate-600 truncate pr-2" title="${lic.nombre}">${lic.nombre}:</span> <span class="font-semibold text-secondary">${(parseFloat(lic.kmAdjudicados) || 0).toLocaleString('es-MX')} km</span></li>
-                                     `).join('')}
-                                 </ul>
-                             </div>
-                         </div>
-                         <!-- Card Costo por KM General -->
-                         <div class="bg-slate-50 p-4 rounded-lg">
-                             <div class="text-center">
-                                 <p class="text-sm font-medium text-slate-500">Costo Total por KM (Obra)</p>
-                                 <p class="text-2xl font-bold text-primary mt-1">${costoTotalPorKmGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
-                                 <p class="text-md text-slate-600">(Costo Total / KM de Obra)</p>
-                             </div>
-                         </div>
-                     </div>
-                     <div class="mt-6 border-t pt-4">
-                         <h4 class="text-md font-semibold text-slate-600 mb-3 text-center">Desglose de Costos por Tipo de Licitación</h4>
-                         <div class="flex flex-wrap justify-center gap-4">
-                             ${Object.entries(costosPorTipo).map(([tipo, monto]) => `
-                                 <div class="bg-blue-50 p-3 rounded-md text-center">
-                                     <p class="text-xs font-semibold text-blue-800">${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}</p>
-                                     <p class="text-lg font-bold text-blue-900">${monto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
-                                 </div>
-                             `).join('')}
-                         </div>
-                     </div>
-                 </div>
-             `;
-             costosCardsGrid.innerHTML += resumenHTML;
-             // --- FIN: Sección de Resumen Financiero General ---
- 
-            // Iterar sobre los tipos de licitación definidos para crear una tarjeta para cada uno
-            for (const [tipo, titulo] of Object.entries(tiposDeLicitacionParaCostos)) {
-                const datosParaTarjeta = licitacionesFiltradas.filter(lic => lic.tipo === tipo);
-                costosCardsGrid.innerHTML += createCostoCardHTML(datosParaTarjeta, titulo, tipo);
-            }
-
-            // Añadir el listener para la actualización interactiva del costo total
-            const breakdownList = document.getElementById('costo-total-breakdown-list');
-            if (breakdownList) {
-                breakdownList.addEventListener('change', updateCostoTotalTramo);
-            }
-        }
-
-        // --- INICIO: Nueva función para actualizar el costo total del tramo interactivamente ---
-        /**
-         * Recalcula y actualiza el costo total del tramo mostrado en la tarjeta de resumen.
-         * Se basa en los checkboxes seleccionados en la lista de desglose.
-         */
-        function updateCostoTotalTramo() {
-            const breakdownList = document.getElementById('costo-total-breakdown-list');
-            if (!breakdownList) return;
-
-            const checkboxes = breakdownList.querySelectorAll('input[type="checkbox"]');
-            let nuevoTotal = 0;
-            checkboxes.forEach(cb => {
-                if (cb.checked) {
-                    nuevoTotal += parseFloat(cb.dataset.monto) || 0;
-                }
-            });
-
-            document.getElementById('costo-tramo-total-display').textContent = nuevoTotal.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
-            document.getElementById('costo-tramo-total-millones-display').textContent = `(${(nuevoTotal / 1000000).toFixed(2)} Millones)`;
-        }
-        // --- FIN: Nueva función ---
-
-        /**
-         * Crea el HTML para una tarjeta de costos individual.
-         * @param {Array} data - Las licitaciones para esta tarjeta.
-         * @param {string} title - El título de la tarjeta.
-         * @param {string} tipo - El tipo de licitación (ej. "1.1 Obra").
-         * @returns {string} El string HTML de la tarjeta.
-         */
-        function createCostoCardHTML(data, title, tipo) {
-            let subtitle = tipo === "1.1 Obra" ? "(No considera costos de supervisión, asesoría y servicios.)" : "";
-            let tableContent = '<p class="text-center text-gray-500 py-4">No hay datos para este tipo de licitación.</p>';
-
-            // --- INICIO: Cálculo del costo promedio por KM ---
-            let footerContent = ''; // REFACTOR: footerContent
-            if (data.length > 0) {
-                const costosValidos = data.map(item => parseFloat(item.costoPorKm)).filter(costo => !isNaN(costo) && costo > 0);
-                const montosValidos = data.map(item => parseFloat(item.monto)).filter(monto => !isNaN(monto) && monto > 0);
-                const kmValidos = data.map(item => parseFloat(item.kmAdjudicados)).filter(km => !isNaN(km) && km > 0);
- 
-                const promedioCostoKm = costosValidos.length > 0
-                    ? costosValidos.reduce((sum, costo) => sum + costo, 0) / costosValidos.length
-                    : 0;
- 
-                const totalMonto = montosValidos.reduce((sum, monto) => sum + monto, 0);
-                const totalKm = kmValidos.reduce((sum, km) => sum + km, 0);
-                const costoTotalPorKm = totalKm > 0 ? totalMonto / totalKm : 0;
- 
-                footerContent = `
-                    <tfoot class="bg-slate-200 font-semibold">
-                        <tr>
-                            <td colspan="5" class="py-2 px-3 text-right">Totales y Promedios</td>
-                            <td class="py-2 px-3 text-center text-white bg-secondary">${totalKm.toLocaleString('es-MX')}</td>
-                            <td class="py-2 px-3 text-center text-white bg-accent">${costoTotalPorKm.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
-                            <td class="py-2 px-3 text-center text-white bg-success">${totalMonto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="6" class="py-2 px-3 text-right italic">Costo Promedio por KM (de la columna)</td>
-                            <td class="py-2 px-3 text-center italic text-accent">${promedioCostoKm.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
-                `;
-            // --- FIN: Cálculo del costo promedio por KM ---
-
-                tableContent = `
-                    <table class="w-full text-sm text-left">
-                        <thead class="text-xs text-slate-700 uppercase bg-slate-200">
-                            <tr>
-                                <th class="py-2 px-3">Dependencia</th>
-                                <th class="py-2 px-3">Nombre</th>
-                                <th class="py-2 px-3">Procedimiento</th>
-                                <th class="py-2 px-3">Fallo</th>
-                                <th class="py-2 px-3">Ganador</th>
-                                <th class="py-2 px-3 text-center">KM Adjudicados</th>
-                                <th class="py-2 px-3 text-center bg-accent/20">Costo/KM</th>
-                                <th class="py-2 px-3 text-center bg-primary/20">Monto</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${data.map(item => `
-                                <tr class="border-b">
-                                    <td class="py-2 px-3">${item.siglasDependencia || 'N/A'}</td>
-                                    <td class="py-2 px-3">${item.nombre || 'N/A'}</td>
-                                    <td class="py-2 px-3">${item.procedimientoContratacion || 'N/A'}</td>
-                                    <td class="py-2 px-3">${formatDate(item.fechaFallo)}</td>
-                                    <td class="py-2 px-3">${item.ganadorLicitacion || 'N/A'}</td>
-                                    <td class="py-2 px-3 text-center">${item.kmAdjudicados || 0}</td>
-                                    <td class="py-2 px-3 text-right font-bold bg-accent/10 text-accent">${item.costoPorKm ? Number(item.costoPorKm).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : '$0.00'}</td>
-                                    <td class="py-2 px-3 text-right font-bold text-primary">${item.monto ? Number(item.monto).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : '$0.00'}</td>
-                                </tr>`).join('')}
-                        </tbody>
-                        ${footerContent}
-                    </table>
-                `;
-            }
-
-            return `
-                <div class="bg-slate-50 p-6 rounded-lg border">
-                    <h3 class="text-lg font-semibold text-center text-slate-800 mb-2">${title}</h3>
-                    ${subtitle ? `<p class="text-sm text-center text-gray-500 mb-4">${subtitle}</p>` : ''}
-                    <div>
-                        ${tableContent}
-                    </div>
-                </div>
-            `;
-        }
-
-        /**
-         * Alterna la visibilidad de un contenedor de contenido dentro de las tarjetas de resumen.
-         * @param {string} contentId - El ID del elemento de contenido a mostrar/ocultar.
-         */
-        function toggleSummaryContent(clickedElement) {
-            const cardBody = clickedElement.parentElement;
-            const contentElement = cardBody.querySelector('.summary-card-content');
-            if (contentElement) { // REFACTOR: contentElement
-                contentElement.classList.toggle('expanded');
-            }
-        }
 
         // =============================================
         // MÓDULO: Inicialización
@@ -6150,13 +5465,6 @@
             // --- FIN: Asignación de elementos ---
 
             // Listener para el modal de detalles content
-            // --- INICIO: Asignación de elementos para la pestaña de Costos ---
-            costosProyectoSelector = document.getElementById('costos-proyecto-selector');
-            costosTramoSelector = document.getElementById('costos-tramo-selector');
-            costosDashboardContainer = document.getElementById('costos-dashboard-container');
-            noCostosSelected = document.getElementById('no-costos-selected');
-            costosCardsGrid = document.getElementById('costos-cards-grid');
-            // --- FIN: Asignación de elementos para la pestaña de Costos ---
             detailsModalContent = document.getElementById('details-modal-content');
             
             // Listener para el tooltip de vista rápida
@@ -6168,7 +5476,6 @@
             setupFalloDashboardFilter();
             setupDynamicDatePicker();
             
-            setupCostosTabListeners();
             // --- Lógica de Autenticación ---
             loginBtn.addEventListener('click', () => {
                 loginScreen.classList.remove('hidden');
@@ -6250,7 +5557,7 @@
             document.getElementById('toggle-chart-type-btn').addEventListener('click', (e) => {
                 isProjectChartStacked = !isProjectChartStacked;
                 const button = e.currentTarget;
-                button.classList.toggle('bg-accent', isProjectChartStacked);
+                button.classList.toggle('bg-primary', isProjectChartStacked);
                 button.classList.toggle('text-white', isProjectChartStacked);
                 button.classList.toggle('bg-slate-200', !isProjectChartStacked);
                 button.classList.toggle('text-slate-700', !isProjectChartStacked);
@@ -6258,7 +5565,7 @@
             });
 
             // Configurar Select2 para los selects
-            $('#licitacion-proyecto, #licitacion-tramo, #licitacion-tipoTren, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #edit-licitacion-proyecto, #edit-licitacion-tramo, #edit-licitacion-tipoTren, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo').each(function() {
+            $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion, #edit-licitacion-proyecto, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo, #edit-licitacion-anoPublicacion, #edit-licitacion-registradosInteres, #edit-licitacion-nombreLicitantes, #edit-licitacion-ganadorLicitacion').each(function() {
                  $(this).select2({
                      tags: true,
                      placeholder: "Seleccione o escriba una opción",
